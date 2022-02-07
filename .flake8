@@ -1,0 +1,12 @@
+# -*- mode:conf; -*-
+[flake8]
+# mccabe code complexity metric: 10 is too much
+max-complexity = 10
+max-line-length = 88
+
+ignore =
+    # "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code."
+    # This is useless in tests/ where we WANT to have asserts
+    S101
+    # "Docstrings first line must end in a period"
+    D400
