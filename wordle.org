@@ -4,7 +4,7 @@
 #+PROPERTY: header-args:python :tangle src/literate_wordle/wordle.py
 #+PROPERTY: header-args:feature :tangle features/basic.feature
 #+PROPERTY: header-args:shell :results verbatim
-
+#+EXPORT_FILE_NAME: docs/source/_static/wordle.html
 
 * First some requirements
 
@@ -55,7 +55,8 @@ And now run the tests. Remember that since =make= includes both =pre-commit= and
 =pytest=, and the =pre-commit= hook enforces code is tangled, a successful run
 of =make= will confirm that code is correct.
 
-#+begin_src shell
+# Eval: no-export avoids HTML export to force-rerun this code block (which recurses!)
+#+begin_src shell :exports both :eval no-export
 make
 #+end_src
 
