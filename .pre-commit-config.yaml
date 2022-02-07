@@ -11,7 +11,9 @@ repos:
     hooks:   # Sucky because references init.el (DOOM specific, sloooow) to get htmlize
     -   id: emacs-export-html
         name: Emacs export org-mode file to static HTML
-        entry: emacs --batch --script ~/.emacs.d/init.el --eval "(progn (require 'ox-html) (require 'htmlize) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-html-export-to-html))))"
+        # FIXME Skips export if file exists, because non-reproducible
+        # (timestamp) causing pre-commit hook to fail as file modified!
+        entry: emacs --batch --script ~/.emacs.d/init.el --eval "(progn (require 'ox-html) (require 'htmlize) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (if (not (file-exists-p (org-export-output-file-name \".html\")))  (org-html-export-to-html)))))"
         language: system
         files: wordle.org
 -   repo: https://github.com/pre-commit/pre-commit-hooks
