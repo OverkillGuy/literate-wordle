@@ -1,3 +1,152 @@
 #+TITLE: Wordle
 
-Hello world.
+# Tangle all python code into the same file, same for features
+#+PROPERTY: header-args:python :tangle src/literate_wordle/wordle.py
+#+PROPERTY: header-args:feature :tangle features/basic.feature
+#+PROPERTY: header-args:shell :results verbatim
+
+
+* First some requirements
+
+Let's write up some requirements here.
+
+#+begin_src feature
+Feature: Basic feature
+As a wordle implementer
+I need a simple feature file
+So that I validate documentation links to requirements files
+#+end_src
+
+And the docstring for a new python module =wordle.py=
+#+begin_src python :padline no
+"""A short wordle implementation, written in literate programming style"""
+#+end_src
+
+
+Let's add some dummy code to that, to ensure tests work:
+
+#+begin_src python
+def add_two_ints(x: int, y: int) -> int:
+    """
+    Sum two integers together
+
+    >>> add_two_ints(12, 5)
+    17
+    """
+    return x + y
+#+end_src
+
+And let's start defining a test that validates this:
+
+#+begin_src python :tangle tests/test_dummy.py
+"""Basic tests of literate_wordle."""
+
+from literate_wordle.wordle import add_two_ints
+
+
+def test_two_integers_work():
+    """Confirm silly function works"""
+    assert add_two_ints(7,3) == 7 + 3, "Bad addition function"
+
+#+end_src
+
+
+And now run the tests. Remember that since =make= includes both =pre-commit= and
+=pytest=, and the =pre-commit= hook enforces code is tangled, a successful run
+of =make= will confirm that code is correct.
+
+#+begin_src shell
+make
+#+end_src
+
+#+RESULTS:
+#+begin_example
+poetry install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: literate_wordle (0.1.0)
+pre-commit run --all --all-files
+Emacs tangle org-mode literate-programming files (ensures synced).......................Passed
+Trim Trailing Whitespace................................................................Passed
+Fix End of Files........................................................................Passed
+Check for added large files.............................................................Passed
+Check that executables have shebangs................................(no files to check)Skipped
+Check for case conflicts................................................................Passed
+Check vcs permalinks....................................................................Passed
+Forbid new submodules...................................................................Passed
+Mixed line ending.......................................................................Passed
+Check for merge conflicts...............................................................Passed
+Detect Private Key......................................................................Passed
+Check Toml..............................................................................Passed
+Check Yaml..............................................................................Passed
+Check JSON..........................................................(no files to check)Skipped
+mypy....................................................................................Passed
+cd docs && make html
+make[1]: Entering directory '/home/jiby/dev/ws/short/literate_wordle/docs'
+Running Sphinx v4.4.0
+loading pickled environment... done
+[autosummary] generating autosummary for: features.md, index.rst, readme.md, wordle.md
+[AutoAPI] Reading files... [ 50%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
+[AutoAPI] Reading files... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/wordle.py
+
+[AutoAPI] Mapping Data... [ 50%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
+[AutoAPI] Mapping Data... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/wordle.py
+
+[AutoAPI] Rendering Data... [ 50%] literate_wordle
+[AutoAPI] Rendering Data... [100%] literate_wordle.wordle
+
+myst v0.15.2: MdParserConfig(renderer='sphinx', commonmark_only=False, enable_extensions=['dollarmath'], dmath_allow_labels=True, dmath_allow_space=True, dmath_allow_digits=True, dmath_double_inline=False, update_mathjax=True, mathjax_classes='tex2jax_process|mathjax_process|math|output_area', disable_syntax=[], url_schemes=['http', 'https', 'mailto', 'ftp'], heading_anchors=2, heading_slug_func=None, html_meta=[], footnote_transition=True, substitutions=[], sub_delimiters=['{', '}'], words_per_minute=200)
+building [mo]: targets for 0 po files that are out of date
+building [html]: targets for 3 source files that are out of date
+updating environment: 0 added, 4 changed, 0 removed
+reading sources... [ 25%] autoapi/index
+reading sources... [ 50%] autoapi/literate_wordle/index
+reading sources... [ 75%] autoapi/literate_wordle/wordle/index
+reading sources... [100%] features
+
+looking for now-outdated files... none found
+pickling environment... done
+checking consistency... done
+preparing documents... done
+writing output... [ 20%] autoapi/index
+writing output... [ 40%] autoapi/literate_wordle/index
+writing output... [ 60%] autoapi/literate_wordle/wordle/index
+writing output... [ 80%] features
+writing output... [100%] index
+
+generating indices... genindex py-modindex done
+highlighting module code... [ 50%] literate_wordle
+highlighting module code... [100%] literate_wordle.wordle
+
+writing additional pages... search done
+copying static files... done
+copying extra files... done
+dumping search index in English (code: en)... done
+dumping object inventory... done
+build succeeded, 1 warning.
+
+The HTML pages are in build/html.
+make[1]: Leaving directory '/home/jiby/dev/ws/short/literate_wordle/docs'
+poetry run pytest
+[1m============================= test session starts ==============================[0m
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, datadir-1.3.1, clarity-1.0.1
+[1mcollecting ... [0mcollected 3 items
+
+src/literate_wordle/wordle.py::literate_wordle.wordle.add_two_ints [32mPASSED[0m[32m [ 33%][0m
+tests/test_dummy.py::test_two_integers_work [32mPASSED[0m[32m                       [ 66%][0m
+tests/test_version.py::test_version [32mPASSED[0m[32m                               [100%][0m
+
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+[32m============================== [32m[1m3 passed[0m[32m in 0.03s[0m[32m ===============================[0m
+poetry build
+Building literate_wordle (0.1.0)
+  - Building sdist
+  - Built literate_wordle-0.1.0.tar.gz
+  - Building wheel
+  - Built literate_wordle-0.1.0-py3-none-any.whl
+#+end_example

@@ -1,6 +1,5 @@
 
-.. note::
-   To see the code's documentation, head over to the `API Reference <autoapi/index.html>`_ section.
+See also the `HTML version <_static/wordle.html>`_ now
 
 
 .. toctree::
@@ -8,3 +7,4 @@
 
    README <readme>
    features
+   wordle

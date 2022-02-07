@@ -10,7 +10,7 @@ Literate programming is the practice of writing a program as if it was a novel
 or a blog post, with each explanation conjoined with a code block. A process
 called "tangling" extracts the code blocks to be generated into proper files.
 
-In this case, the novel is available in [wordle.org](./wordle.org), and tangles
+In this case, the novel is available in file `wordle.org`, and tangles
 into this repository's code.
 
 Other than this file duplicating the entire repo's worth of code, the rest of
