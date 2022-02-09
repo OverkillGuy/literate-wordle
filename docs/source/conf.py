@@ -72,10 +72,20 @@ collections = {
     'gherkin_features_jinja': {
         'driver': 'jinja',
         'source': '_templates/gherkin_feature.rst.j2',
-        'target': 'gherkin_feature_{{name}}.rst',
-        'data': {
-            'name': 'me',
-            'city': 'munich'
+        'target': 'gherkin_feature.rst',
+        'multiple_files': False,
+        'data':
+            {
+                'users': [
+                    {
+                        'name': 'me',
+                        'city': 'Munich'
+                    },
+                    {
+                        'name': 'jb',
+                        'city': 'Nice'
+                    }
+                ],
             },
         'active': True,
     },

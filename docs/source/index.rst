@@ -8,4 +8,4 @@ See also the `HTML version <_static/wordle.html>`_ now
    README <readme>
    features
    wordle
-   Features2 <_collections/gherkin_feature_me>
+   Features2 <_collections/gherkin_feature>

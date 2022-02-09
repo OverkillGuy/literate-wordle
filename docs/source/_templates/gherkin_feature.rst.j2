@@ -1,11 +1,8 @@
 Super cool title
 ================
 
+Here's a list of people and their city:
 
-Lower title
------------
-
-
-Hey Hooo!
-
-It's {{name}} from {{city}}!
+{% for user in users %}
+{{user.name}} is from {{user.city}}.
+{% endfor %}
