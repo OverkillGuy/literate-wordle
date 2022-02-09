@@ -33,6 +33,7 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.autosectionlabel",
               "sphinx.ext.viewcode",
               "autoapi.extension",
+              "sphinxcontrib.collections",
               "myst_parser"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -66,3 +67,16 @@ autosectionlabel_prefix_document = True
 
 myst_heading_anchors = 2
 
+# Sphinx-Collections Extension
+collections = {
+    'gherkin_features_jinja': {
+        'driver': 'jinja',
+        'source': '_templates/gherkin_feature.rst.j2',
+        'target': 'gherkin_feature_{{name}}.rst',
+        'data': {
+            'name': 'me',
+            'city': 'munich'
+            },
+        'active': True,
+    },
+}
