@@ -71,6 +71,12 @@ myst_heading_anchors = 2
 
 # Sphinx-Collections Extension
 collections = {
+    'gherkin_features_copy' : {
+        'driver': 'copy_folder',
+        'source': '../features/',
+        'target': 'gherkin_features/',
+        'ignore': ['*.md', '*.org'], # Copy only ".feature" really
+    },
     'gherkin_features_jinja': {
         'driver': 'jinja',
         'source': '_templates/gherkin_feature.md.j2',
@@ -89,7 +95,6 @@ collections = {
                     }
                 ],
             },
-        'active': True,
     },
 }
 
