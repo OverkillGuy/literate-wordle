@@ -1,5 +1,5 @@
 
-```{note} Please also have a look at the [wordle.org](wordle) file, and linked [features](features.md)
+```{note} Please also have a look at the [wordle.org](wordle) file, and linked [features](_collections/gherkin_feature.md)
 ```
 ```{eval-rst}
 .. note::

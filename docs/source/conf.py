@@ -70,10 +70,26 @@ autosectionlabel_prefix_document = True
 myst_heading_anchors = 2
 
 # Sphinx-Collections Extension
+
+
+def list_features(features_full_path):
+    """Generate a sphinxcontrib-collection-compatible dict of features files
+
+    Lists out files under a specific features path, giving out a dictionary made
+    up of list of feature file details (dict)
+    """
+    file_list = os.listdir(features_full_path)
+    return {"features": [({"filename": filename}) for filename in file_list]}
+
+
+FEATURES_FOLDERNAME = "features"
+FEATURES_RELATIVE_PATH = ".."
+FEATURES_FULL_PATH = f"{FEATURES_RELATIVE_PATH}/{FEATURES_FOLDERNAME}/"
+
 collections = {
     'gherkin_features_copy' : {
         'driver': 'copy_folder',
-        'source': '../features/',
+        'source': FEATURES_FULL_PATH,  # one up from the docs/ folder (where "make" runs)
         'target': 'gherkin_features/',
         'ignore': ['*.md', '*.org'], # Copy only ".feature" really
     },
@@ -81,20 +97,8 @@ collections = {
         'driver': 'jinja',
         'source': '_templates/gherkin_feature.md.j2',
         'target': 'gherkin_feature.md',
-        'multiple_files': False,
-        'data':
-            {
-                'users': [
-                    {
-                        'name': 'me',
-                        'city': 'Munich'
-                    },
-                    {
-                        'name': 'jb',
-                        'city': 'Nice'
-                    }
-                ],
-            },
+        'multiple_files': False,  # Single output file, loops INSIDE jinja template
+        'data': list_features(f"../{FEATURES_FULL_PATH}") # listdir is run at conf.py instead = more up
     },
 }
 

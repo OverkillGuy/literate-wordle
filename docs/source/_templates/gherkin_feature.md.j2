@@ -1,15 +1,17 @@
-# Super cool title
+# Requirements list
 
-Here's a list of people and their city:
 
-{% for user in users %}
-**{{user.name}}** is from _{{user.city}}_.
+Each entry below is taken from a file found from the `features/` folder,
+rendered into a a [sphinxcontrib-needs
+requirement](https://sphinxcontrib-needs.readthedocs.io/en/latest/), and lists
+out the file's content, rendered as Gherkin properly. Adding new files in `features/` will make this page grow on next render.
+
+
+{% for feature in features %}
+### {{feature.filename}}
 
 ```{eval-rst}
-.. req:: {{user.name}} needs to login
-
-   Aliquam feugiat tellus ut neque. Pellentesque tristique imperdiet tortor.
-   Donec vitae dolor. Donec pretium posuere tellus.
+.. req:: {{feature.filename}}
 
    .. literalinclude:: gherkin_features/basic.feature
       :language: gherkin
