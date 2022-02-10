@@ -34,6 +34,8 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.viewcode",
               "autoapi.extension",
               "sphinxcontrib.collections",
+              "sphinxcontrib.needs",
+              "sphinxcontrib.plantuml", # dep of sphinxcontrib-needs[1]
               "myst_parser"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -90,3 +92,11 @@ collections = {
         'active': True,
     },
 }
+
+# Sphinxcontrib-plantuml
+
+# I haven't really installed plantuml, and as long as I don't need it for
+# sphinxcontrib-needs, it won't bother me to point to a fake file.
+# Ideally, plantuml would be an optional dependency of sphinxcontrib-needs[1]
+# [1]: https://github.com/useblocks/sphinxcontrib-needs/issues/222
+plantuml_jar_path = "/dev/null"

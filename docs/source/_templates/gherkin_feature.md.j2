@@ -4,4 +4,12 @@ Here's a list of people and their city:
 
 {% for user in users %}
 **{{user.name}}** is from _{{user.city}}_.
+
+```{eval-rst}
+.. req:: {{user.name}} needs to login
+
+   Aliquam feugiat tellus ut neque. Pellentesque tristique imperdiet tortor.
+   Donec vitae dolor. Donec pretium posuere tellus.
+
+```
 {% endfor %}

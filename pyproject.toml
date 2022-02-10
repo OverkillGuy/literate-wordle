@@ -42,6 +42,8 @@ sphinx-rtd-theme = "^1.0.0"
 myst-parser = "^0.15.2"
 sphinx-autoapi = "^1.8.4"
 sphinx-collections = "^0.0.1"
+sphinxcontrib-needs = "^0.7.5"
+sphinxcontrib-plantuml = "^0.22"
 
 
 [build-system]
