@@ -72,3 +72,4 @@ addopts = """-vv \
         # --cov-report=xml:test_results/coverage.xml \
         # --cov-report=html:test_results/coverage.html \
         # --cov-report=term \
+norecursedirs = ".git build docs"
