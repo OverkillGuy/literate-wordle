@@ -71,8 +71,8 @@ myst_heading_anchors = 2
 collections = {
     'gherkin_features_jinja': {
         'driver': 'jinja',
-        'source': '_templates/gherkin_feature.rst.j2',
-        'target': 'gherkin_feature.rst',
+        'source': '_templates/gherkin_feature.md.j2',
+        'target': 'gherkin_feature.md',
         'multiple_files': False,
         'data':
             {
