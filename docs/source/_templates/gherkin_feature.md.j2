@@ -1,11 +1,11 @@
-# Requirements list
-
+# Requirements
 
 Each entry below is taken from a file found from the `features/` folder,
 rendered into a a [sphinxcontrib-needs
 requirement](https://sphinxcontrib-needs.readthedocs.io/en/latest/), and lists
 out the file's content, rendered as Gherkin properly. Adding new files in `features/` will make this page grow on next render.
 
+## List of requirements
 
 {% for feature in features %}
 ### {{feature.filename}}
@@ -17,3 +17,10 @@ out the file's content, rendered as Gherkin properly. Adding new files in `featu
       :language: gherkin
 ```
 {% endfor %}
+
+## Requirements summary
+
+```{eval-rst}
+.. needtable:: Requirements list
+   :style: table
+```
