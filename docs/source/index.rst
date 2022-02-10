@@ -1,7 +1,4 @@
 
-See also the `HTML version <_static/wordle.html>`_ now
-
-
 .. toctree::
    :caption: Table of Contents:
 
