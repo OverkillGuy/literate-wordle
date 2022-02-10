@@ -3,7 +3,6 @@
 # Tangle all python code into the same file, same for features
 #+PROPERTY: header-args:python :tangle src/literate_wordle/wordle.py
 #+PROPERTY: header-args:shell :results verbatim
-#+EXPORT_FILE_NAME: docs/source/_static/wordle.html
 
 * First some requirements
 

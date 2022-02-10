@@ -87,7 +87,12 @@ FEATURES_RELATIVE_PATH = ".."
 FEATURES_FULL_PATH = f"{FEATURES_RELATIVE_PATH}/{FEATURES_FOLDERNAME}/"
 
 collections = {
-    'gherkin_features_copy' : {
+    'wordle_html_export_filecopy': {
+      'driver': 'copy_file',
+      'source': f"../wordle.html",
+      'target': '_static/wordle.html'
+    },
+    'gherkin_features_foldercopy' : {
         'driver': 'copy_folder',
         'source': FEATURES_FULL_PATH,  # one up from the docs/ folder (where "make" runs)
         'target': 'gherkin_features/',

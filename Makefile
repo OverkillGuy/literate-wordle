@@ -16,7 +16,7 @@ test:
 	poetry run pytest
 
 .PHONY: docs
-docs:
+docs: wordle.html
 	cd docs && make html
 
 .PHONY: docs-serve
@@ -57,3 +57,10 @@ poetry-venv-local:
 # Requires the virtualenv to be local (see "poetry-venv-local")
 poetry-venv-nuke:
 	find .venv -delete
+
+wordle.html: wordle.org
+	emacs --batch \
+		--script ~/.emacs.d/init.el \
+		--eval "(load-file \"~/.doom.d/init.el\")" \
+		--eval "(progn (require 'ox-html) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-html-export-to-html)))))" \
+		wordle.org
