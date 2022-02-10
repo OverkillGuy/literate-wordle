@@ -2,7 +2,6 @@
 
 # Tangle all python code into the same file, same for features
 #+PROPERTY: header-args:python :tangle src/literate_wordle/wordle.py
-#+PROPERTY: header-args:feature :tangle features/basic.feature
 #+PROPERTY: header-args:shell :results verbatim
 #+EXPORT_FILE_NAME: docs/source/_static/wordle.html
 
@@ -10,7 +9,7 @@
 
 Let's write up some requirements here.
 
-#+begin_src feature
+#+begin_src feature :tangle features/basic.feature
 Feature: Basic feature
 As a wordle implementer
 I need a simple feature file
@@ -151,3 +150,19 @@ Building literate_wordle (0.1.0)
   - Building wheel
   - Built literate_wordle-0.1.0-py3-none-any.whl
 #+end_example
+
+* More requirements
+:PROPERTIES:
+:CREATED:  [2022-02-10 Thu 01:59]
+:ID:       7b80a167-41ac-4d9d-933a-4318ec544a74
+:END:
+
+Let's add another set of requirements, marked as a new gherkin file. This should
+render in the requirements list page.
+
+#+begin_src feature :tangle features/another.feature
+Feature: Another cool gherkin feature file
+  As a developer attentive to requirements documentation
+  I need another Gherkin feature
+  In order to validate that each feature-file shows up in requirements page automatically
+#+end_src
