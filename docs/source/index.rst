@@ -1,3 +1,6 @@
+Literate wordle
+===============
+
 
 .. toctree::
    :caption: Table of Contents:
