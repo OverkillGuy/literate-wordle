@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-02-13 Sun 16:25 -->
+<!-- 2022-02-16 Wed 01:08 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Wordle</title>
@@ -201,187 +201,186 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org2832d37">1. First some requirements</a></li>
-<li><a href="#orgcc144b5">2. More requirements</a></li>
+<li><a href="#orgca4978c">1. Mise en bouche: picking an answer</a>
+<ul>
+<li><a href="#org217d032">1.1. Solution dictionary file</a></li>
+<li><a href="#orgac5fcd0">1.2. TDD for picking word functionality</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
+<p>
+Implementing the viral game &ldquo;Wordle&rdquo; in Python using literate programming!
+</p>
 
-<div id="outline-container-org2832d37" class="outline-2">
-<h2 id="org2832d37"><span class="section-number-2">1.</span> First some requirements</h2>
+<p>
+Literate programming is the art of writing code as if it was a novel (or
+blogpost), writing down what&rsquo;s needed, explaining the reasoning, and weaving in
+code snippets that add up to the codebase as we grow in understanding. The
+result is a &ldquo;story&rdquo; which can be read, but also &ldquo;tangled&rdquo; back into a proper
+codebase that works normally.
+</p>
+
+<p>
+I&rsquo;ll be making liberal use of Gherkin to describe what we&rsquo;re building.
+</p>
+
+<div id="outline-container-orgca4978c" class="outline-2">
+<h2 id="orgca4978c"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Let&rsquo;s write up some requirements here.
+To get us started, let&rsquo;s cover the very first thing Wordle has to do: pick a
+word that will become our answer:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Basic feature</span>
-As a wordle implementer
-I need a simple feature file
-So that I validate documentation links to requirements files
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Our first requirement</label><pre class="src src-feature"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Pick an answer word</span>
+  As the wordle game
+  I need to pick a random 5 letter word
+  In order to let players guess it
 </pre>
 </div>
 
 <p>
-And the docstring for a new python module <code>wordle.py</code>
+Right. That&rsquo;s fairly straightforward, but the secret word can&rsquo;t be random
+characters, it needs to be a proper word. So we need to find a dictionary to
+pick from.
 </p>
-<div class="org-src-container">
-<pre class="src src-python"><span style="color: #83898d;">"""A short wordle implementation, written in literate programming style"""</span>
-</pre>
 </div>
-
-
+<div id="outline-container-org217d032" class="outline-3">
+<h3 id="org217d032"><span class="section-number-3">1.1.</span> Solution dictionary file</h3>
+<div class="outline-text-3" id="text-1-1">
 <p>
-Let&rsquo;s add some dummy code to that, to ensure tests work:
+Since we&rsquo;re trying to match the Wordle website, let&rsquo;s use Wordle&rsquo;s own
+dictionary. Someone <a href="https://raw.githubusercontent.com/AllValley/WordleDictionary/main/wordle_solutions_alphabetized.txt">helpfully uploaded it</a>. We&rsquo;ll need to download it locally
+first:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">add_two_ints</span><span style="color: #FF8811;">(</span>x: <span style="color: #c678dd;">int</span>, y: <span style="color: #c678dd;">int</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">int</span>:
-    <span style="color: #83898d;">"""</span>
-<span style="color: #83898d;">    Sum two integers together</span>
-
-<span style="color: #83898d;">    &gt;&gt;&gt; add_two_ints(12, 5)</span>
-<span style="color: #83898d;">    17</span>
-<span style="color: #83898d;">    """</span>
-    <span style="color: #51afef;">return</span> x + y
+<pre class="src src-shell">wget <span style="color: #98be65;">\</span>
+    --output-document <span style="color: #98be65;">"src/literate_wordle/wordle_answers_dict.txt"</span> <span style="color: #98be65;">\</span>
+    <span style="color: #98be65;">"https://raw.githubusercontent.com/AllValley/WordleDictionary/6f14d2f03d01c36fe66e3ccc0929394251ab139d/wordle_solutions_alphabetized.txt"</span>
 </pre>
 </div>
 
 <p>
-And let&rsquo;s start defining a test that validates this:
+Except an alphabetically sorted text file takes a lot of space but compresses
+really well: let&rsquo;s compress that instead
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #83898d;">"""Basic tests of literate_wordle."""</span>
-
-<span style="color: #51afef;">from</span> literate_wordle.wordle <span style="color: #51afef;">import</span> add_two_ints
-
-
-<span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_two_integers_work</span><span style="color: #FF8811;">()</span>:
-    <span style="color: #83898d;">"""Confirm silly function works"""</span>
-    <span style="color: #51afef;">assert</span> add_two_ints<span style="color: #FF8811;">(</span><span style="color: #da8548; font-weight: bold;">7</span>,<span style="color: #da8548; font-weight: bold;">3</span><span style="color: #FF8811;">)</span> == <span style="color: #da8548; font-weight: bold;">7</span> + <span style="color: #da8548; font-weight: bold;">3</span>, <span style="color: #98be65;">"Bad addition function"</span>
-
+<pre class="src src-shell"><span style="color: #dcaeea;">ANSWERS_FILE</span>=<span style="color: #98be65;">"src/literate_wordle/wordle_answers_dict.txt"</span>
+<span style="color: #ECBE7B;">ls</span> -hal <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">{ANSWERS_FILE}</span><span style="color: #98be65;">"</span>
+gzip <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">ANSWERS_FILE</span><span style="color: #98be65;">"</span>
+<span style="color: #ECBE7B;">ls</span> -hal <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">{ANSWERS_FILE}</span><span style="color: #98be65;">.gz"</span>
+<span style="color: #5B6268;"># </span><span style="color: #5B6268;">Unnecessary: gzip removes the original as it compresses</span>
+<span style="color: #5B6268;"># </span><span style="color: #5B6268;">rm</span><span style="color: #5B6268;"> "$ANSWERS_FILE"</span>
 </pre>
 </div>
-
 
 <p>
-And now run the tests. Remember that since <code>make</code> includes both <code>pre-commit</code> and
-<code>pytest</code>, and the <code>pre-commit</code> hook enforces code is tangled, a successful run
-of <code>make</code> will confirm that code is correct.
+Sweet, we have cut down by ~two thirds the filesize.
 </p>
 
+<p>
+Now, let&rsquo;s use Test-Driven Development to guide us towards picking an answer
+word.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgac5fcd0" class="outline-3">
+<h3 id="orgac5fcd0"><span class="section-number-3">1.2.</span> TDD for picking word functionality</h3>
+<div class="outline-text-3" id="text-1-2">
 <div class="org-src-container">
-<pre class="src src-shell"><span style="color: #ECBE7B;">make</span>
+<pre class="src src-python"><span style="color: #83898d;">"""</span>
+<span style="color: #83898d;">Feature: Pick an answer word</span>
+<span style="color: #83898d;">  As the wordle game</span>
+<span style="color: #83898d;">  I need to pick a random 5 letter word</span>
+<span style="color: #83898d;">  In order to let players guess it</span>
+<span style="color: #83898d;">"""</span>
+
+<span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> pick_answer_word
+
+
+<span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_pick_word_ok_length</span><span style="color: #FF8811;">()</span>:
+    <span style="color: #83898d;">"""Confirm a wordle solution is of right size"""</span>
+    <span style="color: #51afef;">assert</span> <span style="color: #c678dd;">len</span><span style="color: #FF8811;">(</span>pick_answer_word<span style="color: #8F0;">()</span><span style="color: #FF8811;">)</span> == <span style="color: #da8548; font-weight: bold;">5</span>, <span style="color: #98be65;">"Picked wordle solution is wrong size!"</span>
 </pre>
 </div>
 
-<pre class="example" id="orge11b1ef">
-poetry install
-Installing dependencies from lock file
+<p>
+Of course, since that feature isn&rsquo;t implemented (not even the skeleton), running
+tests right now would crash, not just give a red light. So let&rsquo;s implement the
+barest hint of a function that returns the wrong thing, to make the test run but
+fail:
+</p>
 
-No dependencies to install or update
+<p>
+First, the docstring for a new python module <code>words.py</code>
+</p>
 
-Installing the current project: literate_wordle (0.1.0)
-pre-commit run --all --all-files
-Emacs tangle org-mode literate-programming files (ensures synced).......................Passed
-Trim Trailing Whitespace................................................................Passed
-Fix End of Files........................................................................Passed
-Check for added large files.............................................................Passed
-Check that executables have shebangs................................(no files to check)Skipped
-Check for case conflicts................................................................Passed
-Check vcs permalinks....................................................................Passed
-Forbid new submodules...................................................................Passed
-Mixed line ending.......................................................................Passed
-Check for merge conflicts...............................................................Passed
-Detect Private Key......................................................................Passed
-Check Toml..............................................................................Passed
-Check Yaml..............................................................................Passed
-Check JSON..........................................................(no files to check)Skipped
-mypy....................................................................................Passed
-cd docs &amp;&amp; make html
-make[1]: Entering directory '/home/jiby/dev/ws/short/literate_wordle/docs'
-Running Sphinx v4.4.0
-loading pickled environment... done
-[autosummary] generating autosummary for: features.md, index.rst, readme.md, wordle.md
-[AutoAPI] Reading files... [ 50%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
-[AutoAPI] Reading files... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/wordle.py
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #83898d;">"""Dictionary features to back wordle solutions"""</span>
+</pre>
+</div>
 
-[AutoAPI] Mapping Data... [ 50%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
-[AutoAPI] Mapping Data... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/wordle.py
+<p>
+In that module, let&rsquo;s add the skeleton for our <code>pick_answer_word</code> function, but
+return an invalid result, to make test explicitly fail:
+</p>
 
-[AutoAPI] Rendering Data... [ 50%] literate_wordle
-[AutoAPI] Rendering Data... [100%] literate_wordle.wordle
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
+    <span style="color: #83898d;">"""Pick a Wordle solution/answer from wordle dictionary"""</span>
+    <span style="color: #51afef;">return</span> <span style="color: #98be65;">""</span>  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Incorrect solution to get RED test</span>
+</pre>
+</div>
 
-myst v0.15.2: MdParserConfig(renderer='sphinx', commonmark_only=False, enable_extensions=['dollarmath'], dmath_allow_labels=True, dmath_allow_space=True, dmath_allow_digits=True, dmath_double_inline=False, update_mathjax=True, mathjax_classes='tex2jax_process|mathjax_process|math|output_area', disable_syntax=[], url_schemes=['http', 'https', 'mailto', 'ftp'], heading_anchors=2, heading_slug_func=None, html_meta=[], footnote_transition=True, substitutions=[], sub_delimiters=['{', '}'], words_per_minute=200)
-building [mo]: targets for 0 po files that are out of date
-building [html]: targets for 3 source files that are out of date
-updating environment: 0 added, 4 changed, 0 removed
-reading sources... [ 25%] autoapi/index
-reading sources... [ 50%] autoapi/literate_wordle/index
-reading sources... [ 75%] autoapi/literate_wordle/wordle/index
-reading sources... [100%] features
+<p>
+With our test ready, and a dummy function in place, let&rsquo;s see the tests go red:
+</p>
 
-looking for now-outdated files... none found
-pickling environment... done
-checking consistency... done
-preparing documents... done
-writing output... [ 20%] autoapi/index
-writing output... [ 40%] autoapi/literate_wordle/index
-writing output... [ 60%] autoapi/literate_wordle/wordle/index
-writing output... [ 80%] features
-writing output... [100%] index
 
-generating indices... genindex py-modindex done
-highlighting module code... [ 50%] literate_wordle
-highlighting module code... [100%] literate_wordle.wordle
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
+</pre>
+</div>
 
-writing additional pages... search done
-copying static files... done
-copying extra files... done
-dumping search index in English (code: en)... done
-dumping object inventory... done
-build succeeded, 1 warning.
-
-The HTML pages are in build/html.
-make[1]: Leaving directory '/home/jiby/dev/ws/short/literate_wordle/docs'
+<pre class="example" id="org3f322aa">
 poetry run pytest
-[1m============================= test session starts ==============================[0m
+============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
 cachedir: .pytest_cache
 rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
 plugins: cov-3.0.0, datadir-1.3.1, clarity-1.0.1
-[1mcollecting ... [0mcollected 3 items
+collecting ... collected 2 items
 
-src/literate_wordle/wordle.py::literate_wordle.wordle.add_two_ints [32mPASSED[0m[32m [ 33%][0m
-tests/test_dummy.py::test_two_integers_work [32mPASSED[0m[32m                       [ 66%][0m
-tests/test_version.py::test_version [32mPASSED[0m[32m                               [100%][0m
+tests/test_pick_word.py::test_pick_word_ok_length FAILED                 [ 50%]
+tests/test_version.py::test_version PASSED                               [100%]
 
+=================================== FAILURES ===================================
+___________________________ test_pick_word_ok_length ___________________________
+
+    def test_pick_word_ok_length():
+        """Confirm a wordle solution is of right size"""
+&gt;       assert len(pick_answer_word()) == 5, "Picked wordle solution is wrong size!"
+E       AssertionError: Picked wordle solution is wrong size!
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         0
+E         5
+E
+
+tests/test_pick_word.py:13: AssertionError
 - generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
-[32m============================== [32m[1m3 passed[0m[32m in 0.03s[0m[32m ===============================[0m
-poetry build
-Building literate_wordle (0.1.0)
-  - Building sdist
-  - Built literate_wordle-0.1.0.tar.gz
-  - Building wheel
-  - Built literate_wordle-0.1.0-py3-none-any.whl
-</pre>
-</div>
-</div>
-
-<div id="outline-container-orgcc144b5" class="outline-2">
-<h2 id="orgcc144b5"><span class="section-number-2">2.</span> More requirements</h2>
-<div class="outline-text-2" id="text-2">
-<p>
-Let&rsquo;s add another set of requirements, marked as a new gherkin file. This should
-render in the requirements list page.
-</p>
-
-<div class="org-src-container">
-<pre class="src src-feature"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Another cool gherkin feature file</span>
-  As a developer attentive to requirements documentation
-  I need another Gherkin feature
-  In order to validate that each feature-file shows up in requirements page automatically
+=========================== short test summary info ============================
+FAILED tests/test_pick_word.py::test_pick_word_ok_length - AssertionError: Pi...
+========================= 1 failed, 1 passed in 0.07s ==========================
+make: *** [Makefile:16: test] Error 1
 </pre>
 </div>
 </div>
@@ -389,7 +388,7 @@ render in the requirements list page.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Jb Doyon</p>
-<p class="date">Created: 2022-02-13 Sun 16:25</p>
+<p class="date">Created: 2022-02-16 Wed 01:08</p>
 </div>
 </body>
 </html>
