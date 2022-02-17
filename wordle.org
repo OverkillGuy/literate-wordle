@@ -172,16 +172,30 @@ weirdness:
 
 #+begin_src python :tangle src/literate_wordle/words.py
 """Dictionary features to back wordle solutions"""
+#+end_src
 
+#+NAME: choice-stdlib
+#+CAPTION: Necessary standard library imports
+#+begin_src python :tangle no
 import gzip
 import importlib.resources as pkg_resources
 from random import choice
+#+end_src
 
+#+NAME: choice-locallib
+#+CAPTION: Local import of =assets/= folder
+#+begin_src python :tangle no
 from . import assets  # Relative import of the assets/ folder
+#+end_src
 
+#+NAME: choice-func-unzipdict
+#+CAPTION: Actual function to unzip dictionary
+#+begin_src python :tangle no
 def get_words_list() -> list[str]:
     """Decompress the wordle dictionary"""
-    dict_compressed_bytes = pkg_resources.read_binary(assets, "wordle_answers_dict.txt.gz")
+    dict_compressed_bytes = pkg_resources.read_binary(
+        assets, "wordle_answers_dict.txt.gz"
+    )
     dict_string = gzip.decompress(dict_compressed_bytes).decode("ascii")
     answer_word_list = [word.strip().lower() for word in dict_string.split("\n")]
     return answer_word_list
@@ -189,7 +203,9 @@ def get_words_list() -> list[str]:
 
 Then write out the pretty trivial function to pick:
 
-#+begin_src python :tangle src/literate_wordle/words.py
+#+NAME: choice-func-pickanswer
+#+CAPTION: Pick-a-word!
+#+begin_src python :tangle no
 def pick_answer_word() -> str:
     """Pick a single word out of the dictionary of answers"""
     return choice(get_words_list())
@@ -365,3 +381,226 @@ drown out the nice narrative we're building here.]
 Along the way, the code spelled out in this narrative-oriented file is tangled
 out into proper code paths, so that the =Makefile= can pick it up and validate
 the proper package-ness.
+* Confirming guess is a valid word
+
+Now that we can pick secret words, we need to start processing guesses. The very
+first thing a guess needs is validating guesses are proper words of the right
+length. This feature will give us a familiar context (dictionaries), while
+slowly ramping up the details of the Gherkin features:
+
+#+NAME: feature-check-valid-guess
+#+CAPTION: New Gherkin feature file =features/checking_guess_valid_word.feature=
+#+begin_src feature :tangle features/checking_guess_valid_word.feature
+Feature: Checking a guess is a valid word
+  As a Wordle game
+  I need to confirm each guessed word is valid
+  So that I only accept real words, no kwyjibo
+#+end_src
+
+In practice, this means multiple things:
+
+#+NAME: scenario-check-valid-guess
+#+CAPTION: Scenarios to describe the feature in details
+#+begin_src feature :tangle features/checking_guess_valid_word.feature
+Scenario: Reject long words
+  When guessing "affable"
+  Then the guess is rejected
+  And reason for rejection is "Guess too long"
+
+Scenario: Reject short words
+  When guessing "baby"
+  Then the guess is rejected
+  And reason for rejection is "Guess too short"
+
+Scenario: Reject fake words via dictionary
+  When guessing "vbpdj"
+  Then the guess is rejected
+  And reason for rejection is "Not a word from the dictionary"
+
+Scenario: Accept five letter dictionary words
+  When guessing "crane"
+  Then the guess is accepted
+#+end_src
+
+So, with a feature covering two scenarios, we can start laying out acceptance
+tests.
+
+Since I quite like to use the Gherkin feature file inside the
+docstrings of Python tests, I'm going to take advantage of having already
+written it above to reference it for export, so I can template it out:
+
+#+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Code Snippet [[feature-check-valid-guess]] and [[scenario-check-valid-guess]]
+#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
+"""
+<<feature-check-valid-guess>>
+
+<<scenario-check-valid-guess>>
+"""
+#+end_src
+
+With the feature described, let's import our hypothetical test code
+
+#+NAME: test-valid-import
+#+begin_src python :tangle no
+from literate_wordle.words import check_valid_word
+#+end_src
+
+And write out a simple test using the first scenario:
+
+#+NAME: test-valid-1
+#+begin_src python :tangle no
+def test_reject_long_words():
+    """Scenario: Reject long words"""
+    # When guessing "affable"
+    guess = "affable"
+    is_valid, reject_reason = check_valid_word(guess)
+    # Then the guess is rejected
+    assert not is_valid, "Overly long guess should have been rejected"
+    # And reason for rejection is "Guess too long"
+    assert reject_reason == "Guess too long"
+#+end_src
+
+And in a similar way, we write the opposite test for too short:
+
+#+NAME: test-valid-2
+#+begin_src python :tangle no
+def test_reject_overly_short_words():
+    """Scenario: Reject short words"""
+    # When guessing "baby"
+    guess = "baby"
+    is_valid, reject_reason = check_valid_word(guess)
+    # Then the guess is rejected
+    assert not is_valid, "Overly short guess should have been rejected"
+    # And reason for rejection is "Guess too short"
+    assert reject_reason == "Guess too short"
+#+end_src
+
+And finally, the dictionary checks:
+
+#+NAME: test-valid-3
+#+begin_src python :tangle no
+def test_reject_nondict_words():
+    """Scenario: Reject fake words via dictionary"""
+    # When guessing "vbpdj"
+    guess = "vbpdj"
+    is_valid, reject_reason = check_valid_word(guess)
+    # Then the guess is rejected
+    assert not is_valid, "Word not in dictionary should have been rejected"
+    # And reason for rejection is "Not a word from the dictionary"
+    assert reject_reason == "Not a word from the dictionary"
+#+end_src
+
+
+#+NAME: test-valid-4
+#+begin_src python :tangle no
+def test_accept_dict_words():
+    """Scenario: Accept five letter dictionary words"""
+    # When guessing "crane"
+    guess = "crane"
+    is_valid, reject_reason = check_valid_word(guess)
+    # Then the guess is accepted
+    assert is_valid, "Correct length word in dictionary should have been accepted"
+#+end_src
+
+One tiny detail regarding this last example, which highlights why separating
+Gherkin from actual code is important: We describe in the positive scenario the
+need to accept a correct word in terms of "not rejecting", which in code maps to
+the =is_valid= boolean. That's suffficient to make the Gherkin scenario, which
+is what we think of when designing the software, but as we see in the
+implementation, there's also the matter of the =reject_reason= component, which
+we should check for emptiness. That is an implementation detail, which has no
+reason to be laid out in the original scenario, but is still valid to make
+assertions on. So we shall:
+
+#+NAME: reject-reason-none
+#+CAPTION: This line isn't defined in Gherkin, because it separates the implementation from the feature's requirement
+#+begin_src python :tangle no
+    assert reject_reason is None, "Accepted word should have no reason to be rejected"
+#+end_src
+
+With all these (high level) tests in hand, let's write up some small
+implementation to get RED tests instead of a crash.
+
+First up is defining a signature: We take a guess in, and return a boolean and a
+string. Except sometimes (as seen in Code Snippet [[reject-reason-none]]) it's
+=None=, so that's more of an =Optional= string, which we'll need to import:
+
+#+NAME: valid-stdlib
+#+begin_src python :tangle no
+from typing import Optional, Tuple
+#+end_src
+
+#+NAME: valid-func-proto
+#+begin_src python :tangle no
+def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
+#+end_src
+
+And to fill it with junk:
+
+#+NAME: valid-func-junk
+#+begin_src python :tangle no
+    """Dummy implementation of checking a valid word"""
+    return False, "Not implemented"
+#+end_src
+
+
+# Note that in Wordle, the list of possible solutions is a subset of the word
+# dictionary used for guess validation. We previously loaded the answers, now we need the other one too.
+
+# Same thing for the test, to deal with
+** Fix tangle layout
+This subsection won't get exported to HTML, but remains tangled normally.
+This helps us fix the org-mode tangled layout, specifically how imports in
+python have a rigid ordering, but the way we implemented the functions in two
+passes didn't allow for the proper order.
+
+This means we need to manually weave the code blocks, instead of just stating
+they all point to the same file and rely on file top-to-bottom order, we have an
+explicit code block where we template out "add this bit, now 2 lines below add
+that snippet, and then...". Not ideal, but it has the added benefit of allowing
+custom layout like number of lines jumped between files, which was blocking
+adoption of the =black= formatter in this repository.
+
+First, fix =words.py= imports being out of order in our narrative by tangling
+them via noweb to weave the part 1 imports with the part2.
+
+#+NAME: words-py-tangle
+#+begin_src python :tangle src/literate_wordle/words.py :noweb yes
+
+<<choice-stdlib>>
+<<valid-stdlib>>
+
+<<choice-locallib>>
+
+
+<<choice-func-unzipdict>>
+
+
+<<choice-func-pickanswer>>
+
+
+<<valid-func-proto>>
+<<valid-func-junk>>
+#+end_src
+
+Now the same thing with the test file, which indeed /is/ in proper order
+already, but would benefit from two-lines-between-tests to guarantee formatting:
+
+#+NAME: words-py-tangle
+#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
+
+<<test-valid-import>>
+
+
+<<test-valid-1>>
+
+
+<<test-valid-2>>
+
+
+<<test-valid-3>>
+
+
+<<test-valid-4>>
+<<reject-reason-none>>
+#+end_src
