@@ -10,3 +10,4 @@ documentation.
    README <readme>
    _collections/gherkin_feature
    wordle
+   wordle_sources

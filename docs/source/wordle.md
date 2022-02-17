@@ -1,20 +1,19 @@
 # Literate programming wordle
 
-Rendering the `wordle.org` file and showing it raw, without any processing.
+Rendering the `wordle.org` file as webpage and showing it raw, without any
+post-processing.
 
 Unfortunately, the sphinx documentation generator doesn't understand org-mode
 files, so I can't render this directly. The following is exported from org-mode
 to HTML, then included as raw (static) HTML inside sphinx, so as to keep the
 sidebar etc.
 
+
+```{note}
+You can see the raw [org-mode](https://orgmode.org) file for context in [wordle sources](wordle_sources.md)
+```
+
 ```{eval-rst}
 .. raw:: html
    :file: _collections/_static/wordle.html
-```
-
-## Raw file
-
-Below is the raw org-mode file that was rendered above
-
-```{literalinclude} ../../wordle.org
 ```
