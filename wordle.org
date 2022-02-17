@@ -45,7 +45,7 @@ wget \
 Except an alphabetically sorted text file takes a lot of space but compresses
 really well: let's compress that instead
 
-#+begin_src shell :tangle no
+#+begin_src shell :tangle no :exports both
 ANSWERS_FILE="src/literate_wordle/assets/wordle_answers_dict.txt"
 du -k "${ANSWERS_FILE}"
 gzip "$ANSWERS_FILE"
@@ -58,7 +58,7 @@ du -k "${ANSWERS_FILE}.gz"
 : 16	src/literate_wordle/assets/wordle_answers_dict.txt
 : 8	src/literate_wordle/assets/wordle_answers_dict.txt.gz
 
-Sweet, we have cut down by ~two thirds the filesize.
+Sweet, we have cut down the filesize by half.
 
 Now, let's use Test-Driven Development to guide us towards picking an answer
 word.

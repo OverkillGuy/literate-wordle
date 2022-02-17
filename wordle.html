@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-02-16 Wed 02:08 -->
+<!-- 2022-02-17 Thu 20:46 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Wordle</title>
@@ -201,12 +201,12 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orge2a5db0">1. Mise en bouche: picking an answer</a>
+<li><a href="#org78c4a8d">1. Mise en bouche: picking an answer</a>
 <ul>
-<li><a href="#orgd47de5c">1.1. Solution dictionary file</a></li>
-<li><a href="#orgd7cfc4c">1.2. TDD for picking word functionality</a></li>
-<li><a href="#org9b270bf">1.3. Importing dictionary: static/packaged asset file read</a></li>
-<li><a href="#org2a12161">1.4. Debriefing on the method</a></li>
+<li><a href="#org07c742e">1.1. Solution dictionary file</a></li>
+<li><a href="#org6ae74db">1.2. TDD for picking word functionality</a></li>
+<li><a href="#orgf1e7961">1.3. Importing dictionary: static/packaged asset file read</a></li>
+<li><a href="#org3696806">1.4. Debriefing on the method</a></li>
 </ul>
 </li>
 </ul>
@@ -228,8 +228,8 @@ codebase that works normally.
 I&rsquo;ll be making liberal use of Gherkin to describe what we&rsquo;re building.
 </p>
 
-<div id="outline-container-orge2a5db0" class="outline-2">
-<h2 id="orge2a5db0"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
+<div id="outline-container-org78c4a8d" class="outline-2">
+<h2 id="org78c4a8d"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 To get us started, let&rsquo;s cover the very first thing Wordle has to do: pick a
@@ -250,8 +250,8 @@ characters, it needs to be a proper word. So we need to find a dictionary to
 pick from.
 </p>
 </div>
-<div id="outline-container-orgd47de5c" class="outline-3">
-<h3 id="orgd47de5c"><span class="section-number-3">1.1.</span> Solution dictionary file</h3>
+<div id="outline-container-org07c742e" class="outline-3">
+<h3 id="org07c742e"><span class="section-number-3">1.1.</span> Solution dictionary file</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Since we&rsquo;re trying to match the Wordle website, let&rsquo;s use Wordle&rsquo;s own
@@ -281,8 +281,14 @@ du -k <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</spa
 </pre>
 </div>
 
+<pre class="example">
+16	src/literate_wordle/assets/wordle_answers_dict.txt
+8	src/literate_wordle/assets/wordle_answers_dict.txt.gz
+</pre>
+
+
 <p>
-Sweet, we have cut down by ~two thirds the filesize.
+Sweet, we have cut down the filesize by half.
 </p>
 
 <p>
@@ -292,8 +298,8 @@ word.
 </div>
 </div>
 
-<div id="outline-container-orgd7cfc4c" class="outline-3">
-<h3 id="orgd7cfc4c"><span class="section-number-3">1.2.</span> TDD for picking word functionality</h3>
+<div id="outline-container-org6ae74db" class="outline-3">
+<h3 id="org6ae74db"><span class="section-number-3">1.2.</span> TDD for picking word functionality</h3>
 <div class="outline-text-3" id="text-1-2">
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #83898d;">"""</span>
@@ -349,7 +355,7 @@ With our test ready, and a dummy function in place, let&rsquo;s see the tests go
 </pre>
 </div>
 
-<pre class="example" id="orgc3aa270">
+<pre class="example" id="org457eab9">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -390,8 +396,8 @@ Tests indeed failed as expected, can now try to make it pass.
 </div>
 </div>
 
-<div id="outline-container-org9b270bf" class="outline-3">
-<h3 id="org9b270bf"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
+<div id="outline-container-orgf1e7961" class="outline-3">
+<h3 id="orgf1e7961"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 At first glance, the implementation of the function we want is simple, it looks
@@ -489,7 +495,7 @@ Perfect! So the test should now pass, right?
 </pre>
 </div>
 
-<pre class="example" id="org3ed7aeb">
+<pre class="example" id="org4e6e8c6">
 poetry install
 Installing dependencies from lock file
 
@@ -619,8 +625,8 @@ Everything checks out: our feature is ready!<sup><a id="fnr.1" class="footref" h
 </p>
 </div>
 </div>
-<div id="outline-container-org2a12161" class="outline-3">
-<h3 id="org2a12161"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
+<div id="outline-container-org3696806" class="outline-3">
+<h3 id="org3696806"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 We just completed our first loop: determine a small component that needs
@@ -660,7 +666,7 @@ drown out the nice narrative we&rsquo;re building here.</p></div></div>
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Jb Doyon</p>
-<p class="date">Created: 2022-02-16 Wed 02:08</p>
+<p class="date">Created: 2022-02-17 Thu 20:46</p>
 </div>
 </body>
 </html>
