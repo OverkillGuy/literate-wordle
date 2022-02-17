@@ -66,7 +66,8 @@ word.
 ** TDD for picking word functionality
 
 #+begin_src python :tangle tests/test_pick_word.py
-"""
+"""Validates the Gherkin file features/pick_answer_word.feature:
+
 Feature: Pick an answer word
   As the wordle game
   I need to pick a random 5 letter word
@@ -214,7 +215,7 @@ def pick_answer_word() -> str:
 And make the =assets/= folder a proper importable python module just to be sure
 
 #+begin_src shell :tangle no :exports code
-touch src/literate_wordle/assets/__init__.py
+echo '"""Static binary assets required to Wordle well"""' > src/literate_wordle/assets/__init__.py
 #+end_src
 
 ... So now we have an implementation of the function, let's manually test it in
@@ -431,7 +432,8 @@ written it above to reference it for export, so I can template it out:
 
 #+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Code Snippet [[feature-check-valid-guess]] and [[scenario-check-valid-guess]]
 #+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
-"""
+"""Validates the Gherkin file features/checking_guess_valid_word.feature:
+
 <<feature-check-valid-guess>>
 
 <<scenario-check-valid-guess>>
@@ -539,7 +541,7 @@ And to fill it with junk:
 
 #+NAME: valid-func-junk
 #+begin_src python :tangle no
-    """Dummy implementation of checking a valid word"""
+    """Implement fake checking a valid word"""
     return False, "Not implemented"
 #+end_src
 
@@ -547,25 +549,24 @@ And to fill it with junk:
 # Note that in Wordle, the list of possible solutions is a subset of the word
 # dictionary used for guess validation. We previously loaded the answers, now we need the other one too.
 
-# Same thing for the test, to deal with
-** Fix tangle layout
-This subsection won't get exported to HTML, but remains tangled normally.
-This helps us fix the org-mode tangled layout, specifically how imports in
-python have a rigid ordering, but the way we implemented the functions in two
-passes didn't allow for the proper order.
 
-This means we need to manually weave the code blocks, instead of just stating
-they all point to the same file and rely on file top-to-bottom order, we have an
-explicit code block where we template out "add this bit, now 2 lines below add
-that snippet, and then...". Not ideal, but it has the added benefit of allowing
-custom layout like number of lines jumped between files, which was blocking
-adoption of the =black= formatter in this repository.
+# These comments won't get rendered as HTML, but code defined in "exports none"
+# remains tangled normally. This helps us fix the org-mode tangled layout,
+# specifically how imports in python have a rigid ordering, but the way we
+# implemented the functions in two passes didn't allow for the proper order.
 
-First, fix =words.py= imports being out of order in our narrative by tangling
-them via noweb to weave the part 1 imports with the part2.
+# This means we need to manually weave the code blocks, instead of just stating
+# they all point to the same file and rely on file top-to-bottom order, we have an
+# explicit code block where we template out "add this bit, now 2 lines below add
+# that snippet, and then...". Not ideal, but it has the added benefit of allowing
+# custom layout like number of lines jumped between files, which was blocking
+# adoption of the formatter "black" in this repository.
+
+# First, fix words.py imports being out of order in our narrative by tangling
+# them via noweb to weave the part 1 imports with the part2.
 
 #+NAME: words-py-tangle
-#+begin_src python :tangle src/literate_wordle/words.py :noweb yes
+#+begin_src python :tangle src/literate_wordle/words.py :noweb yes :export none
 
 <<choice-stdlib>>
 <<valid-stdlib>>
@@ -583,11 +584,11 @@ them via noweb to weave the part 1 imports with the part2.
 <<valid-func-junk>>
 #+end_src
 
-Now the same thing with the test file, which indeed /is/ in proper order
-already, but would benefit from two-lines-between-tests to guarantee formatting:
+# Now the same thing with the test file, which indeed /is/ in proper order
+# already, but would benefit from two-lines-between-tests to guarantee formatting:
 
 #+NAME: words-py-tangle
-#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
+#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes :exports none
 
 <<test-valid-import>>
 

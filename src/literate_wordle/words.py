@@ -24,5 +24,5 @@ def pick_answer_word() -> str:
 
 
 def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
-    """Dummy implementation of checking a valid word"""
+    """Implement fake checking a valid word"""
     return False, "Not implemented"

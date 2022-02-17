@@ -1,12 +1,13 @@
 exclude: '^docs/source/conf.py'
 repos:
--   repo: local
-    hooks:
-    -   id: emacs-tangle
-        name: Emacs tangle org-mode literate-programming files (ensures synced)
-        entry: emacs -Q --batch --eval "(progn (require 'ob-tangle) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-babel-tangle))))"
-        language: system
-        files: wordle.org
+# Tangling is a manual process that is better off staying that way?
+# -   repo: local
+#     hooks:
+#     -   id: emacs-tangle
+#         name: Emacs tangle org-mode literate-programming files (ensures synced)
+#         entry: emacs -Q --batch --eval "(progn (require 'ob-tangle) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-babel-tangle))))"
+#         language: system
+#         files: wordle.org
 -   repo: local
     hooks:   # Sucky because references init.el (DOOM specific, sloooow) to get htmlize
     -   id: emacs-export-html
@@ -33,35 +34,26 @@ repos:
     -   id: check-yaml
     -   id: check-json
 # Python formatters
-# Disabled because org-mode tangling forces formatting to be weird (newlines between blocks)
-# -   repo: local
-#     hooks:
-#       - id: black
-#         name: Black (python formatter)
-#         entry: poetry run black src/ tests/
-#         language: system
-#         types: [python]
-#         require_serial: true
-# -   repo: local
-#     hooks:
-#       - id: isort
-#         name: isort (python import sorter)
-#         entry: poetry run isort
-#         language: system
-#         types: [python]
-#         require_serial: true
-
+-   repo: https://github.com/psf/black
+    rev: 22.1.0
+    hooks:
+      - id: black
+-   repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
 ##Build script linters
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910
     hooks:
     -   id: mypy
-# -   repo: https://github.com/pycqa/flake8
-#     rev: 4.0.1
-#     hooks:
-#     -   id: flake8
-#         args: ["--tee", "--output-file", "test_results/flake8_report.txt"]
-#         additional_dependencies:
-#           - "flake8-bandit==2.1.2"
-#           - "flake8-bugbear==21.3.2"
-#           - "flake8-docstrings==1.6.0"
+-   repo: https://github.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+    -   id: flake8
+        args: ["--tee", "--output-file", "test_results/flake8_report.txt"]
+        additional_dependencies:
+          - "flake8-bandit==2.1.2"
+          - "flake8-bugbear==22.1.11"
+          - "flake8-docstrings==1.6.0"

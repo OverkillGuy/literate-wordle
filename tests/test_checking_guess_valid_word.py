@@ -1,4 +1,5 @@
-"""
+"""Validates the Gherkin file features/checking_guess_valid_word.feature:
+
 Feature: Checking a guess is a valid word
   As a Wordle game
   I need to confirm each guessed word is valid

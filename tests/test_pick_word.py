@@ -1,4 +1,5 @@
-"""
+"""Validates the Gherkin file features/pick_answer_word.feature:
+
 Feature: Pick an answer word
   As the wordle game
   I need to pick a random 5 letter word

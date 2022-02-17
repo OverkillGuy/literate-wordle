@@ -10,3 +10,5 @@ ignore =
     S101
     # "Docstrings first line must end in a period"
     D400
+    # "Standard pseudo-random generators are not suitable for security/cryptographic purposes"
+    S311
