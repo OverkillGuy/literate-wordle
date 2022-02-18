@@ -430,7 +430,7 @@ Since I quite like to use the Gherkin feature file inside the
 docstrings of Python tests, I'm going to take advantage of having already
 written it above to reference it for export, so I can template it out:
 
-#+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Code Snippet [[feature-check-valid-guess]] and [[scenario-check-valid-guess]]
+#+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing [[feature-check-valid-guess]] and [[scenario-check-valid-guess]]
 #+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
 """Validates the Gherkin file features/checking_guess_valid_word.feature:
 
@@ -439,7 +439,7 @@ written it above to reference it for export, so I can template it out:
 <<scenario-check-valid-guess>>
 """
 #+end_src
-
+** Test setup
 With the feature described, let's import our hypothetical test code
 
 #+NAME: test-valid-import
@@ -524,7 +524,7 @@ With all these (high level) tests in hand, let's write up some small
 implementation to get RED tests instead of a crash.
 
 First up is defining a signature: We take a guess in, and return a boolean and a
-string. Except sometimes (as seen in Code Snippet [[reject-reason-none]]) it's
+string. Except sometimes (as seen in Listing [[reject-reason-none]]) it's
 =None=, so that's more of an =Optional= string, which we'll need to import:
 
 #+NAME: valid-stdlib
@@ -545,6 +545,200 @@ And to fill it with junk:
     return False, "Not implemented"
 #+end_src
 
+All right, so we have tests, let's see them fail!
+
+#+begin_src shell :tangle no :exports both :async
+make test 2>&1 || true
+#+end_src
+
+#+RESULTS:
+#+begin_example
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 5 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words FAILED   [ 20%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words FAILED [ 40%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words FAILED [ 60%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words FAILED   [ 80%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_reject_long_words ____________________________
+
+    def test_reject_long_words():
+        """Scenario: Reject long words"""
+        # When guessing "affable"
+        guess = "affable"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Overly long guess should have been rejected"
+        # And reason for rejection is "Guess too long"
+>       assert reject_reason == "Guess too long"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Guess too long
+E
+
+tests/test_checking_guess_valid_word.py:39: AssertionError
+________________________ test_reject_overly_short_words ________________________
+
+    def test_reject_overly_short_words():
+        """Scenario: Reject short words"""
+        # When guessing "baby"
+        guess = "baby"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Overly short guess should have been rejected"
+        # And reason for rejection is "Guess too short"
+>       assert reject_reason == "Guess too short"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Guess too short
+E
+
+tests/test_checking_guess_valid_word.py:50: AssertionError
+__________________________ test_reject_nondict_words ___________________________
+
+    def test_reject_nondict_words():
+        """Scenario: Reject fake words via dictionary"""
+        # When guessing "vbpdj"
+        guess = "vbpdj"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Word not in dictionary should have been rejected"
+        # And reason for rejection is "Not a word from the dictionary"
+>       assert reject_reason == "Not a word from the dictionary"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Not a word from the dictionary
+E
+
+tests/test_checking_guess_valid_word.py:61: AssertionError
+____________________________ test_accept_dict_words ____________________________
+
+    def test_accept_dict_words():
+        """Scenario: Accept five letter dictionary words"""
+        # When guessing "crane"
+        guess = "crane"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is accepted
+>       assert is_valid, "Correct length word in dictionary should have been accepted"
+E       AssertionError: Correct length word in dictionary should have been accepted
+E       assert False
+
+tests/test_checking_guess_valid_word.py:70: AssertionError
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/words.py                14      0   100%
+------------------------------------------------------------
+TOTAL                                       15      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+=========================== short test summary info ============================
+FAILED tests/test_checking_guess_valid_word.py::test_reject_long_words - asse...
+FAILED tests/test_checking_guess_valid_word.py::test_reject_overly_short_words
+FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - a...
+FAILED tests/test_checking_guess_valid_word.py::test_accept_dict_words - Asse...
+========================= 4 failed, 1 passed in 0.13s ==========================
+make: *** [Makefile:16: test] Error 1
+#+end_example
+
+Test failure as expected, and enjoy that 100% coverage![fn::Obviously coverage
+metric is a very fuzzy number which doesn't guarantee much, but most well maintained code has a
+tendency to have good coverage, because the features are well tested. It's a
+correlation-metric, nothing more. In our case, we're doing TDD (test goes first
+indeed) and we're pushing this even more to explicit our user requirements as
+acceptance tests, it should be no surprise the coverage gets good.]
+
+** Implementing the feature, one test at a time
+Let's implement the proper feature. First, we fill a dummy function body to
+check length, and test it out, seeing less tests fail as we implemented half the
+feature:
+
+#+NAME: valid-func-lenbody
+#+begin_src python
+"""Check wordle guess length only, no dict checks"""
+answer_length = 5
+guess_length = len(guess)
+if guess_length < answer_length:
+    return False, "Guess too short"
+elif guess_length > answer_length:
+    return False, "Guess too long"
+return True, None  # No dictionary check
+#+end_src
+
+#+begin_src shell :tangle no :exports both :async
+make test 2>&1 || true
+#+end_src
+
+#+RESULTS:
+#+begin_example
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 5 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words PASSED   [ 20%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words PASSED [ 40%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words FAILED [ 60%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words PASSED   [ 80%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_reject_nondict_words ___________________________
+
+    def test_reject_nondict_words():
+        """Scenario: Reject fake words via dictionary"""
+        # When guessing "vbpdj"
+        guess = "vbpdj"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+>       assert not is_valid, "Word not in dictionary should have been rejected"
+E       AssertionError: Word not in dictionary should have been rejected
+E       assert not True
+
+tests/test_checking_guess_valid_word.py:59: AssertionError
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/words.py                19      0   100%
+------------------------------------------------------------
+TOTAL                                       20      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+=========================== short test summary info ============================
+FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - A...
+========================= 1 failed, 4 passed in 0.11s ==========================
+make: *** [Makefile:16: test] Error 1
+#+end_example
 
 # Note that in Wordle, the list of possible solutions is a subset of the word
 # dictionary used for guess validation. We previously loaded the answers, now we need the other one too.
@@ -566,7 +760,7 @@ And to fill it with junk:
 # them via noweb to weave the part 1 imports with the part2.
 
 #+NAME: words-py-tangle
-#+begin_src python :tangle src/literate_wordle/words.py :noweb yes :export none
+#+begin_src python :tangle src/literate_wordle/words.py :noweb yes :exports none
 
 <<choice-stdlib>>
 <<valid-stdlib>>
@@ -581,7 +775,7 @@ And to fill it with junk:
 
 
 <<valid-func-proto>>
-<<valid-func-junk>>
+    <<valid-func-lenbody>>
 #+end_src
 
 # Now the same thing with the test file, which indeed /is/ in proper order

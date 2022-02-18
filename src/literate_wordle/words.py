@@ -24,5 +24,11 @@ def pick_answer_word() -> str:
 
 
 def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
-    """Implement fake checking a valid word"""
-    return False, "Not implemented"
+    """Check wordle guess length only, no dict checks"""
+    answer_length = 5
+    guess_length = len(guess)
+    if guess_length < answer_length:
+        return False, "Guess too short"
+    elif guess_length > answer_length:
+        return False, "Guess too long"
+    return True, None  # No dictionary check

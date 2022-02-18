@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-02-17 Thu 23:38 -->
+<!-- 2022-02-18 Fri 00:20 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Wordle</title>
@@ -201,15 +201,20 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgc21bccc">1. Mise en bouche: picking an answer</a>
+<li><a href="#org8a9998b">1. Mise en bouche: picking an answer</a>
 <ul>
-<li><a href="#orgea7ac30">1.1. Solution dictionary file</a></li>
-<li><a href="#org6f70202">1.2. TDD for picking word functionality</a></li>
-<li><a href="#orgca62a62">1.3. Importing dictionary: static/packaged asset file read</a></li>
-<li><a href="#org5fc62af">1.4. Debriefing on the method</a></li>
+<li><a href="#orga680b28">1.1. Solution dictionary file</a></li>
+<li><a href="#orgd200176">1.2. TDD for picking word functionality</a></li>
+<li><a href="#org2589fbb">1.3. Importing dictionary: static/packaged asset file read</a></li>
+<li><a href="#org11eee91">1.4. Debriefing on the method</a></li>
 </ul>
 </li>
-<li><a href="#orgba7cf1b">2. Confirming guess is a valid word</a></li>
+<li><a href="#org7dc969b">2. Confirming guess is a valid word</a>
+<ul>
+<li><a href="#org4ce83f7">2.1. Test setup</a></li>
+<li><a href="#org7c3efdf">2.2. Implementing the feature, one test at a time</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -229,8 +234,8 @@ codebase that works normally.
 I&rsquo;ll be making liberal use of Gherkin to describe what we&rsquo;re building.
 </p>
 
-<div id="outline-container-orgc21bccc" class="outline-2">
-<h2 id="orgc21bccc"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
+<div id="outline-container-org8a9998b" class="outline-2">
+<h2 id="org8a9998b"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 To get us started, let&rsquo;s cover the very first thing Wordle has to do: pick a
@@ -251,8 +256,8 @@ characters, it needs to be a proper word. So we need to find a dictionary to
 pick from.
 </p>
 </div>
-<div id="outline-container-orgea7ac30" class="outline-3">
-<h3 id="orgea7ac30"><span class="section-number-3">1.1.</span> Solution dictionary file</h3>
+<div id="outline-container-orga680b28" class="outline-3">
+<h3 id="orga680b28"><span class="section-number-3">1.1.</span> Solution dictionary file</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Since we&rsquo;re trying to match the Wordle website, let&rsquo;s use Wordle&rsquo;s own
@@ -299,8 +304,8 @@ word.
 </div>
 </div>
 
-<div id="outline-container-org6f70202" class="outline-3">
-<h3 id="org6f70202"><span class="section-number-3">1.2.</span> TDD for picking word functionality</h3>
+<div id="outline-container-orgd200176" class="outline-3">
+<h3 id="orgd200176"><span class="section-number-3">1.2.</span> TDD for picking word functionality</h3>
 <div class="outline-text-3" id="text-1-2">
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #83898d;">"""Validates the Gherkin file features/pick_answer_word.feature:</span>
@@ -357,7 +362,7 @@ With our test ready, and a dummy function in place, let&rsquo;s see the tests go
 </pre>
 </div>
 
-<pre class="example" id="org6846009">
+<pre class="example" id="org2a67a25">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -398,8 +403,8 @@ Tests indeed failed as expected, can now try to make it pass.
 </div>
 </div>
 
-<div id="outline-container-orgca62a62" class="outline-3">
-<h3 id="orgca62a62"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
+<div id="outline-container-org2589fbb" class="outline-3">
+<h3 id="org2589fbb"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 At first glance, the implementation of the function we want is simple, it looks
@@ -440,19 +445,19 @@ weirdness:
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>Necessary standard library imports</label><pre class="src src-python" id="org3767d29"><span style="color: #51afef;">import</span> gzip
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>Necessary standard library imports</label><pre class="src src-python" id="org948e0d7"><span style="color: #51afef;">import</span> gzip
 <span style="color: #51afef;">import</span> importlib.resources <span style="color: #51afef;">as</span> pkg_resources
 <span style="color: #51afef;">from</span> random <span style="color: #51afef;">import</span> choice
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>Local import of <code>assets/</code> folder</label><pre class="src src-python" id="org761ae9e"><span style="color: #51afef;">from</span> . <span style="color: #51afef;">import</span> assets  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Relative import of the assets/ folder</span>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>Local import of <code>assets/</code> folder</label><pre class="src src-python" id="orga419be4"><span style="color: #51afef;">from</span> . <span style="color: #51afef;">import</span> assets  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Relative import of the assets/ folder</span>
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>Actual function to unzip dictionary</label><pre class="src src-python" id="org5b5a63e"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_words_list</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">list</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>Actual function to unzip dictionary</label><pre class="src src-python" id="orgceababa"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_words_list</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">list</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
     <span style="color: #83898d;">"""Decompress the wordle dictionary"""</span>
     <span style="color: #dcaeea;">dict_compressed_bytes</span> = pkg_resources.read_binary<span style="color: #FF8811;">(</span>
         assets, <span style="color: #98be65;">"wordle_answers_dict.txt.gz"</span>
@@ -468,7 +473,7 @@ Then write out the pretty trivial function to pick:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>Pick-a-word!</label><pre class="src src-python" id="orgd5ef163"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>Pick-a-word!</label><pre class="src src-python" id="org60faf1b"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Pick a single word out of the dictionary of answers"""</span>
     <span style="color: #51afef;">return</span> choice<span style="color: #FF8811;">(</span>get_words_list<span style="color: #8F0;">()</span><span style="color: #FF8811;">)</span>
 </pre>
@@ -508,7 +513,7 @@ Perfect! So the test should now pass, right?
 </pre>
 </div>
 
-<pre class="example" id="orgce176a4">
+<pre class="example" id="org3d6aaeb">
 poetry install
 Installing dependencies from lock file
 
@@ -638,8 +643,8 @@ Everything checks out: our feature is ready!<sup><a id="fnr.1" class="footref" h
 </p>
 </div>
 </div>
-<div id="outline-container-org5fc62af" class="outline-3">
-<h3 id="org5fc62af"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
+<div id="outline-container-org11eee91" class="outline-3">
+<h3 id="org11eee91"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 We just completed our first loop: determine a small component that needs
@@ -656,8 +661,8 @@ the proper package-ness.
 </div>
 </div>
 </div>
-<div id="outline-container-orgba7cf1b" class="outline-2">
-<h2 id="orgba7cf1b"><span class="section-number-2">2.</span> Confirming guess is a valid word</h2>
+<div id="outline-container-org7dc969b" class="outline-2">
+<h2 id="org7dc969b"><span class="section-number-2">2.</span> Confirming guess is a valid word</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Now that we can pick secret words, we need to start processing guesses. The very
@@ -667,7 +672,7 @@ slowly ramping up the details of the Gherkin features:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>New Gherkin feature file <code>features/checking_guess_valid_word.feature</code></label><pre class="src src-feature" id="org3e7c048"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Checking a guess is a valid word</span>
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>New Gherkin feature file <code>features/checking_guess_valid_word.feature</code></label><pre class="src src-feature" id="org88ee443"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Checking a guess is a valid word</span>
   As a Wordle game
   I need to confirm each guessed word is valid
   So that I only accept real words, no kwyjibo
@@ -679,7 +684,7 @@ In practice, this means multiple things:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>Scenarios to describe the feature in details</label><pre class="src src-feature" id="org54e362e"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Reject long words</span>
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>Scenarios to describe the feature in details</label><pre class="src src-feature" id="org5b824ff"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Reject long words</span>
 <span style="color: #51afef;">  When</span> guessing <span style="color: #98be65;">"affable"</span>
 <span style="color: #51afef;">  Then</span> the guess is rejected
 <span style="color: #51afef;">  And</span> reason for rejection is <span style="color: #98be65;">"Guess too long"</span>
@@ -712,7 +717,7 @@ written it above to reference it for export, so I can template it out:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>New test file&rsquo;s module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Code Snippet <a href="#org3e7c048">7</a> and <a href="#org54e362e">8</a></label><pre class="src src-python"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>New test file&rsquo;s module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing <a href="#org88ee443">7</a> and <a href="#org5b824ff">8</a></label><pre class="src src-python"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
 
 <span style="color: #83898d;">Feature: Checking a guess is a valid word</span>
 <span style="color: #83898d;">  As a Wordle game</span>
@@ -740,13 +745,16 @@ written it above to reference it for export, so I can template it out:
 <span style="color: #83898d;">"""</span>
 </pre>
 </div>
-
+</div>
+<div id="outline-container-org4ce83f7" class="outline-3">
+<h3 id="org4ce83f7"><span class="section-number-3">2.1.</span> Test setup</h3>
+<div class="outline-text-3" id="text-2-1">
 <p>
 With the feature described, let&rsquo;s import our hypothetical test code
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org0cbe0b0"><span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
+<pre class="src src-python" id="org306f31f"><span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
 </pre>
 </div>
 
@@ -755,7 +763,7 @@ And write out a simple test using the first scenario:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgf8a3765"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_long_words</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="orgb73417a"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_long_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject long words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "affable"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"affable"</span>
@@ -772,7 +780,7 @@ And in a similar way, we write the opposite test for too short:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org84d3447"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_overly_short_words</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="orgaaa4fc3"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_overly_short_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject short words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "baby"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"baby"</span>
@@ -789,7 +797,7 @@ And finally, the dictionary checks:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgb31e5d3"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_nondict_words</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org96d904b"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_nondict_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject fake words via dictionary"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "vbpdj"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"vbpdj"</span>
@@ -803,7 +811,7 @@ And finally, the dictionary checks:
 
 
 <div class="org-src-container">
-<pre class="src src-python" id="org2591aec"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_accept_dict_words</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org9718eff"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_accept_dict_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Accept five letter dictionary words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "crane"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"crane"</span>
@@ -826,7 +834,7 @@ assertions on. So we shall:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 10: </span>This line isn&rsquo;t defined in Gherkin, because it separates the implementation from the feature&rsquo;s requirement</label><pre class="src src-python" id="orgc3dd84a">    <span style="color: #51afef;">assert</span> reject_reason <span style="color: #51afef;">is</span> <span style="color: #a9a1e1;">None</span>, <span style="color: #98be65;">"Accepted word should have no reason to be rejected"</span>
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>This line isn&rsquo;t defined in Gherkin, because it separates the implementation from the feature&rsquo;s requirement</label><pre class="src src-python" id="org93198bc">    <span style="color: #51afef;">assert</span> reject_reason <span style="color: #51afef;">is</span> <span style="color: #a9a1e1;">None</span>, <span style="color: #98be65;">"Accepted word should have no reason to be rejected"</span>
 </pre>
 </div>
 
@@ -837,17 +845,17 @@ implementation to get RED tests instead of a crash.
 
 <p>
 First up is defining a signature: We take a guess in, and return a boolean and a
-string. Except sometimes (as seen in Code Snippet <a href="#orgc3dd84a">10</a>) it&rsquo;s
+string. Except sometimes (as seen in Listing <a href="#org93198bc">10</a>) it&rsquo;s
 <code>None</code>, so that&rsquo;s more of an <code>Optional</code> string, which we&rsquo;ll need to import:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org70281c2"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional, Tuple
+<pre class="src src-python" id="orga6f49a0"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional, Tuple
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org8222438"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">check_valid_word</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; Tuple<span style="color: #FF8811;">[</span><span style="color: #c678dd;">bool</span>, Optional<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">]</span>:
+<pre class="src src-python" id="org48086d2"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">check_valid_word</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; Tuple<span style="color: #FF8811;">[</span><span style="color: #c678dd;">bool</span>, Optional<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">]</span>:
 </pre>
 </div>
 
@@ -856,40 +864,209 @@ And to fill it with junk:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org2307c35">    <span style="color: #98be65;">"""Implement fake checking a valid word"""</span>
+<pre class="src src-python" id="org40c4893">    <span style="color: #98be65;">"""Implement fake checking a valid word"""</span>
     <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">False</span>, <span style="color: #98be65;">"Not implemented"</span>
 </pre>
 </div>
 
+<p>
+All right, so we have tests, let&rsquo;s see them fail!
+</p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org986c90f">
-<span style="color: #51afef;">import</span> gzip
-<span style="color: #51afef;">import</span> importlib.resources <span style="color: #51afef;">as</span> pkg_resources
-<span style="color: #51afef;">from</span> random <span style="color: #51afef;">import</span> choice
-<span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional, Tuple
+<pre class="src src-shell"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
+</pre>
+</div>
 
-<span style="color: #51afef;">from</span> . <span style="color: #51afef;">import</span> assets  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Relative import of the assets/ folder</span>
+<pre class="example" id="orgc2d2d08">
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 5 items
 
+tests/test_checking_guess_valid_word.py::test_reject_long_words FAILED   [ 20%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words FAILED [ 40%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words FAILED [ 60%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words FAILED   [ 80%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [100%]
 
-<span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_words_list</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">list</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
-    <span style="color: #83898d;">"""Decompress the wordle dictionary"""</span>
-    <span style="color: #dcaeea;">dict_compressed_bytes</span> = pkg_resources.read_binary<span style="color: #FF8811;">(</span>
-        assets, <span style="color: #98be65;">"wordle_answers_dict.txt.gz"</span>
-    <span style="color: #FF8811;">)</span>
-    <span style="color: #dcaeea;">dict_string</span> = gzip.decompress<span style="color: #FF8811;">(</span>dict_compressed_bytes<span style="color: #FF8811;">)</span>.decode<span style="color: #FF8811;">(</span><span style="color: #98be65;">"ascii"</span><span style="color: #FF8811;">)</span>
-    <span style="color: #dcaeea;">answer_word_list</span> = <span style="color: #FF8811;">[</span>word.strip<span style="color: #8F0;">()</span>.lower<span style="color: #8F0;">()</span> <span style="color: #51afef;">for</span> word <span style="color: #51afef;">in</span> dict_string.split<span style="color: #8F0;">(</span><span style="color: #98be65;">"\n"</span><span style="color: #8F0;">)</span><span style="color: #FF8811;">]</span>
-    <span style="color: #51afef;">return</span> answer_word_list
+=================================== FAILURES ===================================
+____________________________ test_reject_long_words ____________________________
 
+    def test_reject_long_words():
+        """Scenario: Reject long words"""
+        # When guessing "affable"
+        guess = "affable"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Overly long guess should have been rejected"
+        # And reason for rejection is "Guess too long"
+&gt;       assert reject_reason == "Guess too long"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Guess too long
+E
 
-<span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
-    <span style="color: #83898d;">"""Pick a single word out of the dictionary of answers"""</span>
-    <span style="color: #51afef;">return</span> choice<span style="color: #FF8811;">(</span>get_words_list<span style="color: #8F0;">()</span><span style="color: #FF8811;">)</span>
+tests/test_checking_guess_valid_word.py:39: AssertionError
+________________________ test_reject_overly_short_words ________________________
 
+    def test_reject_overly_short_words():
+        """Scenario: Reject short words"""
+        # When guessing "baby"
+        guess = "baby"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Overly short guess should have been rejected"
+        # And reason for rejection is "Guess too short"
+&gt;       assert reject_reason == "Guess too short"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Guess too short
+E
 
-<span style="color: #51afef;">def</span> <span style="color: #c678dd;">check_valid_word</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; Tuple<span style="color: #FF8811;">[</span><span style="color: #c678dd;">bool</span>, Optional<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">]</span>:
-    <span style="color: #83898d;">"""Implement fake checking a valid word"""</span>
-    <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">False</span>, <span style="color: #98be65;">"Not implemented"</span>
+tests/test_checking_guess_valid_word.py:50: AssertionError
+__________________________ test_reject_nondict_words ___________________________
+
+    def test_reject_nondict_words():
+        """Scenario: Reject fake words via dictionary"""
+        # When guessing "vbpdj"
+        guess = "vbpdj"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+        assert not is_valid, "Word not in dictionary should have been rejected"
+        # And reason for rejection is "Not a word from the dictionary"
+&gt;       assert reject_reason == "Not a word from the dictionary"
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         Not implemented
+E         Not a word from the dictionary
+E
+
+tests/test_checking_guess_valid_word.py:61: AssertionError
+____________________________ test_accept_dict_words ____________________________
+
+    def test_accept_dict_words():
+        """Scenario: Accept five letter dictionary words"""
+        # When guessing "crane"
+        guess = "crane"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is accepted
+&gt;       assert is_valid, "Correct length word in dictionary should have been accepted"
+E       AssertionError: Correct length word in dictionary should have been accepted
+E       assert False
+
+tests/test_checking_guess_valid_word.py:70: AssertionError
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/words.py                14      0   100%
+------------------------------------------------------------
+TOTAL                                       15      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+=========================== short test summary info ============================
+FAILED tests/test_checking_guess_valid_word.py::test_reject_long_words - asse...
+FAILED tests/test_checking_guess_valid_word.py::test_reject_overly_short_words
+FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - a...
+FAILED tests/test_checking_guess_valid_word.py::test_accept_dict_words - Asse...
+========================= 4 failed, 1 passed in 0.13s ==========================
+make: *** [Makefile:16: test] Error 1
+</pre>
+
+<p>
+Test failure as expected, and enjoy that 100% coverage!<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c3efdf" class="outline-3">
+<h3 id="org7c3efdf"><span class="section-number-3">2.2.</span> Implementing the feature, one test at a time</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Let&rsquo;s implement the proper feature. First, we fill a dummy function body to
+check length, and test it out, seeing less tests fail as we implemented half the
+feature:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgffb9731"><span style="color: #83898d;">"""Check wordle guess length only, no dict checks"""</span>
+<span style="color: #dcaeea;">answer_length</span> = <span style="color: #da8548; font-weight: bold;">5</span>
+<span style="color: #dcaeea;">guess_length</span> = <span style="color: #c678dd;">len</span><span style="color: #FF8811;">(</span>guess<span style="color: #FF8811;">)</span>
+<span style="color: #51afef;">if</span> guess_length &lt; answer_length:
+    <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">False</span>, <span style="color: #98be65;">"Guess too short"</span>
+<span style="color: #51afef;">elif</span> guess_length &gt; answer_length:
+    <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">False</span>, <span style="color: #98be65;">"Guess too long"</span>
+<span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">True</span>, <span style="color: #a9a1e1;">None</span>  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">No dictionary check</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
+</pre>
+</div>
+
+<pre class="example" id="orgebaca72">
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 5 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words PASSED   [ 20%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words PASSED [ 40%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words FAILED [ 60%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words PASSED   [ 80%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_reject_nondict_words ___________________________
+
+    def test_reject_nondict_words():
+        """Scenario: Reject fake words via dictionary"""
+        # When guessing "vbpdj"
+        guess = "vbpdj"
+        is_valid, reject_reason = check_valid_word(guess)
+        # Then the guess is rejected
+&gt;       assert not is_valid, "Word not in dictionary should have been rejected"
+E       AssertionError: Word not in dictionary should have been rejected
+E       assert not True
+
+tests/test_checking_guess_valid_word.py:59: AssertionError
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/words.py                19      0   100%
+------------------------------------------------------------
+TOTAL                                       20      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+=========================== short test summary info ============================
+FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - A...
+========================= 1 failed, 4 passed in 0.11s ==========================
+make: *** [Makefile:16: test] Error 1
 </pre>
 </div>
 </div>
@@ -912,12 +1089,19 @@ entertainment material, with this literate-programming article as companion.
 Refactoring would mean refactoring the <code>wordle.org</code> source file, which would
 drown out the nice narrative we&rsquo;re building here.</p></div></div>
 
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3" role="doc-backlink">3</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">Obviously coverage
+metric is a very fuzzy number which doesn&rsquo;t guarantee much, but most well maintained code has a
+tendency to have good coverage, because the features are well tested. It&rsquo;s a
+correlation-metric, nothing more. In our case, we&rsquo;re doing TDD (test goes first
+indeed) and we&rsquo;re pushing this even more to explicit our user requirements as
+acceptance tests, it should be no surprise the coverage gets good.</p></div></div>
+
 
 </div>
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Jb Doyon</p>
-<p class="date">Created: 2022-02-17 Thu 23:38</p>
+<p class="date">Created: 2022-02-18 Fri 00:20</p>
 </div>
 </body>
 </html>
