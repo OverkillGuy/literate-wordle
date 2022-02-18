@@ -68,4 +68,7 @@ For ease of development, a `Makefile` is provided, use it like this:
 	# Combine tasks:
 	make install test
 
+## License
 
+This project is released under GPLv3. See `COPYING` file for GPLv3 license
+details.
