@@ -24,7 +24,7 @@ def pick_answer_word() -> str:
 
 
 def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
-    """Check wordle guess length only, no dict checks"""
+    """Check a wordle guess is valid: length and in dictionary"""
     answer_length = 5
     guess_length = len(guess)
     if guess_length < answer_length:

@@ -818,7 +818,7 @@ And now we can use the dictionary as a set in our =check_valid_word= function:
 
 #+NAME: valid-func-len-dict
 #+begin_src python
-"""Check wordle guess length only, no dict checks"""
+"""Check a wordle guess is valid: length and in dictionary"""
 answer_length = 5
 guess_length = len(guess)
 if guess_length < answer_length:
