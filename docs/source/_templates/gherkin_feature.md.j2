@@ -12,9 +12,11 @@ out the file's content, rendered as Gherkin properly. Adding new files in `featu
 
 ```{eval-rst}
 .. req:: {{feature.filename}}
+   :id: FEATURE_{{feature.filename | replace(".feature", "") | upper }}
 
    .. literalinclude:: gherkin_features/{{feature.filename}}
       :language: gherkin
+      :caption: Rendered from file `features/{{feature.filename}}`
 ```
 {% endfor %}
 
