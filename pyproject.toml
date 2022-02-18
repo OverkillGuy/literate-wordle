@@ -3,6 +3,15 @@ name = "literate_wordle"
 version = "0.1.0"
 description = "Wordle implementation in literate programming"
 authors = ["Jb Doyon <jb@jiby.tech>"]
+readme = "README.md"
+keywords = [
+  "wordle",
+  "literate-programming",
+  "TDD",
+  "BDD",
+  "gherkin",
+]
+
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
