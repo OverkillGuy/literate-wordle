@@ -27,6 +27,9 @@ To generate that document, use `make docs` to build the project's website, which
 - Python module API reference (generated from code tangled out into repo)
 - Requirements list, each a Gherkin feature, mapping to test cases
 
+If you want to read the generated document, run `make docs docs-serve` to
+generate the document and serve it locally via python's own local HTTP server.
+
 ### Python module
 
 Use as any python module:
