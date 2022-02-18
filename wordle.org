@@ -180,6 +180,10 @@ weirdness:
 #+begin_src python :tangle no
 import gzip
 import importlib.resources as pkg_resources
+#+end_src
+
+#+NAME: choice-stdlib2
+#+begin_src python :tangle no
 from random import choice
 #+end_src
 
@@ -740,10 +744,308 @@ FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - A...
 make: *** [Makefile:16: test] Error 1
 #+end_example
 
-# Note that in Wordle, the list of possible solutions is a subset of the word
-# dictionary used for guess validation. We previously loaded the answers, now we need the other one too.
+Progress! Four of five tests pass, so we now need the dictionary.
 
 
+Note that in Wordle, the list of possible solutions is a subset of the word
+dictionary used for guess validation. We previously loaded the answers, now we
+need the larger set of accepted words. While it does mean there will be
+duplicates, we're talking kilobytes, we can afford that.
+
+We fetch the dictionary like before:
+
+#+begin_src shell :tangle no
+wget \
+    --output-document "src/literate_wordle/assets/wordle_accepted_words_dict.txt" \
+    "https://raw.githubusercontent.com/AllValley/WordleDictionary/6f14d2f03d01c36fe66e3ccc0929394251ab139d/wordle_complete_dictionary.txt"
+#+end_src
+
+#+RESULTS:
+
+And compress it too
+
+#+begin_src shell :tangle no :exports both
+ANSWERS_FILE="src/literate_wordle/assets/wordle_accepted_words_dict.txt"
+du -k "${ANSWERS_FILE}"
+gzip "$ANSWERS_FILE"
+du -k "${ANSWERS_FILE}.gz"
+#+end_src
+
+#+RESULTS:
+: 92	src/literate_wordle/assets/wordle_accepted_words_dict.txt
+: 36	src/literate_wordle/assets/wordle_accepted_words_dict.txt.gz
+
+This time is more like two thirds shaved off, sweet.
+
+We reach to add a function for decompressing, but realize we mostly wrote this
+before, except for the different filename. So let's edit the previous iteration
+to be more generic. One way this can be more generic is returning a =set= of
+strings, instead of the previous =list=. This means we assume no ordering and
+use hash addressing, rather than strict string ordering. After all, we will not
+iterate through the list, as much as we want to randomly access entries, so the
+=set= will provide benefits
+
+#+NAME: choice-func-unzipdict-generic
+#+CAPTION: Generic "unzip asset" function
+#+begin_src python :tangle no
+def get_asset_zip_as_set(asset_filename: str) -> set[str]:
+    """Decompress a file in assets module into a set of words, separated by newline"""
+    compressed_bytes = pkg_resources.read_binary(assets, asset_filename)
+    string = gzip.decompress(compressed_bytes).decode("ascii")
+    string_list = [word.strip().lower() for word in string.split("\n")]
+    return set(string_list)
+#+end_src
+
+Which changes the invocation of =pick_answer_word= into:
+
+#+NAME: choice-func-pickanswer-generic
+#+CAPTION: Pick-a-word, revisited to generic asset fetching
+#+begin_src python :tangle no
+def pick_answer_word() -> str:
+    """Pick a single word out of the dictionary of answers"""
+    return choice(list(get_asset_zip_as_set("wordle_answers_dict.txt.gz")))
+#+end_src
+
+And now we can use the dictionary as a set in our =check_valid_word= function:
+
+
+#+NAME: choice-func-pickanswer-generic
+#+CAPTION: Pick-a-word, revisited to generic asset list
+#+begin_src python :tangle no
+    """Pick a single word out of the dictionary of answers"""
+    return choice(
+#+end_src
+
+#+NAME: valid-func-len-dict
+#+begin_src python
+"""Check wordle guess length only, no dict checks"""
+answer_length = 5
+guess_length = len(guess)
+if guess_length < answer_length:
+    return False, "Guess too short"
+elif guess_length > answer_length:
+    return False, "Guess too long"
+valid_words_dict = get_asset_zip_as_set("wordle_accepted_words_dict.txt.gz")
+if guess in valid_words_dict:
+    return True, None
+return False, "Not a word from the dictionary"
+#+end_src
+
+And we're done! Let's run our system through =make= again, to spot test failures
+but also to get linters:
+
+#+begin_src shell :tangle no :exports both :async
+make
+#+end_src
+
+#+RESULTS:
+#+begin_example
+poetry install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: literate_wordle (0.1.0)
+pre-commit run --all --all-files
+Emacs export org-mode file to static HTML................................Passed
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check for added large files..............................................Passed
+Check that executables have shebangs.................(no files to check)Skipped
+Check for case conflicts.................................................Passed
+Check vcs permalinks.....................................................Passed
+Forbid new submodules....................................................Passed
+Mixed line ending........................................................Passed
+Check for merge conflicts................................................Passed
+Detect Private Key.......................................................Passed
+Check Toml...............................................................Passed
+Check Yaml...............................................................Passed
+Check JSON...........................................(no files to check)Skipped
+black....................................................................Passed
+isort (python)...........................................................Passed
+mypy.....................................................................Passed
+flake8...................................................................Passed
+cd docs && make html
+make[1]: Entering directory '/home/jiby/dev/ws/short/literate_wordle/docs'
+Running Sphinx v4.4.0
+Read in collections ...
+  wordle_html_export_filecopy: Initialised
+  gherkin_features_foldercopy: Initialised
+  gherkin_features_jinja: Initialised
+Clean collections ...
+  gherkin_features_foldercopy: (CopyFolderDriver) Folder deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_features/
+  gherkin_features_jinja: (JinjaDriver) Cleaning 1 jinja Based file/s ...
+Executing collections ...
+  wordle_html_export_filecopy: (CopyFileDriver) Copy file...
+  gherkin_features_foldercopy: (CopyFolderDriver) Copy folder...
+  gherkin_features_jinja: (JinjaDriver) Creating 1 file/s from Jinja template...
+loading pickled environment... done
+[autosummary] generating autosummary for: _collections/gherkin_feature.md, index.rst, readme.md, wordle.md, wordle_sources.md
+[AutoAPI] Reading files... [ 33%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
+[AutoAPI] Reading files... [ 66%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/words.py
+[AutoAPI] Reading files... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/assets/__init__.py
+
+[AutoAPI] Mapping Data... [ 33%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
+[AutoAPI] Mapping Data... [ 66%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/words.py
+[AutoAPI] Mapping Data... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/assets/__init__.py
+
+[AutoAPI] Rendering Data... [ 33%] literate_wordle
+[AutoAPI] Rendering Data... [ 66%] literate_wordle.words
+[AutoAPI] Rendering Data... [100%] literate_wordle.assets
+
+myst v0.15.2: MdParserConfig(renderer='sphinx', commonmark_only=False, enable_extensions=['dollarmath'], dmath_allow_labels=True, dmath_allow_space=True, dmath_allow_digits=True, dmath_double_inline=False, update_mathjax=True, mathjax_classes='tex2jax_process|mathjax_process|math|output_area', disable_syntax=[], url_schemes=['http', 'https', 'mailto', 'ftp'], heading_anchors=2, heading_slug_func=None, html_meta=[], footnote_transition=True, substitutions=[], sub_delimiters=['{', '}'], words_per_minute=200)
+building [mo]: targets for 0 po files that are out of date
+building [html]: targets for 5 source files that are out of date
+updating environment: 0 added, 7 changed, 0 removed
+reading sources... [ 14%] _collections/gherkin_feature
+reading sources... [ 28%] autoapi/index
+reading sources... [ 42%] autoapi/literate_wordle/assets/index
+reading sources... [ 57%] autoapi/literate_wordle/index
+reading sources... [ 71%] autoapi/literate_wordle/words/index
+reading sources... [ 85%] wordle
+reading sources... [100%] wordle_sources
+
+Copying static files for sphinx-needs datatables support.../home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables_loader.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/sphinx_needs_collapse.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/JSZip-2.5.0/jszip.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.print.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.flash.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.html5.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.colVis.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/dataTables.buttons.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.html5.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/common.scss /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/mixins.scss /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/buttons.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/swf/flashExport.swf /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/js/jquery.dataTables.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/css/jquery.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_asc.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_desc_disabled.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_asc_disabled.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_both.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_desc.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/ColReorder-1.4.1/js/dataTables.colReorder.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/ColReorder-1.4.1/css/colReorder.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedColumns-3.2.4/js/dataTables.fixedColumns.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedColumns-3.2.4/css/fixedColumns.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Scroller-1.4.4/js/dataTables.scroller.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Scroller-1.4.4/css/scroller.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedHeader-3.1.3/js/dataTables.fixedHeader.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedHeader-3.1.3/css/fixedHeader.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Responsive-2.2.1/js/dataTables.responsive.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Responsive-2.2.1/css/responsive.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/pdfmake-0.1.32/pdfmake.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/pdfmake-0.1.32/vfs_fonts.js
+Copying static files for sphinx-needs custom style support...[ 25%] common.css
+Copying static files for sphinx-needs custom style support...[ 50%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/layouts.css
+Copying static files for sphinx-needs custom style support...[ 75%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/styles.css
+Copying static files for sphinx-needs custom style support...[100%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/modern.css
+
+looking for now-outdated files... none found
+pickling environment... done
+checking consistency... /home/jiby/dev/ws/short/literate_wordle/docs/source/autoapi/index.rst: WARNING: document isn't included in any toctree
+done
+preparing documents... done
+writing output... [ 12%] _collections/gherkin_feature
+writing output... [ 25%] autoapi/index
+writing output... [ 37%] autoapi/literate_wordle/assets/index
+writing output... [ 50%] autoapi/literate_wordle/index
+writing output... [ 62%] autoapi/literate_wordle/words/index
+writing output... [ 75%] index
+writing output... [ 87%] wordle
+writing output... [100%] wordle_sources
+
+/home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_feature.md:34: WARNING: Any IDs not assigned for table node
+generating indices... genindex py-modindex done
+highlighting module code... [ 50%] literate_wordle
+highlighting module code... [100%] literate_wordle.words
+
+writing additional pages... search done
+copying images... [ 50%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/images/feather_svg/arrow-down-circle.svg
+copying images... [100%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/images/feather_svg/arrow-right-circle.svg
+
+copying static files... done
+copying extra files... done
+dumping search index in English (code: en)... done
+dumping object inventory... done
+build succeeded, 2 warnings.
+
+The HTML pages are in build/html.
+Final clean of collections ...
+  wordle_html_export_filecopy: (CopyFileDriver) File deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/_static/wordle.html
+  gherkin_features_foldercopy: (CopyFolderDriver) Folder deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_features/
+  gherkin_features_jinja: (JinjaDriver) Cleaning 1 jinja Based file/s ...
+  gherkin_features_jinja: (JinjaDriver)   File deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_feature.md
+
+Checking sphinx-needs warnings
+make[1]: Leaving directory '/home/jiby/dev/ws/short/literate_wordle/docs'
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 5 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words PASSED   [ 20%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words PASSED [ 40%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words PASSED [ 60%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words PASSED   [ 80%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [100%]
+
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/words.py                23      0   100%
+------------------------------------------------------------
+TOTAL                                       24      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+============================== 5 passed in 0.09s ===============================
+poetry build
+Building literate_wordle (0.1.0)
+  - Building sdist
+  - Built literate_wordle-0.1.0.tar.gz
+  - Building wheel
+  - Built literate_wordle-0.1.0-py3-none-any.whl
+#+end_example
+
+Tests pass, coverage stays strong, and linters are quiet, this is great!
+
+** Performance trick
+
+We mentioned before in footnotes that the whole dictionary would get unzipped on
+every request for such an asset. Now we're validating guessed words, we may want
+to be processing guesses quite quickly, certainly quicker than one would pick
+words!
+
+What we want to make all this fast, is to make the dictionary unzipping cached,
+so that repeated calls to the function =get_asset_zip_as_set= don't bother with
+file open and unzip. There's a handy python decorator that does the trick! Let's
+add =functools.cache= on top of our slow function:
+
+
+#+NAME: valid-cache-import
+#+CAPTION: Import the cache function
+#+begin_src python :tangle no
+from functools import cache
+#+end_src
+
+
+
+#+NAME: valid-cache-decorator
+#+CAPTION: Decorator to make a function use cache
+#+begin_src python :tangle no
+@cache
+#+end_src
+
+After rerunning our tests, we now have a (theoretically) faster function, yey!
+
+Remember that we committed a couple of performance/optimization sins just then,
+by both: optimizing prematurely (with no proof of slowness), and by doing
+optimization without using profiling information to optimize, we very likely
+just optimized something that isn't our bottleneck. I'm fine with that, just
+wanted to showcase this cool decorator, which functions like an unbounded
+memoizer. But just in case, let's see quick performance numbers of before/after:
+
+#+NAME: valid-perf-before
+#+CAPTION: Before cacheing, running 5 batches of a thousand double-dict-unzip
+#+begin_src shell :exports both
+poetry run python3 -m timeit -v -n 1000 --setup "from literate_wordle.words import pick_answer_word, check_valid_word" "check_valid_word(pick_answer_word())"
+#+end_src
+
+#+RESULTS:
+: raw times: 2.75 sec, 2.72 sec, 2.73 sec, 2.73 sec, 2.72 sec
+:
+: 1000 loops, best of 5: 2.72 msec per loop
+
+And after cacheing:
+
+#+begin_src shell :exports results
+poetry run python3 -m timeit -v -n 1000 --setup "from literate_wordle.words import pick_answer_word, check_valid_word" "check_valid_word(pick_answer_word())"
+#+end_src
+
+#+RESULTS:
+: raw times: 17.1 msec, 12.8 msec, 12.6 msec, 12.8 msec, 12.4 msec
+:
+: 1000 loops, best of 5: 12.4 usec per loop
+
+That's a two orders of magnitude gain for a single line of code changed.
 # These comments won't get rendered as HTML, but code defined in "exports none"
 # remains tangled normally. This helps us fix the org-mode tangled layout,
 # specifically how imports in python have a rigid ordering, but the way we
@@ -763,19 +1065,22 @@ make: *** [Makefile:16: test] Error 1
 #+begin_src python :tangle src/literate_wordle/words.py :noweb yes :exports none
 
 <<choice-stdlib>>
+<<valid-cache-import>>
+<<choice-stdlib2>>
 <<valid-stdlib>>
 
 <<choice-locallib>>
 
 
-<<choice-func-unzipdict>>
+<<valid-cache-decorator>>
+<<choice-func-unzipdict-generic>>
 
 
-<<choice-func-pickanswer>>
+<<choice-func-pickanswer-generic>>
 
 
 <<valid-func-proto>>
-    <<valid-func-lenbody>>
+    <<valid-func-len-dict>>
 #+end_src
 
 # Now the same thing with the test file, which indeed /is/ in proper order
