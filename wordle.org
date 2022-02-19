@@ -21,7 +21,7 @@ word that will become our answer:
 #+CAPTION: Our first requirement
 #+begin_src feature :tangle features/pick_answer_word.feature
 Feature: Pick an answer word
-  As the wordle game
+  As a Wordle game
   I need to pick a random 5 letter word
   In order to let players guess it
 #+end_src
@@ -69,7 +69,7 @@ word.
 """Validates the Gherkin file features/pick_answer_word.feature:
 
 Feature: Pick an answer word
-  As the wordle game
+  As a Wordle game
   I need to pick a random 5 letter word
   In order to let players guess it
 """
@@ -1046,23 +1046,31 @@ poetry run python3 -m timeit -v -n 1000 --setup "from literate_wordle.words impo
 : 1000 loops, best of 5: 12.4 usec per loop
 
 That's a two orders of magnitude gain for a single line of code changed.
-# These comments won't get rendered as HTML, but code defined in "exports none"
-# remains tangled normally. This helps us fix the org-mode tangled layout,
-# specifically how imports in python have a rigid ordering, but the way we
-# implemented the functions in two passes didn't allow for the proper order.
 
-# This means we need to manually weave the code blocks, instead of just stating
-# they all point to the same file and rely on file top-to-bottom order, we have an
-# explicit code block where we template out "add this bit, now 2 lines below add
-# that snippet, and then...". Not ideal, but it has the added benefit of allowing
-# custom layout like number of lines jumped between files, which was blocking
-# adoption of the formatter "black" in this repository.
+** Tangle out all the code
 
-# First, fix words.py imports being out of order in our narrative by tangling
-# them via noweb to weave the part 1 imports with the part2.
+Last section of this file used for internal purposes:
+Code defined above is usually out of order, especially the imports. To avoid
+having nonsence python files with import-feature-import-feature sequences, which
+formatters would go crazy over, we define below some reordered code blocks,
+using the =noweb= feature of org-mode, that tangle out into the proper files
+with proper ordering and spacing.
+
+This means we need to manually weave the code blocks, instead of just stating
+they all point to the same file and rely on file top-to-bottom order, we have an
+explicit code block where we template out "add this bit, now 2 lines below add
+that snippet, and then...". Not ideal, but it has the added benefit of allowing
+custom layout like number of lines jumped between functions, which was blocking
+adoption of the formatter "black" in this repository.
+
+First, fix words.py imports being out of order in our narrative by tangling them
+via noweb to weave the part 1 imports with the part 2. Also insert the cache
+decorator before the assets function, and substitute the =check_valid_word=
+function body with the real implementation instead of the dummy function defined
+initially.
 
 #+NAME: words-py-tangle
-#+begin_src python :tangle src/literate_wordle/words.py :noweb yes :exports none
+#+begin_src python :tangle src/literate_wordle/words.py :noweb yes
 
 <<choice-stdlib>>
 <<valid-cache-import>>
@@ -1083,11 +1091,11 @@ That's a two orders of magnitude gain for a single line of code changed.
     <<valid-func-len-dict>>
 #+end_src
 
-# Now the same thing with the test file, which indeed /is/ in proper order
-# already, but would benefit from two-lines-between-tests to guarantee formatting:
+Now the same thing with the tests file, which indeed /is/ in proper order
+already, but would benefit from two-lines-between-tests to guarantee formatting:
 
 #+NAME: words-py-tangle
-#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes :exports none
+#+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
 
 <<test-valid-import>>
 
@@ -1104,3 +1112,4 @@ That's a two orders of magnitude gain for a single line of code changed.
 <<test-valid-4>>
 <<reject-reason-none>>
 #+end_src
+
