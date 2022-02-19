@@ -1182,7 +1182,7 @@ If we've got the perfect answer, let's have the opposite:
 Scenario: No character in common
   Given a wordle answer "brave"
   When scoring the guess "skill"
-  Then score should be "⬜⬜⬜⬜⬜""
+  Then score should be "⬜⬜⬜⬜⬜"
 #+end_src
 
 ** Can we start coding yet?
@@ -1203,6 +1203,101 @@ vision when writing code, getting excited about the programming problems, losing
 track of what the "user" wants. We need to write down the exact user needs
 first, so as to have a proper ritual during which to "switch from 'User' hat to
 'Developer' hat".
+
+** Finalizing the scenarios
+
+Back to our gherkin scenarios, let's add the yellow marker one:
+
+#+NAME: scoring-scenario-wrongplace
+#+CAPTION: Wrong place case
+#+begin_src feature :tangle features/scoring_guess.feature
+Scenario: Character in wrong place
+  Given a wordle answer "rebus"
+  When scoring the guess "skull"
+  Then score should be "🟨⬜🟨⬜⬜"
+#+end_src
+
+And just for having a good sample of tests with which to test, let's use a table
+of example to confirm scoring works out:
+
+#+NAME: scoring-scenario-multi
+#+CAPTION: Many examples via Gherkin Scenario Outlines and Examples
+#+begin_src feature :tangle features/scoring_guess.feature
+Scenario Outline: Scoring guesses
+  Given a wordle <answer>
+  When scoring <guess>
+  Then score should be <score>
+
+# Emoji (Unicode) character rendering is hard:
+# Please forgive the table column alignment issues!
+  Examples: A few guesses and their score
+    | answer  | guess	| score		|
+    | adage   | adobe	| 🟩🟩⬜⬜🟩	|
+    | serif   | quiet	| ⬜⬜🟨🟨⬜	|
+    | raise   | radix	| 🟩🟩⬜🟨⬜	|
+#+end_src
+
+Note how the "outline" system maps really well to the idea of [[https://docs.pytest.org/en/6.2.x/parametrize.html][pytest's
+parametrized tests]]. We can write the test case /once/, and have a decorator deal
+with the multiple instantiations
+
+All right, that's a few, moving on. But here is the most difficult to implement
+corner case, written out as examples of the previous scenario:
+
+#+NAME: scoring-scenario-multi-identicalanswerchar
+#+CAPTION: Edge case: duplicate character in answer or guess
+#+begin_src feature :tangle features/scoring_guess.feature
+  Examples: Multiple occurences of same character
+    | answer | guess	| score		|
+    | abbey  | kebab	| ⬜⬜🟩🟨🟨	|
+    | abbey  | babes	| 🟨🟨🟩🟩⬜	|
+    | abbey  | abyss	| 🟩🟩🟨⬜⬜	|
+    | abbey  | algae	| 🟩⬜⬜⬜🟨	|
+    | abbey  | keeps	| ⬜🟨⬜⬜⬜	|
+    | abbey  | abate	| 🟩🟩⬜⬜🟨	|
+#+end_src
+
+These sample answers and scores were [[https://nerdschalk.com/wordle-same-letter-twice-rules-explained-how-does-it-work/][taken from online example screenshots]] of
+the original website, hence considered accurate references.
+
+With "abbey" as reference, the "kebab" answer seems logical, with first "b"
+occurence matching as green, and the second being in the wrong place. The
+surprise comes from "keeps" where the first e counts, but the second doesn't
+have an equivalent in the answer, hence flagged as "no such character". That
+makes sense, but that's not how a naive implementation of the game would do it!
+
+
+# Seems to be that we need to count the answer's occurences of each character,
+# and while scoring guesses left-to-right, yellows and greens decrease the
+# number of leftover matches, and when the number of matches is zero that's a non-match.
+
+# That explains why guessing "kebab" for answer gets the first "b" marked green,
+# as expected, and then the second is yellow (still remains values), whereas guessing
+# "keeps" (one "e" in answer, two in guess) marks the first "e" as yellow, and
+# with no more "e" in answer, the second is a bad match.
+
+Out of curiosity, I wonder if there's any wordle answers that contain three
+identical characters? Let's see!
+
+#+begin_src shell :exports both
+zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt.gz | wc -l
+#+end_src
+
+#+RESULTS:
+: 20
+
+Really? 20? That's harsh ... show me one?
+
+#+begin_src shell :exports both
+zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt.gz | head -n 1 | sed 's/\r//'
+#+end_src
+
+#+RESULTS:
+: bobby
+
+Interesting. That must be hard to solve I imagine.
+
+# TODO: https://docs.pytest.org/en/6.2.x/example/parametrize.html#parametrizing-test-methods-through-per-class-configuration
 
 #+begin_src python :tangle no :exports none
 ok = "🟩"
