@@ -8,6 +8,6 @@ documentation.
    :caption: Table of Contents:
 
    README <readme>
-   _collections/gherkin_feature
    wordle
    wordle_sources
+   _collections/gherkin_feature
