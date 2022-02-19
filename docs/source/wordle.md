@@ -10,7 +10,7 @@ sidebar etc.
 
 
 ```{note}
-You can see the raw [org-mode](https://orgmode.org) file for context in [wordle sources](wordle_sources.md)
+You can see the raw file for context in [Source of Literate Wordle](wordle_sources.md)
 ```
 
 ```{eval-rst}

@@ -1064,10 +1064,11 @@ custom layout like number of lines jumped between functions, which was blocking
 adoption of the formatter "black" in this repository.
 
 First, fix words.py imports being out of order in our narrative by tangling them
-via noweb to weave the part 1 imports with the part 2. Also insert the cache
-decorator before the assets function, and substitute the =check_valid_word=
-function body with the real implementation instead of the dummy function defined
-initially.
+via noweb to weave the part 1 imports with the part 2. This means =isort=
+(import sorter) is now happy, won't thrash these python files. Also insert the
+cache decorator before the assets function, and substitute the
+=check_valid_word= function body with the real implementation instead of the
+dummy function defined initially.
 
 #+NAME: words-py-tangle
 #+begin_src python :tangle src/literate_wordle/words.py :noweb yes
@@ -1113,3 +1114,98 @@ already, but would benefit from two-lines-between-tests to guarantee formatting:
 <<reject-reason-none>>
 #+end_src
 
+* Calculating guessed word's score
+
+We can pick answer words, and we can check if a guess is a valid word, now we
+have everything we need to score the guess! Let's first define the overall
+feature:
+
+#+begin_src feature :tangle features/scoring_guess.feature
+Feature: Scoring guesses
+  As a Wordle game
+  I need to tell the player how good their guess is
+  In order to help them find the proper answer
+#+end_src
+
+This sounds simple, but implementing this feature is tricky, because of edge
+cases like multiple identical character in the answer, which need colored
+appropriately (What's the proper way to do that? We need to pin it down in
+requirements!). So let's define /Gherkin Scenarios/ for that feature, to give
+examples of how the feature works in practice. So we write out
+
+#+NAME: scoring-scenario-perfect1
+#+CAPTION: The winning guess scenario
+#+begin_src feature :tangle no
+Scenario: Perfect guess gives perfect score
+  Given a wordle answer "crane"
+  When scoring the guess "crane"
+  Then score should be "🟩🟩🟩🟩🟩"
+#+end_src
+
+This seems easy enough, but we notice that we are making an assumption that's
+not written out, which makes this feature depend on another: We're assuming the
+guess is a valid word! We may want to just add another =Given=, like:
+
+#+begin_src feature :tangle no
+  Given a guess that's a valid dictionary word
+#+end_src
+
+But this isn't just a hypothesis from the current scenario, it's valid for all
+scenarios of this feature. To avoid the tedious copying of that assumption, we
+can use a =Gherkin Background= for the feature:
+
+#+NAME: scoring-background
+#+CAPTION: Pre-condition that applies to all the scenarios of this feature file
+#+begin_src feature :tangle features/scoring_guess.feature
+Background:
+  Given a guess that's a valid dictionary word
+#+end_src
+
+Perfect, so now we're assuming the guess is a valid word, which means a
+dependency on having implemented the previous feature, but we're not specifying
+the guess word itself, which can still be scenario specific. This makes our
+initial "perfect guess" scenario valid again, so we can use it
+
+#+begin_src feature :tangle features/scoring_guess.feature :noweb yes :exports none
+<<scoring-scenario-perfect1>>
+#+end_src
+
+Note that our scenario doesn't make assumption of how many attempts at Wordle
+we're at, or the fact of winning or losing. This is purely a hypothetical
+scenario, disjoint from the feature of actually playing a game.
+
+If we've got the perfect answer, let's have the opposite:
+
+#+NAME: scoring-scenario-nogood
+#+CAPTION: Flunking out scenario
+#+begin_src feature :tangle features/scoring_guess.feature
+Scenario: No character in common
+  Given a wordle answer "brave"
+  When scoring the guess "skill"
+  Then score should be "⬜⬜⬜⬜⬜""
+#+end_src
+
+** Can we start coding yet?
+At this point, we only need to add a "🟨" scenario and we could conceivably
+start the implementation work already, we have work to do!
+
+The problem of "what to do now" is interesting, because we can continue thinking
+up scenarios in Gherkin as a design exercise for a while, or we could already
+start writing test code to back these claims, leading to failed tests, and then
+start on implementation early to aim for green tests, only to add scenarios as
+we realize that our implementation is lacking compared to the original intent of
+the game.
+
+While it's tempting to jump into code first, I believe we should pin down the
+exact requirements on a "whiteboard" of sorts (in that case: Gherkin features
+and scenarios), before starting to touch any code. It's easy to get tunnel
+vision when writing code, getting excited about the programming problems, losing
+track of what the "user" wants. We need to write down the exact user needs
+first, so as to have a proper ritual during which to "switch from 'User' hat to
+'Developer' hat".
+
+#+begin_src python :tangle no :exports none
+ok = "🟩"
+wrong_place = "🟨"
+not_there = "⬜"
+#+end_src
