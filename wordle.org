@@ -1120,6 +1120,7 @@ We can pick answer words, and we can check if a guess is a valid word, now we
 have everything we need to score the guess! Let's first define the overall
 feature:
 
+#+NAME: scoring-feature
 #+begin_src feature :tangle features/scoring_guess.feature
 Feature: Scoring guesses
   As a Wordle game
@@ -1133,7 +1134,7 @@ appropriately (What's the proper way to do that? We need to pin it down in
 requirements!). So let's define /Gherkin Scenarios/ for that feature, to give
 examples of how the feature works in practice. So we write out
 
-#+NAME: scoring-scenario-perfect1
+#+NAME: scoring-scenario-perfect
 #+CAPTION: The winning guess scenario
 #+begin_src feature :tangle no
 Scenario: Perfect guess gives perfect score
@@ -1167,7 +1168,7 @@ the guess word itself, which can still be scenario specific. This makes our
 initial "perfect guess" scenario valid again, so we can use it
 
 #+begin_src feature :tangle features/scoring_guess.feature :noweb yes :exports none
-<<scoring-scenario-perfect1>>
+<<scoring-scenario-perfect>>
 #+end_src
 
 Note that our scenario doesn't make assumption of how many attempts at Wordle
@@ -1296,11 +1297,111 @@ zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt
 : bobby
 
 Interesting. That must be hard to solve I imagine.
+** Writing up acceptance tests
+With no more obvious pathological cases to cover in requirements, it's time to
+switch to our developer hat, and write some (acceptance) tests!
+
+This involves figuring out what our feature is going to be called, and what
+module it's going to be in.
+
+Jumping to the obvious here, we'll make the feature a separate =guess.py=.
+#+NAME: scoring-guessmod-header
+#+CAPTION: guess.py module-level docstring
+#+begin_src python :tangle no
+"""Score guesses of Wordle game"""
+#+end_src
+
+And I imagine a function called =score_guess=, initially returning a junk
+string:
+
+#+NAME: scoring-guessfunc-proto1
+#+CAPTION: score_guess first draft
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess"""
+    return "⬜⬜⬜⬜⬜"
+#+end_src
+
+
+
+#+NAME: scoring-answer-literal
+#+CAPTION: An answer is any of these characters
+#+begin_src python :tangle no
+OK = "🟩"
+WRONG_PLACE = "🟨"
+NOT_THERE = "⬜"
+#+end_src
+
+
+#+NAME: scoring-test-import
+#+CAPTION: Importing the feature, first
+#+begin_src python :tangle no
+from literate_wordle.guess import score_guess
+#+end_src
+
+#+NAME: scoring-test1
+#+CAPTION: First acceptance test using "Perfect guess" scenario
+#+begin_src python :tangle no
+def test_perfect_guess():
+    """Scenario: Perfect guess gives perfect score"""
+    # Given a wordle answer "crane"
+    answer = "crane"
+    # When scoring the guess "crane"
+    our_guess = "crane"
+    score = score_guess(our_guess, answer)
+    # Then score should be "🟩🟩🟩🟩🟩"
+    assert score == "🟩🟩🟩🟩🟩", "Perfect answer should give Perfect Score"
+#+end_src
+
+Now the test should fail appropriately, let's add a twist: we'll mark the
+function as expected to fail, because for now it's not been implemented. This
+allows pytest to mark all tests as passed despite failures, and is perfect for
+either bug reports being worked on, or new features being built.
+
+
+#+NAME: scoring-test-import-pytest
+#+CAPTION: Importing the pytest module to get to pytest.mark
+#+begin_src python :tangle no
+import pytest
+#+end_src
+
+
+
+#+NAME: scoring-test-xfail
+#+CAPTION: Marking the feature as expected to fail, causing tests to not alert.
+#+begin_src python :tangle no
+@pytest.mark.xfail(reason="Not implemented yet")
+#+end_src
+
+
+
 
 # TODO: https://docs.pytest.org/en/6.2.x/example/parametrize.html#parametrizing-test-methods-through-per-class-configuration
 
-#+begin_src python :tangle no :exports none
-ok = "🟩"
-wrong_place = "🟨"
-not_there = "⬜"
+
+And now the function all tangled out!
+#+NAME: scoring-impl-tangleweb
+#+begin_src python :tangle src/literate_wordle/guess.py :exports none :noweb yes
+<<scoring-guessmod-header>>
+
+
+<<scoring-guessfunc-proto1>>
+#+end_src
+
+#+NAME: scoring-test1-tangleweb
+#+begin_src python :tangle tests/test_scoring_guess.py :exports none :noweb yes
+"""Validates the Gherkin file features/scoring_guess.feature:
+
+<<scoring-feature>>
+
+<<scoring-scenario-perfect>>
+"""
+
+<<scoring-test-import-pytest>>
+
+<<scoring-test-import>>
+
+
+<<scoring-test-xfail>>
+<<scoring-test1>>
 #+end_src
