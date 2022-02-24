@@ -3,4 +3,4 @@
 
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess"""
-    return "⬜⬜⬜⬜⬜"
+    return "⬜"

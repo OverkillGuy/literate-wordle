@@ -1319,19 +1319,8 @@ string:
 #+begin_src python :tangle no
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess"""
-    return "⬜⬜⬜⬜⬜"
+    return "⬜"
 #+end_src
-
-
-
-#+NAME: scoring-answer-literal
-#+CAPTION: An answer is any of these characters
-#+begin_src python :tangle no
-OK = "🟩"
-WRONG_PLACE = "🟨"
-NOT_THERE = "⬜"
-#+end_src
-
 
 #+NAME: scoring-test-import
 #+CAPTION: Importing the feature, first
@@ -1373,15 +1362,130 @@ import pytest
 @pytest.mark.xfail(reason="Not implemented yet")
 #+end_src
 
+Confirm these tests work, marked as xfail:
+
+#+begin_src shell :exports both
+make test
+#+end_src
+
+#+RESULTS:
+#+begin_example
+poetry run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collecting ... collected 6 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words PASSED   [ 16%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words PASSED [ 33%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words PASSED [ 50%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words PASSED   [ 66%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED                 [ 83%]
+tests/test_scoring_guess.py::test_perfect_guess XFAIL (Not implement...) [100%]
+
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              1      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/guess.py                 2      0   100%
+src/literate_wordle/words.py                25      0   100%
+------------------------------------------------------------
+TOTAL                                       28      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+========================= 5 passed, 1 xfailed in 0.10s =========================
+#+end_example
+
+** More tests
+
+Let's implement the rest of the failing tests, so we can make it all red, then
+fix the implementation:
+
+#+NAME: scoring-test2
+#+CAPTION: Second acceptance test using "no character in common" scenario
+#+begin_src python :tangle no
+def test_no_common_character():
+    """Scenario: No character in common"""
+    # Given a wordle answer "brave"
+    answer = "brave"
+    # When scoring the guess "skill"
+    our_guess = "skill"
+    score = score_guess(our_guess, answer)
+    # Then score should be "⬜⬜⬜⬜⬜"
+    assert score == "⬜⬜⬜⬜⬜", "No character in common with answer should give 0 score"
+#+end_src
+
+
+#+NAME: scoring-test3
+#+CAPTION: Third acceptance test using "Characters in wrong place" scenario
+#+begin_src python :tangle no
+def test_wrong_place():
+    """Scenario: Character in wrong place"""
+    # Given a wordle answer "rebus"
+    answer = "rebus"
+    # When scoring the guess "skull"
+    our_guess = "skull"
+    score = score_guess(our_guess, answer)
+    # Then score should be "🟨⬜🟨⬜⬜"
+    assert score == "🟨⬜🟨⬜⬜", "Characters are in the wrong place"
+#+end_src
+
+That covers the first three scenarios.
+
+For the Scenario Outline, it's interesting to notice that a pattern emerged,
+which allows the same test skeleton to be reused with different data. In Pytest,
+this can be done by "parametrizing" the test with multiple data entries.
+
+Usually this is just a matter of a decorator to signify the data, but since
+we're trying to make multiple separate tests from the different data sets, we
+can use a [[https://docs.pytest.org/en/6.2.x/example/parametrize.html#set-marks-or-test-id-for-individual-parametrized-test][stronger kind of parametrization]]:
+
+#+NAME: scoring-multi-skeleton
+#+CAPTION: Generic acceptance test
+#+begin_src python :tangle no
+def test_generic_score(answer, our_guess, expected_score):
+    """Scenario Outline: Scoring guesses"""
+    # Given a wordle <answer>
+    # When scoring <guess>
+    score = score_guess(our_guess, answer)
+    # Then score should be <score>
+    assert score == expected_score
+#+end_src
+
+Just need to fill in the parameters:
+#+NAME: scoring-multi-parameters
+#+CAPTION: Parameters for generic test
+#+begin_src python :tangle no
+@pytest.mark.parametrize(
+    "answer,our_guess,expected_score",
+    [
+        pytest.param("adage", "adobe", "🟩🟩⬜⬜🟩", id="normal_guess1"),
+        pytest.param("serif", "quiet", "⬜⬜🟨🟨⬜", id="normal_guess2"),
+        pytest.param("raise", "radix", "🟩🟩⬜🟨⬜", id="normal_guess3"),
+        pytest.param("abbey", "kebab", "⬜⬜🟩🟨🟨", id="multi_occur1"),
+        pytest.param("abbey", "babes", "🟨🟨🟩🟩⬜", id="multi_occur2"),
+        pytest.param("abbey", "abyss", "🟩🟩🟨⬜⬜", id="multi_occur3"),
+        pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
+        pytest.param("abbey", "keeps", "⬜🟨⬜⬜⬜", id="multi_occur5"),
+        pytest.param("abbey", "abate", "🟩🟩⬜⬜🟨", id="multi_occur6"),
+    ],
+)
+#+end_src
 
 
 
-# TODO: https://docs.pytest.org/en/6.2.x/example/parametrize.html#parametrizing-test-methods-through-per-class-configuration
+** Tangle it all out
 
-
-And now the function all tangled out!
+Reorder the blocks from above to export with formatting enabled:
 #+NAME: scoring-impl-tangleweb
-#+begin_src python :tangle src/literate_wordle/guess.py :exports none :noweb yes
+#+CAPTION: guess.py
+#+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
 <<scoring-guessmod-header>>
 
 
@@ -1389,12 +1493,19 @@ And now the function all tangled out!
 #+end_src
 
 #+NAME: scoring-test1-tangleweb
-#+begin_src python :tangle tests/test_scoring_guess.py :exports none :noweb yes
+#+CAPTION: The tests
+#+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
 """Validates the Gherkin file features/scoring_guess.feature:
 
 <<scoring-feature>>
 
 <<scoring-scenario-perfect>>
+
+<<scoring-scenario-nogood>>
+
+<<scoring-scenario-wrongplace>>
+
+<<scoring-scenario-multi>>
 """
 
 <<scoring-test-import-pytest>>
@@ -1404,4 +1515,17 @@ And now the function all tangled out!
 
 <<scoring-test-xfail>>
 <<scoring-test1>>
+
+
+<<scoring-test-xfail>>
+<<scoring-test2>>
+
+
+<<scoring-test-xfail>>
+<<scoring-test3>>
+
+
+<<scoring-multi-parameters>>
+<<scoring-test-xfail>>
+<<scoring-multi-skeleton>>
 #+end_src
