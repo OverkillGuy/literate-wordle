@@ -36,7 +36,7 @@ Scenario Outline: Scoring guesses
 
   Examples: Multiple occurences of same character
     | answer | guess	| score		|
-    | abbey  | kebab	| ⬜⬜🟩🟨🟨	|
+    | abbey  | kebab	| ⬜🟨🟩🟨🟨	|
     | abbey  | babes	| 🟨🟨🟩🟩⬜	|
     | abbey  | abyss	| 🟩🟩🟨⬜⬜	|
     | abbey  | algae	| 🟩⬜⬜⬜🟨	|

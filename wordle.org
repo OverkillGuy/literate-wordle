@@ -1250,7 +1250,7 @@ corner case, written out as examples of the previous scenario:
 #+begin_src feature :tangle features/scoring_guess.feature
   Examples: Multiple occurences of same character
     | answer | guess	| score		|
-    | abbey  | kebab	| ⬜⬜🟩🟨🟨	|
+    | abbey  | kebab	| ⬜🟨🟩🟨🟨	|
     | abbey  | babes	| 🟨🟨🟩🟩⬜	|
     | abbey  | abyss	| 🟩🟩🟨⬜⬜	|
     | abbey  | algae	| 🟩⬜⬜⬜🟨	|
@@ -1468,7 +1468,7 @@ Just need to fill in the parameters:
         pytest.param("adage", "adobe", "🟩🟩⬜⬜🟩", id="normal_guess1"),
         pytest.param("serif", "quiet", "⬜⬜🟨🟨⬜", id="normal_guess2"),
         pytest.param("raise", "radix", "🟩🟩⬜🟨⬜", id="normal_guess3"),
-        pytest.param("abbey", "kebab", "⬜⬜🟩🟨🟨", id="multi_occur1"),
+        pytest.param("abbey", "kebab", "⬜🟨🟩🟨🟨", id="multi_occur1"),
         pytest.param("abbey", "babes", "🟨🟨🟩🟩⬜", id="multi_occur2"),
         pytest.param("abbey", "abyss", "🟩🟩🟨⬜⬜", id="multi_occur3"),
         pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
@@ -1478,6 +1478,144 @@ Just need to fill in the parameters:
 )
 #+end_src
 
+** Implementing the feature
+
+With the amount of prep we did, the little scoring function can be safely done.
+
+Let's experiment with the solution, iterating over naive solution and seeing how
+close they get to implementing the feature, by number of tests failed.
+
+Before anything, we go to the bottom of this file, where the tangling happens,
+and remove the "xfail" marker, so that test failures actually notify us as
+failures.
+
+First, a simple string matching by iterating over both lists at once:
+
+#+NAME: scoring-guessfunc-naive
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess naively"""
+    NO = "⬜"
+    OK = "🟩"
+    response = ""
+    for answer_char, guess_char in zip(answer, guess):
+        if answer_char == guess_char:
+            response += OK
+        else:
+            response += NO
+    return response
+#+end_src
+
+That only passes 3 tests of the 12 we just defined, obviously because we don't
+deal with incorrect characters. So let's add keeping track of characters in the
+wrong places:
+
+#+NAME: scoring-guessfunc-naive2
+#+CAPTION: Keep track of all answer characters
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess a little less naively"""
+    NO = "⬜"
+    OK = "🟩"
+    WRONG_PLACE = "🟨"
+    answer_chars_set = set(list(answer))
+    response = ""
+    for answer_char, guess_char in zip(answer, guess):
+        if answer_char == guess_char:
+            response += OK
+        elif guess_char in answer_chars_set:
+            response += WRONG_PLACE
+        else:
+            response += NO
+    return response
+#+end_src
+
+That version now passes 8 of 12 tests, with the issue being the multiple
+occurence of the same character in the answer being treated wrong, clearly an
+edge case we were fortunate to identify early.
+
+Looking at the tests, it seems that our scoring technique needs to remember how
+many occurences of each characters of the answer exists, and grade only the
+first occurence of such characters as "wrong place", reducing the counter.
+
+Fortunately, Python implements a good Counter function which we can import:
+
+#+NAME: scoring-guessfunc-import
+#+begin_src python :tangle: no
+from collections import Counter
+#+end_src
+
+We want something like this:
+
+#+begin_src python :tangle no
+if guess_char in answer_chars and answer_chars[guess_char] > 0:
+    response += WRONG_PLACE
+    # Reduce occurence since we "used" this one
+    answer_chars[guess_char] -= 1
+    # No more hits = pretend character isn't even seen (remove from dict)
+    if answer_chars[guess_char] == 0:
+        del answer_chars[guess_char]
+#+end_src
+
+So we try it
+
+#+NAME: scoring-guessfunc-impl1
+#+CAPTION: Use a Counter for character multiple occurences
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess with Counter"""
+    NO = "⬜"
+    OK = "🟩"
+    WRONG_PLACE = "🟨"
+    # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
+    answer_chars = Counter(answer)
+    response = ""
+    for answer_char, guess_char in zip(answer, guess):
+        if answer_char == guess_char:
+            response += OK
+        elif guess_char in answer_chars and answer_chars[guess_char] > 0:
+            response += WRONG_PLACE
+            # Reduce occurence since we "used" this one
+            answer_chars[guess_char] -= 1
+            # No more hits = pretend character isn't even seen (remove from dict)
+            if answer_chars[guess_char] == 0:
+                del answer_chars[guess_char]
+        else:
+            response += NO
+    return response
+#+end_src
+
+But while this improves the score, we are still 3 tests from success! Turns out
+we only did the reduction of counter for yellow, not also greens. This needs a
+bit of reshuffling:
+
+#+NAME: scoring-guessfunc-impl
+#+CAPTION: Use a Counter for character multiple occurences
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess with Counter"""
+    NO = "⬜"
+    OK = "🟩"
+    WRONG_PLACE = "🟨"
+    # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
+    answer_chars = Counter(answer)
+    response = ""
+    for guess_char, answer_char in zip(guess, answer):
+        if guess_char not in answer_chars:
+            response += NO
+            continue  # Early exit for this character, skip to next
+        # From here on, we MUST have a char in common, regardless of place
+        if answer_char == guess_char:
+            response += OK
+        elif answer_chars[guess_char] > 0:
+            response += WRONG_PLACE
+        # Either way, reduce occurence counter since we "used" this occurence
+        answer_chars[guess_char] -= 1
+        # No more hits = pretend character isn't even seen (remove from dict)
+        if answer_chars[guess_char] == 0:
+            del answer_chars[guess_char]
+    return response
+#+end_src
 
 
 ** Tangle it all out
@@ -1489,7 +1627,10 @@ Reorder the blocks from above to export with formatting enabled:
 <<scoring-guessmod-header>>
 
 
-<<scoring-guessfunc-proto1>>
+<<scoring-guessfunc-import>>
+
+
+<<scoring-guessfunc-impl>>
 #+end_src
 
 #+NAME: scoring-test1-tangleweb
@@ -1506,6 +1647,8 @@ Reorder the blocks from above to export with formatting enabled:
 <<scoring-scenario-wrongplace>>
 
 <<scoring-scenario-multi>>
+
+<<scoring-scenario-multi-identicalanswerchar>>
 """
 
 <<scoring-test-import-pytest>>
@@ -1513,19 +1656,15 @@ Reorder the blocks from above to export with formatting enabled:
 <<scoring-test-import>>
 
 
-<<scoring-test-xfail>>
 <<scoring-test1>>
 
 
-<<scoring-test-xfail>>
 <<scoring-test2>>
 
 
-<<scoring-test-xfail>>
 <<scoring-test3>>
 
 
 <<scoring-multi-parameters>>
-<<scoring-test-xfail>>
 <<scoring-multi-skeleton>>
 #+end_src

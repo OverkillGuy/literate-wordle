@@ -32,6 +32,15 @@ Scenario Outline: Scoring guesses
     | adage   | adobe	| 🟩🟩⬜⬜🟩	|
     | serif   | quiet	| ⬜⬜🟨🟨⬜	|
     | raise   | radix	| 🟩🟩⬜🟨⬜	|
+
+  Examples: Multiple occurences of same character
+    | answer | guess	| score		|
+    | abbey  | kebab	| ⬜🟨🟩🟨🟨	|
+    | abbey  | babes	| 🟨🟨🟩🟩⬜	|
+    | abbey  | abyss	| 🟩🟩🟨⬜⬜	|
+    | abbey  | algae	| 🟩⬜⬜⬜🟨	|
+    | abbey  | keeps	| ⬜🟨⬜⬜⬜	|
+    | abbey  | abate	| 🟩🟩⬜⬜🟨	|
 """
 
 import pytest
@@ -39,7 +48,6 @@ import pytest
 from literate_wordle.guess import score_guess
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 def test_perfect_guess():
     """Scenario: Perfect guess gives perfect score"""
     # Given a wordle answer "crane"
@@ -51,7 +59,6 @@ def test_perfect_guess():
     assert score == "🟩🟩🟩🟩🟩", "Perfect answer should give Perfect Score"
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 def test_no_common_character():
     """Scenario: No character in common"""
     # Given a wordle answer "brave"
@@ -63,7 +70,6 @@ def test_no_common_character():
     assert score == "⬜⬜⬜⬜⬜", "No character in common with answer should give 0 score"
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 def test_wrong_place():
     """Scenario: Character in wrong place"""
     # Given a wordle answer "rebus"
@@ -81,7 +87,7 @@ def test_wrong_place():
         pytest.param("adage", "adobe", "🟩🟩⬜⬜🟩", id="normal_guess1"),
         pytest.param("serif", "quiet", "⬜⬜🟨🟨⬜", id="normal_guess2"),
         pytest.param("raise", "radix", "🟩🟩⬜🟨⬜", id="normal_guess3"),
-        pytest.param("abbey", "kebab", "⬜⬜🟩🟨🟨", id="multi_occur1"),
+        pytest.param("abbey", "kebab", "⬜🟨🟩🟨🟨", id="multi_occur1"),
         pytest.param("abbey", "babes", "🟨🟨🟩🟩⬜", id="multi_occur2"),
         pytest.param("abbey", "abyss", "🟩🟩🟨⬜⬜", id="multi_occur3"),
         pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
@@ -89,7 +95,6 @@ def test_wrong_place():
         pytest.param("abbey", "abate", "🟩🟩⬜⬜🟨", id="multi_occur6"),
     ],
 )
-@pytest.mark.xfail(reason="Not implemented yet")
 def test_generic_score(answer, our_guess, expected_score):
     """Scenario Outline: Scoring guesses"""
     # Given a wordle <answer>
