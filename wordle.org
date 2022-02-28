@@ -1668,3 +1668,284 @@ Reorder the blocks from above to export with formatting enabled:
 <<scoring-multi-parameters>>
 <<scoring-multi-skeleton>>
 #+end_src
+
+* Playing a round of Wordle
+
+With all the subfeatures we have, we can now play a round of wordle, we're
+missing only the "state" of the game board, with the interactivity of the game.
+
+#+NAME: track-guess-feat
+#+begin_src feature :tangle features/track_guesses.feature
+Feature: Track number of guesses
+  As a Wordle game
+  I need to track how many guesses were already given
+  In order to announce win or game over
+#+end_src
+
+There are a few obvious cases we want to see:
+
+#+NAME: track-guess-scenario1
+#+begin_src feature :tangle features/track_guesses.feature
+Scenario: First guess is allowed
+  Given a wordle answer
+  And I didn't guess before
+  When I guess the word
+  Then my guess is scored
+#+end_src
+
+
+#+NAME: track-guess-scenario2
+#+begin_src feature :tangle features/track_guesses.feature
+Scenario: Fifth guess still allowed
+  Given a wordle answer
+  And I guessed 4 times
+  When I guess the word
+  Then my guess is scored
+#+end_src
+
+
+#+NAME: track-guess-scenario3
+#+begin_src feature :tangle features/track_guesses.feature
+Scenario: Sixth failed guess is game over
+  Given a wordle answer
+  And I guessed 5 times
+  When I guess the word
+  And my guess isn't the answer
+  Then my guess is scored
+  But game shows "Game Over"
+  And game shows the real answer
+#+end_src
+
+This feature shows us all the state we need to manage to track a Wordle game:
+- an answer
+- the number of previous guesses
+- the previous guesses themselves? not needed after we print
+- the previous guesses' scores? not needed after we print it either
+
+Simply answer + number of guesses then.
+
+Let's test it out: New test file, with docstring from Gherkin Feature.
+
+#+NAME: track-guess-test-docs
+#+begin_src python :tangle no :noweb yes
+"""Validates the Gherkin file features/track_guesses.feature
+
+<<track-guess-feat>>
+"""
+#+end_src
+
+In terms of the prototype of that function, it seems we need to track
+separately:
+- The game's internal state, before a move is played
+- The different outcomes that a guess can have (win, loose, continue)
+- Result of a guess on a game
+
+This will mean some data structures (maybe a little overkill, but fun!):
+
+#+CAPTION: Imports for enumeration of state and data-holding classes
+#+NAME: track-guess-import-dataclass
+#+begin_src python :tangle no
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+#+end_src
+
+#+CAPTION: Necessary objects to hold state
+#+NAME: track-guess-gamestate
+#+begin_src python :tangle no
+class WordleMoveOutcome(Enum):
+    """Outcome of a single move"""
+
+    GAME_OVER_LOST = 1
+    GAME_WON = 2
+    GUESS_SCORED_CONTINUE = 3
+
+
+@dataclass
+class WordleGame:
+    """A Wordle game's internal state, before a move is played"""
+
+    answer: str
+    guess_number: int
+
+
+@dataclass
+class WordleMove:
+    """A Wordle game state once a move is played"""
+
+    game: WordleGame
+    outcome: WordleMoveOutcome
+    message: str
+    score: Optional[str]
+#+end_src
+
+So we can now define our function:
+
+#+NAME: track-guess-proto
+#+begin_src python :tangle no
+def play_round(guess: str, game: WordleGame) -> WordleMove:
+    """Use guess on the given game, resulting in WordleMove"""
+#+end_src
+
+
+Before we finish implementing this function, let's define its acceptance tests:
+
+
+#+NAME: track-guess-test-import
+#+begin_src python :tangle no :noweb yes
+from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
+#+end_src
+
+
+
+#+NAME: track-guess-test1
+#+begin_src python :tangle no
+def test_first_guess_allowed():
+    """Scenario: First guess is allowed"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I didn't guess before
+    guess_number = 0
+    game = WordleGame(answer=answer, guess_number=guess_number)
+    # When I guess the word
+    guess = "kebab"
+    result = play_round(guess, game)
+    # Then my guess is scored
+    OUTCOME_CONTINUE = WordleMoveOutcome.GUESS_SCORED_CONTINUE
+    assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
+    assert result.score is not None, "No score given as result"
+    assert len(result.score) == 5, "Score of incorrect length"
+    OK_CHARS = ["🟩", "🟨", "⬜"]
+    assert all(
+        char in OK_CHARS for char in list(result.score)
+    ), "Score doesn't match score's characters"
+#+end_src
+
+#+NAME: track-guess-test2
+#+begin_src python :tangle no
+def test_fifth_guess_allowed():
+    """Scenario: Fifth guess still allowed"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I guessed 4 times
+    guess_number = 4
+    game = WordleGame(answer=answer, guess_number=guess_number)
+    # When I guess the word
+    guess = "kebab"
+    result = play_round(guess, game)
+    # Then my guess is scored
+    OUTCOME_CONTINUE = WordleMoveOutcome.GUESS_SCORED_CONTINUE
+    assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
+    assert result.score is not None, "No score given as result"
+    assert len(result.score) == 5, "Score of incorrect length"
+    OK_CHARS = ["🟩", "🟨", "⬜"]
+    assert all(
+        char in OK_CHARS for char in list(result.score)
+    ), "Score doesn't match score's characters"
+#+end_src
+
+
+#+NAME: track-guess-test3
+#+begin_src python :tangle no
+def test_sixth_guess_fails_game():
+    """Scenario: Sixth failed guess is game over"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I guessed 5 times
+    guess_number = 5
+    game = WordleGame(answer, guess_number)
+    # When I guess the word
+    # And my guess isn't the answer
+    guess = "kebab"
+    result = play_round(guess, game)
+    # Then my guess isn't scored
+    assert result.outcome == WordleMoveOutcome.GAME_OVER_LOST, "Should have lost game"
+    # But game shows "Game Over"
+    assert "game over" in result.message.lower(), "Should show game over message"
+    # And game shows the real answer
+    assert answer in result.message
+#+end_src
+
+As I write this test, I notice there's one case of the =enum= we haven't
+covered, which means the =play_round= scenarios aren't correct. Let's add a
+scenario for winning the game!
+
+#+NAME: track-guess-scenario4
+#+begin_src feature :tangle features/track_guesses.feature
+Scenario: Winning guess
+  Given a wordle answer
+  And I guessed 3 times
+  When I guess the word
+  And my guess is the answer
+  Then my guess is scored
+  And score is perfect
+  And game shows "Game Won"
+#+end_src
+
+Accordingly, we write a test:
+
+#+NAME: track-guess-test4
+#+begin_src python :tangle no
+def test_winning_guess_wins():
+    """Scenario: Winning guess"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I guessed 3 times
+    guess_number = 3
+    game = WordleGame(answer, guess_number)
+    # When I guess the word
+    # And my guess is the answer
+    guess = answer
+    result = play_round(guess, game)
+    # Then my guess is scored
+    assert result.score is not None, "Guess should be scored"
+    # And the score is perfect
+    assert result.score == "🟩🟩🟩🟩🟩"
+    # And game shows "Game Won
+    assert result.outcome == WordleMoveOutcome.GAME_WON, "Should have won game"
+    assert "game won" in result.message.lower()
+#+end_src
+
+With all the tests in hand, we tangle everything out into files, filling in a
+dummy prototype for the benefit of red tests.
+
+#+CAPTION: A dummy move result to make tests run but fail
+#+NAME: track-guess-impl-dummy
+#+begin_src python :tangle no
+result = WordleMoveOutcome.GAME_OVER_LOST
+return WordleMove(game=game, outcome=result, message="You suck!", score=None)
+#+end_src
+
+The tests:
+#+begin_src python :tangle tests/test_track_guess_number.py  :noweb yes
+<<track-guess-test-docs>>
+
+
+<<track-guess-test-import>>
+
+
+<<track-guess-test1>>
+
+
+<<track-guess-test2>>
+
+
+<<track-guess-test3>>
+
+
+<<track-guess-test4>>
+#+end_src
+
+#+begin_src python :tangle src/literate_wordle/game.py :noweb yes
+"""Wordle game's state and playing rounds"""
+
+
+<<track-guess-import-dataclass>>
+
+
+<<track-guess-gamestate>>
+
+
+<<track-guess-proto>>
+    <<track-guess-impl-dummy>>
+#+end_src
