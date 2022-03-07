@@ -15,9 +15,9 @@ Scenario: Fifth guess still allowed
   When I guess the word
   Then my guess is scored
 
-Scenario: Sixth failed guess is game over
+Scenario: Six failed guess is game over
   Given a wordle answer
-  And I guessed 5 times
+  And I guessed 6 times already
   When I guess the word
   And my guess isn't the answer
   Then my guess is scored

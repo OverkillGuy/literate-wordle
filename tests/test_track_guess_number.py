@@ -56,8 +56,8 @@ def test_sixth_guess_fails_game():
     """Scenario: Sixth failed guess is game over"""
     # Given a wordle answer
     answer = "orbit"
-    # And I guessed 5 times
-    guess_number = 5
+    # And I guessed 6 times already
+    guess_number = 6
     game = WordleGame(answer, guess_number)
     # When I guess the word
     # And my guess isn't the answer
@@ -89,3 +89,23 @@ def test_winning_guess_wins():
     # And game shows "Game Won
     assert result.outcome == WordleMoveOutcome.GAME_WON, "Should have won game"
     assert "game won" in result.message.lower()
+
+
+# Not a Scenario covered by existing gherkin feature:
+# Intentional, see wordle.org for reasoning
+def test_invalid_guess_not_counted():
+    """Scenario: Invalid guess isn't counted"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I guessed 3 times
+    guess_number = 3
+    game = WordleGame(answer=answer, guess_number=guess_number)
+    # When I guess the word
+    # But my guess isn't a dictionary word
+    guess = "xolfy"
+    result = play_round(guess, game)
+    # Then my guess is rejected as invalid word
+    OUTCOME_BADWORD = WordleMoveOutcome.GUESS_NOTVALID_CONTINUE
+    assert result.outcome == OUTCOME_BADWORD, "Guess should have been rejected"
+    # And my guess is not scored
+    assert result.score is None, "No score should be given on bad word"
