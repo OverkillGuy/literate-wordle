@@ -2191,7 +2191,7 @@ on project scope, another advantage of deep understanding of project requirement
 Back to the implementation: tests should all pass now, =make= is happy, but
 there's an interesting issue:
 
-#+begin_result
+#+begin_verbatim
 ----------- coverage: platform linux, python 3.9.5-final-0 -----------
 Name                                     Stmts   Miss  Cover
 ------------------------------------------------------------
@@ -2204,7 +2204,7 @@ src/literate_wordle/words.py                25      0   100%
 TOTAL                                       83      2    98%
 Coverage HTML written to dir test_results/coverage.html
 Coverage XML written to file test_results/coverage.xml
-#+end_result
+#+end_verbatim
 
 We lowered coverage, nooo! Exploring the coverage HTML file in a browser, we see
 that the lines in question that aren't covered are:
@@ -2313,3 +2313,169 @@ The tests:
     <<track-guess-impl5>>
     <<track-guess-impl6>>
 #+end_src
+
+* Final round: command line interface
+
+We have assembled lego bricks into an almost finished product, as we have enough to
+play a single round. Let's give this project a shell command to invoke, tying
+together all the other disjointed features.
+
+#+begin_src feature :tangle features/command_line_entrypoint.feature
+Feature: Pywordle shell command
+  As a Wordle game
+  I need a shell command to launch the game
+  In order to give convenient entrypoint for players
+#+end_src
+
+I don't think it's necessary to give specific scenarios, because we've
+thoroughly tested the underlying implementation of the game, we just need to
+assemble it into a shell command.
+
+So let's define an entrypoint for the game, generating a new one:
+
+#+NAME: cli-main1
+#+begin_src python :tangle no
+def new_game() -> WordleGame:
+    """Generate a new WordleGame"""
+    return WordleGame(answer=pick_answer_word(), guess_number=1)
+#+end_src
+
+And how to play until we lose, printing to stdout as we go:
+
+#+NAME: cli-main2
+#+begin_src python :tangle no
+def play_game(game: WordleGame, guess_fetcher: Callable, response_logger: Callable):
+    """Plays the given WordleGame until completion.
+
+    Asks guess_fetcher for guess, and prints response to response_logger
+    """
+    outcome = WordleMoveOutcome.GUESS_SCORED_CONTINUE  # Gotta start somehow
+    while outcome not in {WordleMoveOutcome.GAME_WON, WordleMoveOutcome.GAME_OVER_LOST}:
+        guess = guess_fetcher()
+        result = play_round(guess=guess, game=game)
+        response_logger(result.message)
+        game = result.game
+        outcome = result.outcome
+#+end_src
+
+Note how both the guess and the response are dependency-injected, to allow for
+fully automated testing later (though we won't use that too much).
+
+Add a few imports needed:
+
+#+NAME: cli-main-import-std
+#+begin_src python :tangle no
+from typing import Callable
+#+end_src
+
+#+NAME: cli-main-import-mod
+#+begin_src python :tangle no
+from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
+from literate_wordle.words import pick_answer_word
+#+end_src
+
+Now we can add command line argument parsing in a separate file:
+
+
+#+NAME: cli-pargs1
+#+begin_src python :tangle no
+def parse_args(raw_args: List[str]) -> argparse.Namespace:
+    """Parse given command line arguments"""
+    description = "Wordle implementation in Python, as literate programming"
+    # Bit overkill since there is no real argument to parse yet
+    parser = argparse.ArgumentParser(prog="pywordle", description=description)
+    return parser.parse_args(raw_args)
+#+end_src
+
+#+NAME: cli-pargs-import-std1
+#+begin_src python :tangle no
+import argparse
+#+end_src
+
+#+NAME: cli-pargs-import-std2
+#+begin_src python :tangle no
+from typing import List
+#+end_src
+
+#+NAME: cli-pargs2
+#+begin_src python :tangle no
+def play_game_args(raw_args: List[str]):
+    """Play a standard Wordle game from stdin to stdout, given args"""
+    _ = parse_args(raw_args)
+    game = new_game()
+    play_game(game=game, guess_fetcher=input, response_logger=print)
+#+end_src
+
+#+NAME: cli-pargs3
+#+begin_src python :tangle no
+def main():
+    """Pass sys.argv to the play_game_args function"""
+    play_game_args(sys.argv[1:])
+#+end_src
+
+#+NAME: cli-pargs-import-std3
+#+begin_src python :tangle no
+import sys
+#+end_src
+
+#+NAME: cli-pargs-import-mod
+#+begin_src python :tangle no
+from literate_wordle.main import new_game, play_game
+#+end_src
+
+Since both our main and cli are meant to be untestable, because it's the
+interactive entrypoint, it's a bit unfair to compute coverage over it. Let's
+blacklist these two files, preventing them weighing down coverage metric.
+
+#+begin_src conf :tangle .coveragerc
+[run]
+omit =
+    # Don't compute coverage for these 2 manual invocation files
+    src/literate_wordle/main.py
+    src/literate_wordle/cli.py
+#+end_src
+
+** Tangling it out
+#+begin_src python :tangle src/literate_wordle/main.py :noweb yes
+"""Entrypoint for pywordle"""
+
+
+<<cli-main-import-std>>
+
+<<cli-main-import-mod>>
+
+
+<<cli-main1>>
+
+
+<<cli-main2>>
+
+
+<<cli-main3>>
+#+end_src
+
+
+#+begin_src python :tangle src/literate_wordle/cli.py :noweb yes
+"""Command line entrypoint for pywordle"""
+
+
+<<cli-pargs-import-std1>>
+<<cli-pargs-import-std3>>
+<<cli-pargs-import-std2>>
+
+<<cli-pargs-import-mod>>
+
+
+<<cli-pargs1>>
+
+
+<<cli-pargs2>>
+
+
+<<cli-pargs3>>
+#+end_src
+
+
+** COMMENT CLI invokation
+In Python, when using [[https://python-poetry.org/][Poetry]] like we are, the package is defined in
+=pyproject.toml=. To define a new command, this

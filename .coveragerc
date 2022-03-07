@@ -1,0 +1,5 @@
+[run]
+omit =
+    # Don't compute coverage for these 2 manual invocation files
+    src/literate_wordle/main.py
+    src/literate_wordle/cli.py
