@@ -166,7 +166,7 @@ someone's computer , so our code needs to say "the file that is in my package
 alongside me", which is a little more complex.
 
 From [[https://stackoverflow.com/a/20885799][Stackoverflow on reading static files from inside Python package]], we can
-use the =importlib.resources= module, since our project requires =Python >3.8=.
+use the =importlib.resources= module, since our project requires =Python >3.9=.
 
 So let's define first a =get_words_list= function to wrap around the import
 weirdness:
