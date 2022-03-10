@@ -31,23 +31,17 @@ build:
 
 # Less commonly used commands
 
-# Generate a pip-compatible requirements.txt
-# From the poetry.lock. Mostly for CI use.
-.PHONY: export-requirements
-export-requirements:
-	poetry -o requirements.txt
-
-
-# Install poetry from pip
-# IMPORTANT: Make sure "pip" resolves to a virtualenv
-# Or that you are happy with poetry installed system-wide
+# Install poetry from pipx
+# Note: pipx is NOT pip, see pipx docs:
+# https://pypa.github.io/pipx/
 .PHONY: install-poetry
 install-poetry:
-	pip install poetry
+	pipx install poetry
 
 # Ensure Poetry will generate virtualenv inside the git repo /.venv/
 # rather than in a centralized location. This makes it possible to
-# manipulate venv more simply
+# manipulate venv more simply.
+# This is a global flag for all repos, only need to do this once
 .PHONY: poetry-venv-local
 poetry-venv-local:
 	poetry config virtualenvs.in-project true
@@ -58,9 +52,20 @@ poetry-venv-local:
 poetry-venv-nuke:
 	find .venv -delete
 
+
+
+
 wordle.html: wordle.org
 	emacs --batch \
 		--script ~/.emacs.d/init.el \
 		--eval "(load-file \"~/.doom.d/init.el\")" \
 		--eval "(progn (require 'ox-html) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-html-export-to-html)))))" \
 		wordle.org
+
+# Exports this repository as a tarball
+# made up of git bundle file (cloneable/pullable file)
+# and generated HTML docs
+.PHONY: export-repo
+export-repo: docs
+	git bundle create wordle.gitbundle --all
+	tar czvf wordle.tar.gz docs/build/html/ wordle.gitbundle
