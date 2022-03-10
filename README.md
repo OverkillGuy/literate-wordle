@@ -4,7 +4,7 @@ Writing up a Python implementation of Wordle using literate programming.
 
 > Follow along on the journey to implement Wordle in Python using TDD
 
-Requires Python >3.9.
+Requires Python >=3.9.
 
 ## Literate programming
 
@@ -67,8 +67,9 @@ Use as any python module:
 
 ### Python setup
 
-This repository uses Python >=3.9, using [Poetry](https://python-poetry.org) as
-package manager to define a Python package inside `src/literate_wordle/`.
+This repository uses Python 3.9 or above, using
+[Poetry](https://python-poetry.org) as package manager to define a Python
+package inside `src/literate_wordle/`.
 
 `poetry` will create virtual environments if needed, fetch
 dependencies, and install them for development.
