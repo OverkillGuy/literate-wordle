@@ -2476,6 +2476,115 @@ omit =
 #+end_src
 
 
-** COMMENT CLI invokation
+** Launching as CLI
 In Python, when using [[https://python-poetry.org/][Poetry]] like we are, the package is defined in
-=pyproject.toml=. To define a new command, this
+=pyproject.toml=. To define a new command, this means using the
+=tool.poetry.script= key:
+
+#+begin_src conf :tangle no
+[tool.poetry.scripts]
+pywordle = "literate_wordle.cli:main"
+#+end_src
+
+So we can now manually invoke this tool. And for the given argument parser, a
+help message should be available:
+
+#+CAPTION: Invoking the help menu. Note "poetry run" prefix to ensure we're running inside virtualenv, where the package is installed
+#+begin_src shell :tangle no :exports both
+poetry run pywordle --help
+#+end_src
+
+#+RESULTS:
+: usage: pywordle [-h]
+:
+: Wordle implementation in Python, as literate programming
+:
+: optional arguments:
+:   -h, --help  show this help message and exit
+
+And we can play a round!
+
+#+begin_result
+$ poetry shell
+$ pywordle
+hello
+Try again! Guess number 1. Score is: ⬜🟨🟨⬜🟨
+lobes
+Try again! Guess number 2. Score is: 🟨🟩⬜🟩⬜
+cranes
+Guess too long
+crane
+Try again! Guess number 3. Score is: ⬜⬜⬜🟨🟨
+novel
+Correct! Game won in 4 guesses
+#+end_result
+
+Taking a step back, we've got command line launch of the game, and it gave
+us proper play feature. We're done here, especially for a short experimental
+project like this one.
+
+But if this codebase was to be maintained, extended, reused, the bar for
+"acceptable" test coverage would be much higher.
+
+For instance, we have no test overall on the game loop of guess input/output,
+despite all the layers below being pretty well covered. So I'd want tests that
+call the =play_game= function with scripted inputs and log the outputs, taking
+advantage of the dependency injection we set up to make proper UI-oriented
+tests. These would reveal, for instance, that when launching the game, there is
+nothing greeting us, no prompt for a guess, which is a usability issue.
+
+Remember that testing's primary goal is to increase our trust in the system we
+build.
+
+In that vein, because we've got feature acceptance tests covered for every
+layer, the biggest source of uncertainty in the system is the implementation
+itself: we're just not shaking out the code very much, beyond what a normal
+usage would look like. This calls for exploring the edge cases that code may
+have, regardless of intended features. Every string parameter should be tried
+with empty string, uppercase vs lowercase, different encoding, etc.
+
+To give ideas on how to do this, I recently rediscovered that there's an
+interesting way to look for code that wasn't yet tested much: Use test coverage
+measurements, show lines that no tests hit (=if= that never get triggered), and
+build tests around that. Obviously, this won't be sufficient to get all the
+issues[fn::Test coverage marks a line as "covered" if it is hit by any test, but
+not why and how in depth. Classic example is for loops, which mark the loop as
+covered, but the loop could have been hit only once, hiding edge cases when the
+feature iterates over the loop multiple (or no) times. As always, this is at
+best a fun heuristic.], but it's a good way to poke at existing test code.
+* Conclusion
+
+We just walked through building a simple wordle program from scratch, using
+literate programming to weave a novel's worth of explanations and reasoning,
+with code blocks that export to the proper project code locations.
+
+The project uses modern Python tooling (poetry, pytest) and uses formatters
+(black, isort), linters (flake8 with plugins), type checkers (mypy), and the
+project generates its own general documentation (including this page, if you're
+reading it in a browser) and API reference (Sphinx with myst_parser for Markdown
+support), enforcing compliance of every tool via make and pre-commit.
+
+The code was written in a Test-driven (TDD) way, as the tests always came before
+the feature itself, guiding how the implementation looks like, all the way to
+having 100% test coverage (whatever that means).
+
+More importantly in my eyes, we only built what was strictly necessary, by using
+Behaviour-driven development (BDD, also called acceptance-test-driven
+development) to guide what subfeature to build next based on our needs. These
+specifications were encoded as Gherkin Features, available in a dedicated
+=features/= folder, and thanks to the magic of Sphinx documentation, each of
+those are collected into a list of requirements in a dedicated Requirements
+page of the docs.
+
+Since all of the feature files have associated acceptance tests that match the
+phrasing of the Gherkin features, future automation work could look at linking
+the requirements in Sphinx to the associated test file, so as to finally get
+full traceability from requirements, through specifications, to implementation
+and finally acceptance tests that pass.
+
+This project was my first foray into literate programming at this scale, an
+attempt to bring together all the good ideas of TDD, modern Python development,
+Gherkin usage for requirements traceability purposes (without overly zealous
+extremes of Cucumber automation). All these ideas were until now scattered,
+implemented each without the others in different places, and this project
+fuses them into something I hope is more valuable than the sum of its parts.
