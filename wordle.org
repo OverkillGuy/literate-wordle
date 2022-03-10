@@ -1,5 +1,7 @@
 #+TITLE: Wordle
 
+#+OPTIONS: ^:nil
+
 # Shell steps should show results verbatim (not tables) and don't rerun on export
 #+PROPERTY: header-args:shell :results verbatim :eval no-export
 
@@ -821,14 +823,6 @@ def pick_answer_word() -> str:
 #+end_src
 
 And now we can use the dictionary as a set in our =check_valid_word= function:
-
-
-#+NAME: choice-func-pickanswer-generic
-#+CAPTION: Pick-a-word, revisited to generic asset list
-#+begin_src python :tangle no
-    """Pick a single word out of the dictionary of answers"""
-    return choice(
-#+end_src
 
 #+NAME: valid-func-len-dict
 #+begin_src python
