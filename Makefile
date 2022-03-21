@@ -28,6 +28,35 @@ docs-serve:
 build:
 	poetry build
 
+# Proper Makefile target:
+# The file wordle.html is actually generated from wordle.org with that command
+# Note: Any modifications (last edit time) of wordle.org will cause rebuild wordle.html
+# FIXME: This make target WORKS (generates valid HTML) but result is monochrome = ugly.
+# Way less pretty than just using my own Emacs and export HTML myself via
+# shortcut `C-c C-e h h`. Despite meaning to be an automated replacement,
+# something to do with Doom Emacs init process causes the theming to not load
+# theme properly before running HTML export, so the code blocks export as
+# monochrome. So keep this command here as fallback, but I'll keep exporting by
+# hand till I understand Emacs more.
+wordle.html: wordle.org
+	emacs --batch \
+		--script ~/.emacs.d/init.el \
+		--eval "(load-file \"~/.doom.d/init.el\")" \
+		--eval "(progn (require 'ox-html) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-html-export-to-html)))))" \
+		wordle.org
+
+# FIXME: This make target does export code, but the code layout is wrong, failing linters!
+# Some default config of my Doom Emacs seems to influence code
+# indentation? So the tangle shortcut `C-c C-v t` in my Emacs give different
+# result than this command. Until I understand more about this, use manual
+# tangle via shortcut instead!
+.PHONY: tangle-code
+tangle-code:
+	emacs -Q \
+		--batch \
+		--eval "(progn (require 'ob-tangle) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-babel-tangle))))" \
+		wordle.org
+
 
 # Less commonly used commands
 
@@ -49,22 +78,14 @@ poetry-venv-local:
 # Delete the virtualenv to clean dependencies
 # Useful when switching to a branch with less dependencies
 # Requires the virtualenv to be local (see "poetry-venv-local")
+.PHONY: poetry-venv-nuke
 poetry-venv-nuke:
 	find .venv -delete
 
 
-
-
-wordle.html: wordle.org
-	emacs --batch \
-		--script ~/.emacs.d/init.el \
-		--eval "(load-file \"~/.doom.d/init.el\")" \
-		--eval "(progn (require 'ox-html) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-html-export-to-html)))))" \
-		wordle.org
-
 # Exports this repository as a tarball
 # made up of git bundle file (cloneable/pullable file)
-# and generated HTML docs
+# and generated HTML docs (serve-able via python3 -m http.server)
 .PHONY: export-repo
 export-repo: docs
 	git bundle create wordle.gitbundle --all

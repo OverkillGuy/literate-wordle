@@ -1,22 +1,21 @@
 exclude: '^docs/source/conf.py'
 repos:
-# Tangling is a manual process that is better off staying that way?
+# # SEE WORDLE.ORG for FIXME explaining why manual export is prettier (damn Emacs!)
 # -   repo: local
 #     hooks:
 #     -   id: emacs-tangle
-#         name: Emacs tangle org-mode literate-programming files (ensures synced)
-#         entry: emacs -Q --batch --eval "(progn (require 'ob-tangle) (dolist (file command-line-args-left) (with-current-buffer (find-file-noselect file) (org-babel-tangle))))"
+#         name: Emacs tangle org-mode literate-programming files (ensures code synced)
+#         entry: make tangle-code
 #         language: system
 #         files: wordle.org
--   repo: local
-    hooks:   # Sucky because references init.el (DOOM specific, sloooow) to get htmlize
-    -   id: emacs-export-html
-        name: Emacs export org-mode file to static HTML
-        # FIXME Skips export if file exists, because non-reproducible
-        # (timestamp) causing pre-commit hook to fail as file modified!
-        entry: make wordle.html
-        language: system
-        files: wordle.org
+#         pass_filenames: false
+# -   repo: local
+#     hooks:
+#     -   id: emacs-export-html
+#         name: Emacs export org-mode file to static HTML
+#         entry: make wordle.html
+#         language: system
+#         files: wordle.org
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
