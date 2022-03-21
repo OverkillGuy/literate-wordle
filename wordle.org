@@ -437,13 +437,11 @@ docstrings of Python tests, I'm going to take advantage of having already
 written it above to reference it for export, so I can template it out:
 
 #+NAME: scenario-check-tangle-noweb
-#+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing [[feature-check-valid-guess]] and [[scenario-check-valid-guess]]
+#+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing [[feature-check-valid-guess]]
 #+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
 """Validates the Gherkin file features/checking_guess_valid_word.feature:
 
 <<feature-check-valid-guess>>
-
-<<scenario-check-valid-guess>>
 """
 #+end_src
 
@@ -1647,16 +1645,6 @@ Reorder the blocks from above to export with formatting enabled:
 """Validates the Gherkin file features/scoring_guess.feature:
 
 <<scoring-feature>>
-
-<<scoring-scenario-perfect>>
-
-<<scoring-scenario-nogood>>
-
-<<scoring-scenario-wrongplace>>
-
-<<scoring-scenario-multi>>
-
-<<scoring-scenario-multi-identicalanswerchar>>
 """
 
 <<scoring-test-import-pytest>>
