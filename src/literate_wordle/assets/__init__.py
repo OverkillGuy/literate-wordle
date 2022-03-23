@@ -1,1 +1,1 @@
-"""Static binary assets required to Wordle well"""
+"""Static binary assets (dictionaries) required to perform Wordle"""

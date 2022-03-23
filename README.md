@@ -2,17 +2,17 @@
 
 Writing up a Python implementation of Wordle using literate programming.
 
-> Follow along on the journey to implement Wordle in Python using TDD
+> Follow along on the journey to implement Wordle in Python using Behaviour-driven Development techniques.
 
 ### Dependencies
 
-- [Python](https://www.python.org/) 3.9 or later, because of the heavy use of
-  typing hints
+- [Python](https://www.python.org/) 3.9 or later (use of typing hints)
 - [Poetry](https://python-poetry.org) package manager, to install development
   dependencies and generate virtual environment.
 
-Note that the wordle program itself doesn't need any external dependency, but the way to
-call that executable as command line tool does depend on Poetry.
+Note that the wordle program itself doesn't use any external dependency, but the
+way to call that executable as command line tool does depend on Poetry.
+Generating project documentation also requires dependencies.
 
 ## Literate programming?
 
@@ -30,6 +30,8 @@ prose, and the fact this file can re-generate the project's source code, the
 rest of the repository is a completely normal python project.
 
 ## Usage
+
+### Read the story
 
 The primary usage of this repository is as a "story" to read along as a webpage.
 
@@ -72,8 +74,9 @@ Use this package as you would any python module:
 	poetry shell
 	python3
 	>>> from literate_wordle import words
-	>>> words.pick_answer_word()
-	blank
+	>>> answer = words.pick_answer_word()
+    >> print(f"Hello! The secret wordle answer is '{answer}'.")
+    Hello! The secret wordle answer is 'blank'.
 
 ## Development
 

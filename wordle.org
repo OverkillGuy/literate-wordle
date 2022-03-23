@@ -5,22 +5,40 @@
 # Shell steps should show results verbatim (not tables) and don't rerun on export
 #+PROPERTY: header-args:shell :results verbatim :eval no-export
 
-Implementing the viral game "Wordle" in Python using literate programming!
+I've recently written [[https://jiby.tech/post/gherkin-features-user-requirements/][a series of blog posts about Gherkin]], the [[https://jiby.tech/post/bdd-dreams-cucumber-and-gherkin/][Behaviour-driven
+development movement,]] and how Cucumber (the BDD tool of choice) failed to
+perform to expectations.
 
-Literate programming is the art of writing code as if it was a novel (or
-blogpost), writing down what's needed, explaining the reasoning, and weaving in
-code snippets that add up to the codebase as we grow in understanding. The
-result is a "story" which can be read, but also "tangled" back into a proper
-codebase that works normally.
+I wanted to showcase the BDD-inspired low-tech solution I came up with via a
+toy project, demonstrating a small but significant programming task, broken down
+as series of design-implementation cycles.
 
-I'll be making liberal use of Gherkin to describe what we're building.
+Wordle is a perfect target: it's a small codebase, with a half dozen features to
+string together into a useable game.
+
+In order to document the process, the code is written via literate programming.
+
+#+begin_quote
+Literate programming is the art of writing code as if it was a novel (or blogpost), writing down what's needed, explaining the reasoning, and weaving in code snippets that add up to the codebase as we grow in understanding. The result is a "story" which can be read, but also "tangled" back into a proper codebase that works normally.
+#+end_quote
+
+For more context on the code repository (how to use, etc), please read the project
+readme.
 
 * Mise en bouche: picking an answer
 
-To get us started, let's cover the very first thing Wordle has to do: pick a
-word that will become our answer:
+To get us started, let's cover the very first behaviour Wordle has to do: pick a
+word that will become our secret answer.
 
-#+CAPTION: Our first requirement
+As the first iteration in a test-driven project, it's important that we set up
+all the components we'll need going forwards.
+
+First, let's formalise a little our first requirement, using Gherkin Feature.
+
+For context as to why/how we're doing this, read THIS ARTICLE.
+
+#+NAME: feature1
+#+CAPTION: Our first requirement. Tangled to features/pick_answer_word.feature
 #+begin_src feature :tangle features/pick_answer_word.feature
 Feature: Pick an answer word
   As a Wordle game
@@ -28,45 +46,33 @@ Feature: Pick an answer word
   In order to let players guess it
 #+end_src
 
-Right. That's fairly straightforward, but the secret word can't be random
+Right. That's fairly straightforward, but the secret word can't just be random
 characters, it needs to be a proper word. So we need to find a dictionary to
 pick from.
-** Solution dictionary file
-Since we're trying to match the Wordle website, let's use Wordle's own
-dictionary. Someone [[https://raw.githubusercontent.com/AllValley/WordleDictionary/main/wordle_solutions_alphabetized.txt][helpfully uploaded it]]. We'll need to download it locally
-first:
-
-#+begin_src shell :tangle no
-wget \
-    --output-document "src/literate_wordle/assets/wordle_answers_dict.txt" \
-    "https://raw.githubusercontent.com/AllValley/WordleDictionary/6f14d2f03d01c36fe66e3ccc0929394251ab139d/wordle_solutions_alphabetized.txt"
-#+end_src
-
-#+RESULTS:
-
-Except an alphabetically sorted text file takes a lot of space but compresses
-really well: let's compress that instead
-
-#+begin_src shell :tangle no :exports both
-ANSWERS_FILE="src/literate_wordle/assets/wordle_answers_dict.txt"
-du -k "${ANSWERS_FILE}"
-gzip "$ANSWERS_FILE"
-du -k "${ANSWERS_FILE}.gz"
-# Unnecessary: gzip removes the original as it compresses
-# rm "$ANSWERS_FILE"
-#+end_src
-
-#+RESULTS:
-: 16	src/literate_wordle/assets/wordle_answers_dict.txt
-: 8	src/literate_wordle/assets/wordle_answers_dict.txt.gz
-
-Sweet, we have cut down the filesize by half.
-
-Now, let's use Test-Driven Development to guide us towards picking an answer
-word.
 
 ** TDD for picking word functionality
 
+We want to write a test that validates that we can indeed pick a random word.
+
+But "Random" and "test" together should make anybody wince at the idea of
+non-deterministic testing.
+
+We /could/ write a test that picks a word, then confirm the word came
+from the dictionary file, but that test would implement the entirety of the
+feature we're testing, as well as rely on the internals of the implementation.
+That's very wrong.
+
+A good alternative would be to pin the randomness, making the test deterministic
+by anchoring the randomness seed to known value, allowing repeatable testing.
+
+But this is just the first test in a new project, we want a simple check to start
+with, so we compromise by making the assertion "is the random word picked a five
+letter word"?
+
+So we write down a new test file, under =tests/= folder, starting with a
+file-level docstring that references the Gherkin feature this enforces.
+
+#+CAPTION: Test driving the first feature. Note the =pick_answer_word()= function doesn't exist yet, we're dreaming it up!
 #+begin_src python :tangle tests/test_pick_word.py
 """Validates the Gherkin file features/pick_answer_word.feature:
 
@@ -84,13 +90,14 @@ def test_pick_word_ok_length():
     assert len(pick_answer_word()) == 5, "Picked wordle solution is wrong size!"
 #+end_src
 
-Of course, since that feature isn't implemented (not even the skeleton), running
-tests right now would crash, not just give a red light. So let's implement the
-barest hint of a function that returns the wrong thing, to make the test run but
-fail:
+Of course, since that feature isn't implemented (not even the module's
+skeleton), running tests right now would crash as import errors, rather than
+give a red light.
 
-First, the docstring for a new python module =words.py=
+So let's implement the barest hint of the =pick_answer_word= function that
+returns the wrong thing, to make the test run and fail:
 
+#+CAPTION: First, the docstring for a new python module =words.py=, under the =literate_wordle= package.
 #+begin_src python :tangle no
 """Dictionary features to back wordle solutions"""
 #+end_src
@@ -106,9 +113,11 @@ def pick_answer_word() -> str:
 
 With our test ready, and a dummy function in place, let's see the tests go red:
 
-#+CAPTION: Running the tests. Note the redirection of errors to make them register and visible in my notes
+# To avoid crashing org-mode, run these tests via: make test 2>&1 || true
+
+#+CAPTION: Running the tests.
 #+begin_src shell :exports both
-make test 2>&1 || true
+make test
 #+end_src
 
 #+RESULTS:
@@ -147,7 +156,46 @@ FAILED tests/test_pick_word.py::test_pick_word_ok_length - AssertionError: Pi...
 make: *** [Makefile:16: test] Error 1
 #+end_example
 
-Tests indeed failed as expected, can now try to make it pass.
+As pytest mentions, we should see a wordle solution of 5 letters, not zero.
+So the test indeed failed as expected, we can now make it pass by implementing
+the feature.
+
+Taking a quick step back, look at how conveniently TDD lets us "dream up an
+API", by describing functions and files that don't need to exist.
+
+** Solutions dictionary file
+
+Since we're trying to match the Wordle website's implementation, let's reuse
+Wordle's own dictionary. Someone [[https://raw.githubusercontent.com/AllValley/WordleDictionary/main/wordle_solutions_alphabetized.txt][helpfully uploaded it]]. Let's download it:
+
+#+begin_src shell :tangle no
+wget \
+    --output-document "wordle_answers_dict.txt" \
+    "https://raw.githubusercontent.com/AllValley/WordleDictionary/6f14d2f03d01c36fe66e3ccc0929394251ab139d/wordle_solutions_alphabetized.txt"
+#+end_src
+
+Except an alphabetically sorted text file takes space for no good reason. Let's
+compress it preventively.
+
+While this can legitimately be seen as a premature optimization, we can see this
+as trying to "flatten" a static text file into a binary "asset" that can be
+packaged into the project's package, like icons are part of webapps.
+
+#+begin_src shell :tangle no :exports both
+ANSWERS_FILE="wordle_answers_dict.txt"
+# Get raw file size in kilobytes
+du -k "${ANSWERS_FILE}"
+# Compress the file (removes original)
+gzip "$ANSWERS_FILE"
+# Check size after compression
+du -k "${ANSWERS_FILE}.gz"
+#+end_src
+
+#+RESULTS:
+: 16	wordle_answers_dict.txt
+: 8	wordle_answers_dict.txt.gz
+
+Sweet, we have cut down the filesize by half.
 
 ** Importing dictionary: static/packaged asset file read
 
@@ -159,41 +207,51 @@ with open("my_dictionary.txt", "r") as fd:
     my_text = fd.read()
 #+end_src
 
-One just needs to find the right file path and we're done, just add sprinkles to
-deal with compression. Sure enough, that is fairly easy.
+One just needs to find the right file path to open, just add sprinkles to deal
+with compression. Sure enough, that is fairly easy.
 
 The issue is that we're trying to write a python package here, which means it could
 be downloaded via =pip install= and installed in an arbitary location on
-someone's computer , so our code needs to say "the file that is in my package
-alongside me", which is a little more complex.
+someone's computer. Our code needs to refer to the file as "the file XYZ inside
+the assets folder of our package". We need to look up how to express that.
 
 From [[https://stackoverflow.com/a/20885799][Stackoverflow on reading static files from inside Python package]], we can
 use the =importlib.resources= module, since our project requires =Python >3.9=.
 
-So let's define first a =get_words_list= function to wrap around the import
-weirdness:
+So we'll move our dictionary zip file into a new module called =assets=, which
+will be a proper python module that can be imported from:
 
+#+CAPTION: Moving our dictionary to the new =assets= sub-module.
+#+begin_src shell :tangle no
+mkdir -p src/literate_wordle/assets/
+# A proper python module means an __init__.py: Give it a docstring
+echo '"""Static binary assets (dictionaries) required to perform Wordle"""' > src/literate_wordle/assets/__init__.py
+mv wordle_answers_dict.txt.gz src/literate_wordle/
+#+end_src
+
+So let's define the new =words=, which will provide the =pick_answer_word= feature.
+
+#+CAPTION: Defining new python module under =src/literate_wordle/words.py=, docstrings first.
 #+begin_src python :tangle src/literate_wordle/words.py
 """Dictionary features to back wordle solutions"""
 #+end_src
 
 #+NAME: choice-stdlib
-#+CAPTION: Necessary standard library imports
+#+CAPTION: Necessary imports from the standard library.
 #+begin_src python :tangle no
 import gzip
 import importlib.resources as pkg_resources
 #+end_src
 
-#+NAME: choice-stdlib2
-#+begin_src python :tangle no
-from random import choice
-#+end_src
-
 #+NAME: choice-locallib
-#+CAPTION: Local import of =assets/= folder
+#+CAPTION: Local import of new =assets/= folder
 #+begin_src python :tangle no
 from . import assets  # Relative import of the assets/ folder
 #+end_src
+
+We need a convenience function to load the zip file into a list of strings.
+
+
 
 #+NAME: choice-func-unzipdict
 #+CAPTION: Actual function to unzip dictionary
@@ -208,144 +266,47 @@ def get_words_list() -> list[str]:
     return answer_word_list
 #+end_src
 
-Then write out the pretty trivial function to pick:
+Ideally we would make a test dedicated for proving this function, but our
+already-failing acceptance test is pretty much covering this entire feature, so
+it's not worth it just now. This is one of those tradeoffs we make between toy
+projects and long-term maintainability of code as a team.
+
+With the word list in hand, writing out the pick function is trivial:
+
+#+CAPTION: Import from standard library for randomness
+#+NAME: choice-stdlib2
+#+begin_src python :tangle no
+from random import choice
+#+end_src
 
 #+NAME: choice-func-pickanswer
-#+CAPTION: Pick-a-word!
+#+CAPTION: Pick-a-word! Pretty simple, with all the legwork we did already.
 #+begin_src python :tangle no
 def pick_answer_word() -> str:
     """Pick a single word out of the dictionary of answers"""
     return choice(get_words_list())
 #+end_src
 
-And make the =assets/= folder a proper importable python module just to be sure
+With the function implemented, we can try it out in a Python REPL:
 
-#+begin_src shell :tangle no :exports code
-echo '"""Static binary assets required to Wordle well"""' > src/literate_wordle/assets/__init__.py
-#+end_src
-
-... So now we have an implementation of the function, let's manually test it in
-a Python REPL:
-
+#+CAPTION: Open an interactive python session, ask twice for random word.
 #+begin_src shell :tangle no :exports both
-poetry run python3 -c 'from literate_wordle import words; print(words.pick_answer_word()); print(words.pick_answer_word())'
+poetry run python3
+>> from literate_wordle import words
+>> print(words.pick_answer_word());
+stink
+>> print(words.pick_answer_word())'
+blank
 #+end_src
-
-#+RESULTS:
-: stink
-: blank
 
 Perfect! So the test should now pass, right?
 
 #+begin_src shell :tangle no :exports both
-make
+make test
 #+end_src
 
 #+RESULTS:
 #+begin_example
-poetry install
-Installing dependencies from lock file
-
-No dependencies to install or update
-
-Installing the current project: literate_wordle (0.1.0)
-pre-commit run --all --all-files
-Emacs tangle org-mode literate-programming files (ensures synced).......................Passed
-Emacs export org-mode file to static HTML...............................................Passed
-Trim Trailing Whitespace................................................................Passed
-Fix End of Files........................................................................Passed
-Check for added large files.............................................................Passed
-Check that executables have shebangs................................(no files to check)Skipped
-Check for case conflicts................................................................Passed
-Check vcs permalinks....................................................................Passed
-Forbid new submodules...................................................................Passed
-Mixed line ending.......................................................................Passed
-Check for merge conflicts...............................................................Passed
-Detect Private Key......................................................................Passed
-Check Toml..............................................................................Passed
-Check Yaml..............................................................................Passed
-Check JSON..........................................................(no files to check)Skipped
-mypy....................................................................................Passed
-cd docs && make html
-make[1]: Entering directory '/home/jiby/dev/ws/short/literate_wordle/docs'
-Running Sphinx v4.4.0
-Read in collections ...
-  wordle_html_export_filecopy: Initialised
-  gherkin_features_foldercopy: Initialised
-  gherkin_features_jinja: Initialised
-Clean collections ...
-  gherkin_features_foldercopy: (CopyFolderDriver) Folder deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_features/
-  gherkin_features_jinja: (JinjaDriver) Cleaning 1 jinja Based file/s ...
-Executing collections ...
-  wordle_html_export_filecopy: (CopyFileDriver) Copy file...
-  gherkin_features_foldercopy: (CopyFolderDriver) Copy folder...
-  gherkin_features_jinja: (JinjaDriver) Creating 1 file/s from Jinja template...
-loading pickled environment... done
-[autosummary] generating autosummary for: _collections/gherkin_feature.md, index.rst, readme.md, wordle.md
-[AutoAPI] Reading files... [ 33%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
-[AutoAPI] Reading files... [ 66%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/words.py
-[AutoAPI] Reading files... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/assets/__init__.py
-
-[AutoAPI] Mapping Data... [ 33%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/__init__.py
-[AutoAPI] Mapping Data... [ 66%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/words.py
-[AutoAPI] Mapping Data... [100%] /home/jiby/dev/ws/short/literate_wordle/src/literate_wordle/assets/__init__.py
-
-[AutoAPI] Rendering Data... [ 33%] literate_wordle
-[AutoAPI] Rendering Data... [ 66%] literate_wordle.words
-[AutoAPI] Rendering Data... [100%] literate_wordle.assets
-
-myst v0.15.2: MdParserConfig(renderer='sphinx', commonmark_only=False, enable_extensions=['dollarmath'], dmath_allow_labels=True, dmath_allow_space=True, dmath_allow_digits=True, dmath_double_inline=False, update_mathjax=True, mathjax_classes='tex2jax_process|mathjax_process|math|output_area', disable_syntax=[], url_schemes=['http', 'https', 'mailto', 'ftp'], heading_anchors=2, heading_slug_func=None, html_meta=[], footnote_transition=True, substitutions=[], sub_delimiters=['{', '}'], words_per_minute=200)
-building [mo]: targets for 0 po files that are out of date
-building [html]: targets for 5 source files that are out of date
-updating environment: 0 added, 6 changed, 1 removed
-reading sources... [ 16%] _collections/gherkin_feature
-reading sources... [ 33%] autoapi/index
-reading sources... [ 50%] autoapi/literate_wordle/assets/index
-reading sources... [ 66%] autoapi/literate_wordle/index
-reading sources... [ 83%] autoapi/literate_wordle/words/index
-reading sources... [100%] wordle
-
-Copying static files for sphinx-needs datatables support.../home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables_loader.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/sphinx_needs_collapse.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/datatables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/JSZip-2.5.0/jszip.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.print.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.flash.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.html5.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.colVis.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/dataTables.buttons.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/js/buttons.html5.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/common.scss /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/mixins.scss /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/css/buttons.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Buttons-1.5.1/swf/flashExport.swf /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/js/jquery.dataTables.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/css/jquery.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_asc.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_desc_disabled.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_asc_disabled.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_both.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/DataTables-1.10.16/images/sort_desc.png /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/ColReorder-1.4.1/js/dataTables.colReorder.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/ColReorder-1.4.1/css/colReorder.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedColumns-3.2.4/js/dataTables.fixedColumns.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedColumns-3.2.4/css/fixedColumns.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Scroller-1.4.4/js/dataTables.scroller.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Scroller-1.4.4/css/scroller.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedHeader-3.1.3/js/dataTables.fixedHeader.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/FixedHeader-3.1.3/css/fixedHeader.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Responsive-2.2.1/js/dataTables.responsive.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/Responsive-2.2.1/css/responsive.dataTables.min.css /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/pdfmake-0.1.32/pdfmake.min.js /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/libs/html/pdfmake-0.1.32/vfs_fonts.js
-Copying static files for sphinx-needs custom style support...[ 25%] common.css
-Copying static files for sphinx-needs custom style support...[ 50%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/layouts.css
-Copying static files for sphinx-needs custom style support...[ 75%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/styles.css
-Copying static files for sphinx-needs custom style support...[100%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/css/modern/modern.css
-
-looking for now-outdated files... none found
-pickling environment... done
-checking consistency... done
-preparing documents... done
-writing output... [ 14%] _collections/gherkin_feature
-writing output... [ 28%] autoapi/index
-writing output... [ 42%] autoapi/literate_wordle/assets/index
-writing output... [ 57%] autoapi/literate_wordle/index
-writing output... [ 71%] autoapi/literate_wordle/words/index
-writing output... [ 85%] index
-writing output... [100%] wordle
-
-generating indices... genindex py-modindex done
-highlighting module code... [ 50%] literate_wordle
-highlighting module code... [100%] literate_wordle.words
-
-writing additional pages... search done
-copying images... [ 50%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/images/feather_svg/arrow-down-circle.svg
-copying images... [100%] /home/jiby/dev/ws/short/literate_wordle/.venv/lib/python3.9/site-packages/sphinxcontrib/needs/images/feather_svg/arrow-right-circle.svg
-
-copying static files... done
-copying extra files... done
-dumping search index in English (code: en)... done
-dumping object inventory... done
-build succeeded, 2 warnings.
-
-The HTML pages are in build/html.
-Final clean of collections ...
-  wordle_html_export_filecopy: (CopyFileDriver) File deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/_static/wordle.html
-  gherkin_features_foldercopy: (CopyFolderDriver) Folder deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_features/
-  gherkin_features_jinja: (JinjaDriver) Cleaning 1 jinja Based file/s ...
-  gherkin_features_jinja: (JinjaDriver)   File deleted: /home/jiby/dev/ws/short/literate_wordle/docs/source/_collections/gherkin_feature.md
-
-Checking sphinx-needs warnings
-make[1]: Leaving directory '/home/jiby/dev/ws/short/literate_wordle/docs'
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -359,35 +320,37 @@ tests/test_version.py::test_version PASSED                               [100%]
 
 - generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
 ============================== 2 passed in 0.03s ===============================
-poetry build
-Building literate_wordle (0.1.0)
-  - Building sdist
-  - Built literate_wordle-0.1.0.tar.gz
-  - Building wheel
-  - Built literate_wordle-0.1.0-py3-none-any.whl
 #+end_example
 
-Everything checks out: our feature is ready![fn::Keen readers will notice
-sub-optimal code, such as re-unzipping the entire solutions file
-before any picking of solution. Indeed, these are valid points. But in the
-context of this project, these are accepted tradeoffs leaning towards
-legibility/simplicity of implementation against raw performance. Considering
-that "picking a solution word" is something done on the order of /once/ over the
-entire runtime, we can afford it.]
+Acceptance tests pass, and linters are happy (not pictured, use =make= to
+check).
+
+Because the acceptance test pass, that means the feature is ready to ship!
+That's the BDD guarantee.
+
+Of course, keen readers will notice sub-optimal code, like how we're unzipping
+the entire solutions file on each requested answer. Because "picking a solution
+word" is something done on the order of /once/ over the /entire runtime/ of a
+Wordle session, we choose to leave this performance wart be.
+
 ** Debriefing on the method
 
 We just completed our first loop: determine a small component that needs
-implemented to build towards Wordle goal, spell it out with Gherkin features,
-explicit the feature via tests, and iterate on the new RED test until it becomes
-green.[fn::Usual TDD cycle adds a refactor/blue cycle, which is indeed necessary
-for production code, as it lends to maintainability. This code is intended as
-entertainment material, with this literate-programming article as companion.
-Refactoring would mean refactoring the =wordle.org= source file, which would
-drown out the nice narrative we're building here.]
+implemented to build towards the Wordle goal, spell it out with Gherkin features,
+explicit the feature via acceptance test, and iterate on the new RED test until it becomes
+green, then ship the feature.
 
-Along the way, the code spelled out in this narrative-oriented file is tangled
-out into proper code paths, so that the =Makefile= can pick it up and validate
-the proper package-ness.
+Common TDD workflow adds a refactor or "blue" component to the cycle, which is
+indeed necessary for production code, as it lends to maintainability. But this
+project is entertainment material, refactoring would mean refactoring the =wordle.org= source file,
+which would drown out the nice narrative we're building here.
+
+Along the way, the code blocks spelled out in this narrative-oriented file is
+tangled out into proper code paths, so that the =Makefile= can pick it up and
+validate the proper package-ness. We'll see as we implement the next feature how
+such a weaving of code snippets works.
+
+
 * Confirming guess is a valid word
 
 Now that we can pick secret words, we need to start processing guesses. The very
