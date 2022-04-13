@@ -31,12 +31,12 @@ def test_first_guess_allowed():
     ), "Score doesn't match score's characters"
 
 
-def test_fifth_guess_allowed():
+def test_sixth_guess_allowed():
     """Scenario: Fifth guess still allowed"""
     # Given a wordle answer
     answer = "orbit"
-    # And I guessed 4 times
-    guess_number = 4
+    # And I guessed 5 times
+    guess_number = 6
     game = WordleGame(answer=answer, guess_number=guess_number)
     # When I guess the word
     guess = "kebab"
@@ -52,12 +52,13 @@ def test_fifth_guess_allowed():
     ), "Score doesn't match score's characters"
 
 
-def test_sixth_guess_fails_game():
+def test_seventh_guess_fails_game():
     """Scenario: Sixth failed guess is game over"""
     # Given a wordle answer
     answer = "orbit"
     # And I guessed 6 times already
-    guess_number = 6
+    # Guessing 6 times BEFORE, using seventh now:
+    guess_number = 7
     game = WordleGame(answer, guess_number)
     # When I guess the word
     # And my guess isn't the answer

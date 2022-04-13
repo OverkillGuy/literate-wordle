@@ -38,7 +38,7 @@ class WordleMove:
 
 def play_round(guess: str, game: WordleGame) -> WordleMove:
     """Use guess on the given game, resulting in WordleMove"""
-    if game.guess_number >= 6:
+    if game.guess_number >= 7:
         message = f"Too many guesses: Game Over. Answer was: {game.answer}"
         outcome = WordleMoveOutcome.GAME_OVER_LOST
         return WordleMove(game=game, outcome=outcome, message=message, score=None)

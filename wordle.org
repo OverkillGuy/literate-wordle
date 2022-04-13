@@ -1717,6 +1717,7 @@ Feature: Track number of guesses
 
 There are a few obvious cases we want to see:
 
+#+CAPTION: Allow the first guess
 #+NAME: track-guess-scenario1
 #+begin_src feature :tangle features/track_guesses.feature
 Scenario: First guess is allowed
@@ -1726,17 +1727,17 @@ Scenario: First guess is allowed
   Then my guess is scored
 #+end_src
 
-
+#+CAPTION: Still allow the sixth guess (skipping 2 through 5)
 #+NAME: track-guess-scenario2
 #+begin_src feature :tangle features/track_guesses.feature
-Scenario: Fifth guess still allowed
+Scenario: Sixth guess still allowed
   Given a wordle answer
-  And I guessed 4 times
+  And I guessed 5 times
   When I guess the word
   Then my guess is scored
 #+end_src
 
-
+#+CAPTION: Sixth guess is last guess (fail on seventh)
 #+NAME: track-guess-scenario3
 #+begin_src feature :tangle features/track_guesses.feature
 Scenario: Six failed guess is game over
@@ -1752,13 +1753,15 @@ Scenario: Six failed guess is game over
 This feature shows us all the state we need to manage to track a Wordle game:
 - an answer
 - the number of previous guesses
-- the previous guesses themselves? not needed after we print
+- the previous guesses themselves? not needed after we print them
 - the previous guesses' scores? not needed after we print it either
 
-Simply answer + number of guesses then.
+So a Wordle Game is the aggregate of "answer" + "number of guesses", nothing
+else.
 
-Let's test it out: New test file, with docstring from Gherkin Feature.
+Let's write the test:
 
+#+CAPTION: New =tests/test_track_guess_number.py= file with just feature's docstring
 #+NAME: track-guess-test-docs
 #+begin_src python :tangle no :noweb yes
 """Validates the Gherkin file features/track_guesses.feature
@@ -1767,21 +1770,52 @@ Let's test it out: New test file, with docstring from Gherkin Feature.
 """
 #+end_src
 
-In terms of the prototype of that function, it seems we need to track
-separately:
-- The game's internal state, before a move is played
-- The different outcomes that a guess can have (win, loose, continue)
-- Result of a guess on a game
-
-This will mean some data structures (maybe a little overkill, but fun!):
-
-#+CAPTION: Imports for enumeration of state and data-holding classes
-#+NAME: track-guess-import-dataclass
+#+CAPTION: Test to track first guess
+#+NAME: track-guess-test1
 #+begin_src python :tangle no
-from dataclasses import dataclass
-from enum import Enum
-from typing import Optional
+def test_first_guess_allowed():
+    """Scenario: First guess is allowed"""
+    # Given a wordle answer
+    answer = "orbit"
+    # And I didn't guess before
+    guess_number = 0
+    game = WordleGame(answer=answer, guess_number=guess_number)
+    # When I guess the word
+    guess = "kebab"
+    result = play_round(guess, game)
+    # Then my guess is scored
+    OUTCOME_CONTINUE = WordleMoveOutcome.GUESS_SCORED_CONTINUE
+    assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
+    assert result.score is not None, "No score given as result"
+    assert len(result.score) == 5, "Score of incorrect length"
+    OK_CHARS = ["🟩", "🟨", "⬜"]
+    assert all(
+        char in OK_CHARS for char in list(result.score)
+    ), "Score doesn't match score's characters"
 #+end_src
+
+In the test above, I've done quite a bit of world-building:
+- Used a new =WordleGame= structure keeping game state
+- Used a new =WordleMoveOutcome= enumeration to describe outcomes
+- Used a new =play_round= function that takes a game + guess
+- Implied in =result= variable at a structure for new Game state after a move
+
+#+CAPTION: The imports for the test of Listing [[track-guess-test1]]
+#+NAME: track-guess-test-import
+#+begin_src python :tangle no :noweb yes
+from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
+#+end_src
+
+
+
+This practice of calling an API that doesn't exist yet is the coolest part of
+TDD, because the tests lend their power to help design what the software should
+feel like, even if we have no idea how to create the backend to that API yet.
+The focus on how the feature is /used/ changes from the usual engineering
+mindset of how we envision the backend, very valuable.
+
+All right, so with that in mind, let's start actually building these data
+structures.
 
 #+CAPTION: Enum for outcomes of a single move
 #+NAME: track-guess-gamestate1
@@ -1815,7 +1849,15 @@ class WordleMove:
     score: Optional[str]
 #+end_src
 
-So we can now define our function:
+#+CAPTION: Imports for enumeration of state and data-holding classes of Listing [[track-guess-gamestate1]],[[track-guess-gamestate2]]
+#+NAME: track-guess-import-dataclass
+#+begin_src python :tangle no
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+#+end_src
+
+With the datastructures ready, we can define our function's signature:
 
 #+NAME: track-guess-proto
 #+begin_src python :tangle no
@@ -1824,47 +1866,18 @@ def play_round(guess: str, game: WordleGame) -> WordleMove:
 #+end_src
 
 
-Before we finish implementing this function, let's define its acceptance tests:
+Before we finish implementing this function, let's define the rest of the
+acceptance tests we settled on in Gherkin:
 
-
-#+NAME: track-guess-test-import
-#+begin_src python :tangle no :noweb yes
-from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
-#+end_src
-
-
-
-#+NAME: track-guess-test1
-#+begin_src python :tangle no
-def test_first_guess_allowed():
-    """Scenario: First guess is allowed"""
-    # Given a wordle answer
-    answer = "orbit"
-    # And I didn't guess before
-    guess_number = 0
-    game = WordleGame(answer=answer, guess_number=guess_number)
-    # When I guess the word
-    guess = "kebab"
-    result = play_round(guess, game)
-    # Then my guess is scored
-    OUTCOME_CONTINUE = WordleMoveOutcome.GUESS_SCORED_CONTINUE
-    assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
-    assert result.score is not None, "No score given as result"
-    assert len(result.score) == 5, "Score of incorrect length"
-    OK_CHARS = ["🟩", "🟨", "⬜"]
-    assert all(
-        char in OK_CHARS for char in list(result.score)
-    ), "Score doesn't match score's characters"
-#+end_src
-
+#+CAPTION: Second test, for sixth guess still OK
 #+NAME: track-guess-test2
 #+begin_src python :tangle no
-def test_fifth_guess_allowed():
+def test_sixth_guess_allowed():
     """Scenario: Fifth guess still allowed"""
     # Given a wordle answer
     answer = "orbit"
-    # And I guessed 4 times
-    guess_number = 4
+    # And I guessed 5 times
+    guess_number = 6
     game = WordleGame(answer=answer, guess_number=guess_number)
     # When I guess the word
     guess = "kebab"
@@ -1880,15 +1893,16 @@ def test_fifth_guess_allowed():
     ), "Score doesn't match score's characters"
 #+end_src
 
-
+#+CAPTION: Actually denying a seventh guess
 #+NAME: track-guess-test3
 #+begin_src python :tangle no
-def test_sixth_guess_fails_game():
+def test_seventh_guess_fails_game():
     """Scenario: Sixth failed guess is game over"""
     # Given a wordle answer
     answer = "orbit"
     # And I guessed 6 times already
-    guess_number = 6
+    # Guessing 6 times BEFORE, using seventh now:
+    guess_number = 7
     game = WordleGame(answer, guess_number)
     # When I guess the word
     # And my guess isn't the answer
@@ -1902,10 +1916,12 @@ def test_sixth_guess_fails_game():
     assert answer in result.message
 #+end_src
 
-As I write this test, I notice there's one case of the =enum= we haven't
-covered, which means the =play_round= scenarios aren't correct. Let's add a
-scenario for winning the game!
+As I write the test in Listing [[track-guess-test3]], I notice there's one case of
+the =enum= we haven't covered(=WordleMoveOutcome.GAME_WON=), which means the
+=play_round= scenarios aren't correct yet. Let's add the scenario for winning
+the game!
 
+#+CAPTION: Winning scenario
 #+NAME: track-guess-scenario4
 #+begin_src feature :tangle features/track_guesses.feature
 Scenario: Winning guess
@@ -1918,8 +1934,19 @@ Scenario: Winning guess
   And game shows "Game Won"
 #+end_src
 
-Accordingly, we write a test:
+A little thought later, it seems we mixed up the requirements a little here (it
+happens): When designing the Gherkin Feature, we wrote about exhausting the
+amounts of guesses, we weren't thinking of win/lose conditions. But when writing
+a =play_round= function, it's indeed very relevant, especially since the
+existing scenarios covered most of the cases already. Ideally, we could have
+added a separate Feature describing winning and losing, and dealt with it
+separately. In practice, here, it's simpler to just expand the feature's scope.
+This is what real engineering is about, aiming for perfection, but making
+compromises to match our imperfect world.
 
+Let's fill in our winning case test:
+
+#+CAPTION: Winning test
 #+NAME: track-guess-test4
 #+begin_src python :tangle no
 def test_winning_guess_wins():
@@ -1942,10 +1969,10 @@ def test_winning_guess_wins():
     assert "game won" in result.message.lower()
 #+end_src
 
-With all the tests in hand, we tangle everything out into files, filling in a
-dummy prototype for the benefit of red tests.
+With all the tests ready, we cobble together a stub for =play_round= to execute
+the tests and see them go red.
 
-#+CAPTION: A dummy move result to make tests run but fail
+#+CAPTION: stub for =play_round=, returning failure, to make tests run red
 #+NAME: track-guess-impl-dummy
 #+begin_src python :tangle no
 result = WordleMoveOutcome.GAME_OVER_LOST
@@ -1954,7 +1981,7 @@ return WordleMove(game=game, outcome=result, message="You suck!", score=None)
 
 All right, the tests do fail, right?
 
-#+begin_src shell :tangle no
+#+begin_src shell :tangle no :exports both
 poetry run pytest 2>&1 || true
 #+end_src
 
@@ -1985,8 +2012,8 @@ tests/test_scoring_guess.py::test_generic_score[multi_occur4] PASSED     [ 71%]
 tests/test_scoring_guess.py::test_generic_score[multi_occur5] PASSED     [ 76%]
 tests/test_scoring_guess.py::test_generic_score[multi_occur6] PASSED     [ 80%]
 tests/test_track_guess_number.py::test_first_guess_allowed FAILED        [ 85%]
-tests/test_track_guess_number.py::test_fifth_guess_allowed FAILED        [ 90%]
-tests/test_track_guess_number.py::test_sixth_guess_fails_game FAILED     [ 95%]
+tests/test_track_guess_number.py::test_sixth_guess_allowed FAILED        [ 90%]
+tests/test_track_guess_number.py::test_seventh_guess_fails_game FAILED     [ 95%]
 tests/test_track_guess_number.py::test_winning_guess_wins FAILED         [100%]
 
 =================================== FAILURES ===================================
@@ -2015,14 +2042,14 @@ E         <WordleMoveOutcome.GUESS_SCORED_CONTINUE: 3>
 E
 
 tests/test_track_guess_number.py:25: AssertionError
-___________________________ test_fifth_guess_allowed ___________________________
+___________________________ test_sixth_guess_allowed ___________________________
 
-    def test_fifth_guess_allowed():
-        """Scenario: Fifth guess still allowed"""
+    def test_sixth_guess_allowed():
+        """Scenario: Sixth guess still allowed"""
         # Given a wordle answer
         answer = "orbit"
-        # And I guessed 4 times
-        guess_number = 4
+        # And I guessed 5 times
+        guess_number = 6
         game = WordleGame(answer=answer, guess_number=guess_number)
         # When I guess the word
         guess = "kebab"
@@ -2040,14 +2067,15 @@ E         <WordleMoveOutcome.GUESS_SCORED_CONTINUE: 3>
 E
 
 tests/test_track_guess_number.py:46: AssertionError
-_________________________ test_sixth_guess_fails_game __________________________
+_________________________ test_seventh_guess_fails_game _________________________
 
-    def test_sixth_guess_fails_game():
+    def test_seventh_guess_fails_game():
         """Scenario: Sixth failed guess is game over"""
         # Given a wordle answer
         answer = "orbit"
-        # And I guessed 5 times
-        guess_number = 5
+        # And I guessed 6 times already
+        # Guessing 6 times BEFORE, using seventh now:
+        guess_number = 7
         game = WordleGame(answer, guess_number)
         # When I guess the word
         # And my guess isn't the answer
@@ -2108,29 +2136,30 @@ Coverage XML written to file test_results/coverage.xml
 
 =========================== short test summary info ============================
 FAILED tests/test_track_guess_number.py::test_first_guess_allowed - Assertion...
-FAILED tests/test_track_guess_number.py::test_fifth_guess_allowed - Assertion...
+FAILED tests/test_track_guess_number.py::test_sixth_guess_allowed - Assertion...
 FAILED tests/test_track_guess_number.py::test_sixth_guess_fails_game - Assert...
 FAILED tests/test_track_guess_number.py::test_winning_guess_wins - AssertionE...
 ========================= 4 failed, 17 passed in 0.18s =========================
 #+end_example
 
-All right, let's implement this:
+All right, let's implement this.
 ** Implementing the feature
 
 First, if we have too many guesses already (before this one), we return game
-lost. This means we decide to fail not at the end of the failed fifth guess, but
-beginning of the sixth.
+lost. This means we decide to fail not at the end of the failed sixth guess, but
+beginning of the seventh.
 
+#+CAPTION: Game over detection. Notice the early-exit pattern.
 #+NAME: track-guess-impl1
 #+begin_src python :tangle no
-if game.guess_number >= 6:
+if game.guess_number >= 7:
     message = f"Too many guesses: Game Over. Answer was: {game.answer}"
     outcome = WordleMoveOutcome.GAME_OVER_LOST
     return WordleMove(game=game, outcome=outcome, message=message, score=None)
 #+end_src
 
 In order to count a guess, it needs to be a valid word. This means importing
-some of our local module.
+some of our package's functions.
 
 #+NAME: track-guess-import-module
 #+begin_src python :tangle no
@@ -2138,22 +2167,25 @@ from literate_wordle.guess import score_guess
 from literate_wordle.words import check_valid_word
 #+end_src
 
-As we try to design this code block, we notice that if the word isn't valid, we
-can't return =GUESS_SCORED_CONTINUE=, because an invalid guess can't be counted!
-So we revise the enum for =WordleMoveOutcome= and because it's a new enum case, we
-will need to add a test for it to cover all grounds! Let's put a pin in that,
-finish implementing this first.
+As we write the code to check if guess is valid word, we notice that if the word
+isn't valid, we can't return =GUESS_SCORED_CONTINUE=, because an invalid-word
+guess shouldn't be counted against the player! So we again revise the
+=WordleMoveOutcome= enum and because it's a new enum case, we will need to add a
+test for it to cover all grounds! Let's put a pin in that, finish implementing
+this first.
 
 #+NAME: track-guess-enum4
-#+CAPTION: Fourth possibility: guess wasn't valid, not counted
+#+CAPTION: Fourth outcome: guess wasn't valid, not counted
 #+begin_src python :tangle no
 GUESS_NOTVALID_CONTINUE = 4
 #+end_src
 
-To compensate for having this enum defined all out of order, we'll use the
-"noweb" feature of org-mode to weave code, in subsection below, inserting this
-fourth possibility in the correct place, so the code looks legit.
+To compensate for having this enum defined all out of order, we'll use again the
+=noweb= feature to weave code back in the enum, in the subsection below,
+inserting this fourth possibility in the correct place, so the code looks like
+it should.
 
+#+CAPTION: Invalid word detection.
 #+NAME: track-guess-impl2
 #+begin_src python :tangle no
 valid, validity_msg = check_valid_word(guess)
@@ -2162,23 +2194,22 @@ if not valid and validity_msg is not None:
     return WordleMove(game=game, outcome=outcome, message=validity_msg, score=None)
 #+end_src
 
-Now we've gotten rid of the cases where the guess was invalid, we're
-interpreting this guess, which means counting it, incrementing guess number:
-
+Now we've gotten rid of the cases where the guess was invalid.
+#+CAPTION: Guess is now valid, count it
 #+NAME: track-guess-impl3
 #+begin_src python :tangle no
 # Guess now guaranteed to be valid: count it
 game.guess_number += 1
 #+end_src
 
-#+CAPTION: The now-valid guess, should be scored
+#+CAPTION: The now-guaranteed-valid guess should be scored
 #+NAME: track-guess-impl4
 #+begin_src python :tangle no
 score = score_guess(guess, game.answer)
 #+end_src
 
 
-#+CAPTION: With a valid guess, can it be won?
+#+CAPTION: Knowing a valid guess, scored, is game won?
 #+NAME: track-guess-impl5
 #+begin_src python :tangle no
 if score == "🟩🟩🟩🟩🟩":
@@ -2187,7 +2218,7 @@ if score == "🟩🟩🟩🟩🟩":
     return WordleMove(game=game, outcome=outcome, message=message, score=score)
 #+end_src
 
-#+CAPTION: Last possibility remains: scored, try another guess
+#+CAPTION: Last possibility remains: scored, not won/lost, try another guess
 #+NAME: track-guess-impl6
 #+begin_src python :tangle no
 # Only case left is "try another guess"
@@ -2197,20 +2228,20 @@ return WordleMove(game=game, outcome=outcome, message=message, score=score)
 #+end_src
 
 
-
 Note that throughout this codebase, we made a lot of assumptions and repetitions
 around the length of a Wordle answer/guess, and this translate to repeated
-hardcoded-ness like above These could have been addressed right away during
-implementation, but it's important to consider if the scope increase is worth
-it: generalized Wordle to N characters isn't super interesting to me, as it
-would require cutting new dictionaries, etc, and I'm just not that into Wordle.
-This is the kind of technical design decision we can do by having a firm grasp
-on project scope, another advantage of deep understanding of project requirements.
+hardcoded-ness like above regarding emojis. These could have been addressed
+right away during implementation, but it's important to consider if the scope
+increase is worth it: generalized Wordle to N characters isn't super interesting
+to me, as it would require cutting new dictionaries, etc, and I'm just not that
+into Wordle. This is the kind of technical design decision we can do by having a
+firm grasp on project scope, another advantage of deep understanding of project
+requirements.
 
 Back to the implementation: tests should all pass now, =make= is happy, but
 there's an interesting issue:
 
-#+begin_verbatim
+#+begin_example
 ----------- coverage: platform linux, python 3.9.5-final-0 -----------
 Name                                     Stmts   Miss  Cover
 ------------------------------------------------------------
@@ -2223,7 +2254,7 @@ src/literate_wordle/words.py                25      0   100%
 TOTAL                                       83      2    98%
 Coverage HTML written to dir test_results/coverage.html
 Coverage XML written to file test_results/coverage.xml
-#+end_verbatim
+#+end_example
 
 We lowered coverage, nooo! Exploring the coverage HTML file in a browser, we see
 that the lines in question that aren't covered are:

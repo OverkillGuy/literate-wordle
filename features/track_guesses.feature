@@ -9,9 +9,9 @@ Scenario: First guess is allowed
   When I guess the word
   Then my guess is scored
 
-Scenario: Fifth guess still allowed
+Scenario: Sixth guess still allowed
   Given a wordle answer
-  And I guessed 4 times
+  And I guessed 5 times
   When I guess the word
   Then my guess is scored
 
