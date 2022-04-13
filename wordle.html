@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-04-13 Wed 22:06 -->
+<!-- 2022-04-13 Wed 23:16 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Wordle</title>
@@ -201,45 +201,45 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org4bfd506">1. Mise en bouche: picking an answer</a>
+<li><a href="#org742349f">1. Mise en bouche: picking an answer</a>
 <ul>
-<li><a href="#org21e8832">1.1. TDD for picking word functionality</a></li>
-<li><a href="#org3bb40f6">1.2. Solutions dictionary file</a></li>
-<li><a href="#orgb0de5fb">1.3. Importing dictionary: static/packaged asset file read</a></li>
-<li><a href="#orgfa78b44">1.4. Debriefing on the method</a></li>
+<li><a href="#org5eb6a8a">1.1. TDD for picking word functionality</a></li>
+<li><a href="#orge8d5e24">1.2. Solutions dictionary file</a></li>
+<li><a href="#org4b4eb9a">1.3. Importing dictionary: static/packaged asset file read</a></li>
+<li><a href="#orgc8e8f74">1.4. Debriefing on the method</a></li>
 </ul>
 </li>
-<li><a href="#org4d3162b">2. Confirming guess is a valid word</a>
+<li><a href="#orgea094ab">2. Confirming guess is a valid word</a>
 <ul>
-<li><a href="#org0560640">2.1. Test setup</a></li>
-<li><a href="#org356deb0">2.2. Implementing the feature, one test at a time</a></li>
-<li><a href="#orgb4a0bf8">2.3. Performance trick</a></li>
-<li><a href="#org95a2063">2.4. Tangle out all the code</a></li>
+<li><a href="#org2ce4693">2.1. Test setup</a></li>
+<li><a href="#orga1495c6">2.2. Implementing the feature, one test at a time</a></li>
+<li><a href="#orgd6883f8">2.3. Performance trick</a></li>
+<li><a href="#org7876a56">2.4. Tangle out all the code</a></li>
 </ul>
 </li>
-<li><a href="#org976f59f">3. Calculating guessed word&rsquo;s score</a>
+<li><a href="#org22d82cc">3. Calculating guessed word&rsquo;s score</a>
 <ul>
-<li><a href="#org90e14ca">3.1. Can we start coding yet?</a></li>
-<li><a href="#orgc902406">3.2. Finalizing the scenarios</a></li>
-<li><a href="#orge18e08e">3.3. Writing up acceptance tests</a></li>
-<li><a href="#org291a731">3.4. More tests</a></li>
-<li><a href="#orgf9768a2">3.5. Implementing the feature</a></li>
-<li><a href="#orgfcbb623">3.6. Tangle it all out</a></li>
+<li><a href="#org7d30193">3.1. Can we start coding yet?</a></li>
+<li><a href="#orgd8b2871">3.2. Finalizing the scoring scenarios</a></li>
+<li><a href="#orgb59fec1">3.3. Writing up acceptance tests</a></li>
+<li><a href="#org0b9aab5">3.4. More tests</a></li>
+<li><a href="#orgbe53151">3.5. Implementing the feature</a></li>
+<li><a href="#orgaaace1e">3.6. Tangle it all out</a></li>
 </ul>
 </li>
-<li><a href="#orgfe09d4d">4. Playing a round of Wordle</a>
+<li><a href="#org6664576">4. Playing a round of Wordle</a>
 <ul>
-<li><a href="#orgc0fae2f">4.1. Implementing the feature</a></li>
-<li><a href="#org9da524f">4.2. Tangling out the whole thing</a></li>
+<li><a href="#org8d4fa43">4.1. Implementing the feature</a></li>
+<li><a href="#orgdbb8153">4.2. Tangling out the whole thing</a></li>
 </ul>
 </li>
-<li><a href="#org9f8ba54">5. Final round: command line interface</a>
+<li><a href="#org20e420d">5. Final round: command line interface</a>
 <ul>
-<li><a href="#orgecf74e5">5.1. Tangling it out</a></li>
-<li><a href="#org0ac5901">5.2. Launching as CLI</a></li>
+<li><a href="#orga236eb9">5.1. Tangling it out</a></li>
+<li><a href="#orgd8d1a07">5.2. Launching as CLI</a></li>
 </ul>
 </li>
-<li><a href="#orgb63f480">6. Conclusion</a></li>
+<li><a href="#org4c1a26d">6. Conclusion</a></li>
 </ul>
 </div>
 </div>
@@ -275,8 +275,8 @@ For more context on the code repository (how to use, etc), please read the proje
 readme.
 </p>
 
-<div id="outline-container-org4bfd506" class="outline-2">
-<h2 id="org4bfd506"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
+<div id="outline-container-org742349f" class="outline-2">
+<h2 id="org742349f"><span class="section-number-2">1.</span> Mise en bouche: picking an answer</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 To get us started, let&rsquo;s cover the very first behaviour Wordle has to do: pick a
@@ -295,7 +295,7 @@ requirements via Gherkin.</a>
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>Our first requirement. Tangled (exported) to <code>features/pick_answer_word.feature</code></label><pre class="src src-feature" id="orgb873fce"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Pick an answer word</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Our first requirement. Tangled (exported) to <code>features/pick_answer_word.feature</code></label><pre class="src src-feature" id="org544c670"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Pick an answer word</span>
   As a Wordle game
   I need to pick a random 5 letter word
   In order to let players guess it
@@ -309,8 +309,8 @@ pick from.
 </p>
 </div>
 
-<div id="outline-container-org21e8832" class="outline-3">
-<h3 id="org21e8832"><span class="section-number-3">1.1.</span> TDD for picking word functionality</h3>
+<div id="outline-container-org5eb6a8a" class="outline-3">
+<h3 id="org5eb6a8a"><span class="section-number-3">1.1.</span> TDD for picking word functionality</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 We want to write a test that validates that we can indeed pick a random word. But &ldquo;Random&rdquo; and &ldquo;test&rdquo; together should make anybody wince at the idea of
@@ -392,7 +392,7 @@ With our test ready, and a dummy function in place, let&rsquo;s see the tests go
 </pre>
 </div>
 
-<pre class="example" id="orgb242d5f">
+<pre class="example" id="org39c5357">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -440,8 +440,8 @@ API&rdquo;, by describing functions and files that don&rsquo;t need to exist yet
 </div>
 </div>
 
-<div id="outline-container-org3bb40f6" class="outline-3">
-<h3 id="org3bb40f6"><span class="section-number-3">1.2.</span> Solutions dictionary file</h3>
+<div id="outline-container-orge8d5e24" class="outline-3">
+<h3 id="orge8d5e24"><span class="section-number-3">1.2.</span> Solutions dictionary file</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Since we&rsquo;re trying to match the Wordle website&rsquo;s implementation, let&rsquo;s reuse
@@ -489,8 +489,8 @@ Sweet, we have cut down the filesize by half.
 </div>
 </div>
 
-<div id="outline-container-orgb0de5fb" class="outline-3">
-<h3 id="orgb0de5fb"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
+<div id="outline-container-org4b4eb9a" class="outline-3">
+<h3 id="org4b4eb9a"><span class="section-number-3">1.3.</span> Importing dictionary: static/packaged asset file read</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 At first glance, the implementation of the function we want is simple, it looks
@@ -538,18 +538,18 @@ With the file in correct position, let&rsquo;s redefine the <code>words</code> m
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>Defining new python module under <code>src/literate_wordle/words.py</code>, starting with docstrings.</label><pre class="src src-python" id="orgc25e029"><span style="color: #83898d;">"""Dictionary features to back wordle solutions"""</span>
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>Defining new python module under <code>src/literate_wordle/words.py</code>, starting with docstrings.</label><pre class="src src-python" id="orgf022c40"><span style="color: #83898d;">"""Dictionary features to back wordle solutions"""</span>
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>Necessary imports from the standard library.</label><pre class="src src-python" id="orgcfb9193"><span style="color: #51afef;">import</span> gzip
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>Necessary imports from the standard library.</label><pre class="src src-python" id="orgd98db46"><span style="color: #51afef;">import</span> gzip
 <span style="color: #51afef;">import</span> importlib.resources <span style="color: #51afef;">as</span> pkg_resources
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>Local import of new <code>assets/</code> folder</label><pre class="src src-python" id="org7b189b2"><span style="color: #51afef;">from</span> . <span style="color: #51afef;">import</span> assets  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Relative import of the assets/ folder</span>
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>Local import of new <code>assets/</code> folder</label><pre class="src src-python" id="org4c6135e"><span style="color: #51afef;">from</span> . <span style="color: #51afef;">import</span> assets  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Relative import of the assets/ folder</span>
 </pre>
 </div>
 
@@ -560,7 +560,7 @@ We need a convenience function to load the zip file into a list of strings.
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>Actual function to unzip dictionary. Note newline-delimited words now lowercased into a list-of-word strings with no trailing whitespace</label><pre class="src src-python" id="org1137149"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_words_list</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">list</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>Actual function to unzip dictionary. Note newline-delimited words now lowercased into a list-of-word strings with no trailing whitespace</label><pre class="src src-python" id="org22e2c7b"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_words_list</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">list</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
     <span style="color: #83898d;">"""Decompress the wordle dictionary"""</span>
     <span style="color: #dcaeea;">dict_compressed_bytes</span> = pkg_resources.read_binary<span style="color: #FF8811;">(</span>
         assets, <span style="color: #98be65;">"wordle_answers_dict.txt.gz"</span>
@@ -583,12 +583,12 @@ With the word list in hand, writing out the pick function is trivial:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 10: </span>Import from standard library for randomness</label><pre class="src src-python" id="org9d28084"><span style="color: #51afef;">from</span> random <span style="color: #51afef;">import</span> choice
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>Import from standard library for randomness</label><pre class="src src-python" id="org983695b"><span style="color: #51afef;">from</span> random <span style="color: #51afef;">import</span> choice
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 11: </span>Pick-a-word! Pretty simple, with all the legwork we did already.</label><pre class="src src-python" id="org9dff094"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>Pick-a-word! Pretty simple, with all the legwork we did already.</label><pre class="src src-python" id="org2fa284b"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Pick a single word out of the dictionary of answers"""</span>
     <span style="color: #51afef;">return</span> choice<span style="color: #FF8811;">(</span>get_words_list<span style="color: #8F0;">()</span><span style="color: #FF8811;">)</span>
 </pre>
@@ -618,7 +618,7 @@ Perfect! So the test should now pass, right?
 </pre>
 </div>
 
-<pre class="example" id="orgce64375">
+<pre class="example" id="org949bbd9">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -653,8 +653,8 @@ Wordle session, we choose to leave this performance wart be.
 </div>
 </div>
 
-<div id="outline-container-orgfa78b44" class="outline-3">
-<h3 id="orgfa78b44"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
+<div id="outline-container-orgc8e8f74" class="outline-3">
+<h3 id="orgc8e8f74"><span class="section-number-3">1.4.</span> Debriefing on the method</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 We just completed our first loop: determine a small component that needs
@@ -683,8 +683,8 @@ such a weaving of code snippets works.
 </div>
 
 
-<div id="outline-container-org4d3162b" class="outline-2">
-<h2 id="org4d3162b"><span class="section-number-2">2.</span> Confirming guess is a valid word</h2>
+<div id="outline-container-orgea094ab" class="outline-2">
+<h2 id="orgea094ab"><span class="section-number-2">2.</span> Confirming guess is a valid word</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Now that we can pick secret words, we need to start processing guesses. The very
@@ -694,7 +694,7 @@ ramping up the details of the Gherkin features:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 13: </span>New Gherkin feature file <code>features/checking_guess_valid_word.feature</code></label><pre class="src src-feature" id="org33ead51"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Checking a guess is a valid word</span>
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>New Gherkin feature file <code>features/checking_guess_valid_word.feature</code></label><pre class="src src-feature" id="org8948f29"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Checking a guess is a valid word</span>
   As a Wordle game
   I need to confirm each guessed word is valid
   So that I only accept real words, no kwyjibo
@@ -706,7 +706,7 @@ In practice, this means multiple things:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 14: </span>Scenarios to describe the feature in details</label><pre class="src src-feature" id="org0df7e3c"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Reject long words</span>
+<label class="org-src-name"><span class="listing-number">Listing 14: </span>Scenarios to describe the feature in details</label><pre class="src src-feature" id="orgf975bd3"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Reject long words</span>
 <span style="color: #51afef;">  When</span> guessing <span style="color: #98be65;">"affable"</span>
 <span style="color: #51afef;">  Then</span> the guess is rejected
 <span style="color: #51afef;">  And</span> reason for rejection is <span style="color: #98be65;">"Guess too long"</span>
@@ -739,7 +739,7 @@ written the feature above, to reference it, so I can template it out in code sni
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 15: </span>New test file&rsquo;s module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing <a href="#org33ead51">13</a></label><pre class="src src-python" id="orga9f1f1b"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
+<label class="org-src-name"><span class="listing-number">Listing 15: </span>New test file&rsquo;s module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing <a href="#org8948f29">13</a></label><pre class="src src-python" id="orgced82aa"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
 
 <span style="color: #83898d;">Feature: Checking a guess is a valid word</span>
 <span style="color: #83898d;">  As a Wordle game</span>
@@ -754,7 +754,7 @@ Just this once, I&rsquo;ll show how the templating happens behind the scene:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 16: </span>Same code block as Listing <a href="#orga9f1f1b">15</a>, but without the magic templating enabled: each block with two chevrons around references a code block from above.</label><pre class="src src-python" id="org0c40a1a"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
+<label class="org-src-name"><span class="listing-number">Listing 16: </span>Same code block as Listing <a href="#orgced82aa">15</a>, but without the magic templating enabled: each block with two chevrons around references a code block from above.</label><pre class="src src-python" id="org77a7033"><span style="color: #83898d;">"""Validates the Gherkin file features/checking_guess_valid_word.feature:</span>
 
 <span style="color: #83898d;">&lt;&lt;feature-check-valid-guess&gt;&gt;</span>
 
@@ -763,20 +763,20 @@ Just this once, I&rsquo;ll show how the templating happens behind the scene:
 </pre>
 </div>
 </div>
-<div id="outline-container-org0560640" class="outline-3">
-<h3 id="org0560640"><span class="section-number-3">2.1.</span> Test setup</h3>
+<div id="outline-container-org2ce4693" class="outline-3">
+<h3 id="org2ce4693"><span class="section-number-3">2.1.</span> Test setup</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 With the feature described, let&rsquo;s import our hypothetical test code
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 17: </span>Import a new function we&rsquo;ll be defining</label><pre class="src src-python" id="orgf5bb48f"><span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
+<label class="org-src-name"><span class="listing-number">Listing 17: </span>Import a new function we&rsquo;ll be defining</label><pre class="src src-python" id="orge059718"><span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 18: </span>A simple test using the first scenario</label><pre class="src src-python" id="org148aa56"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_long_words</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 18: </span>A simple test using the first scenario</label><pre class="src src-python" id="orgf21f933"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_long_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject long words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "affable"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"affable"</span>
@@ -796,7 +796,7 @@ cucumber replacement</a>.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 19: </span>The opposite test, text too short</label><pre class="src src-python" id="org0fae6f9"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_overly_short_words</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 19: </span>The opposite test, text too short</label><pre class="src src-python" id="org5520e28"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_overly_short_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject short words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "baby"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"baby"</span>
@@ -813,7 +813,7 @@ And finally, the dictionary checks:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 20: </span>Non-dictionary words test</label><pre class="src src-python" id="org9a76062"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_nondict_words</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 20: </span>Non-dictionary words test</label><pre class="src src-python" id="orgd8efa17"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_reject_nondict_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Reject fake words via dictionary"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "vbpdj"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"vbpdj"</span>
@@ -827,7 +827,7 @@ And finally, the dictionary checks:
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 21: </span>Dictionary words test</label><pre class="src src-python" id="org00dd4e7"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_accept_dict_words</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 21: </span>Dictionary words test</label><pre class="src src-python" id="org54914dc"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_accept_dict_words</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Accept five letter dictionary words"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When guessing "crane"</span>
     <span style="color: #dcaeea;">guess</span> = <span style="color: #98be65;">"crane"</span>
@@ -854,7 +854,7 @@ implementation&rsquo;s check. So we add the following line to the test:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 22: </span>Appended line to Listing <a href="#org00dd4e7">21</a>. Doesn&rsquo;t map back to Gherkin, because it is an implementation detail, not part of the feature&rsquo;s requirement itself. Still worth checking, in practice.</label><pre class="src src-python" id="orgc9dfc94">    <span style="color: #51afef;">assert</span> reject_reason <span style="color: #51afef;">is</span> <span style="color: #a9a1e1;">None</span>, <span style="color: #98be65;">"Accepted word should have no reason to be rejected"</span>
+<label class="org-src-name"><span class="listing-number">Listing 22: </span>Appended line to Listing <a href="#org54914dc">21</a>. Doesn&rsquo;t map back to Gherkin, because it is an implementation detail, not part of the feature&rsquo;s requirement itself. Still worth checking, in practice.</label><pre class="src src-python" id="orgf662be6">    <span style="color: #51afef;">assert</span> reject_reason <span style="color: #51afef;">is</span> <span style="color: #a9a1e1;">None</span>, <span style="color: #98be65;">"Accepted word should have no reason to be rejected"</span>
 </pre>
 </div>
 
@@ -866,23 +866,23 @@ implementation to get RED tests instead of a crash.
 <p>
 First up is defining the function&rsquo;s signature: Simple enough, we take a string guess
 in, and return a boolean and a string for justification. Except sometimes (as
-seen in Listing <a href="#orgc9dfc94">22</a>) the reason is <code>None</code>, so that&rsquo;s more of an
+seen in Listing <a href="#orgf662be6">22</a>) the reason is <code>None</code>, so that&rsquo;s more of an
 <code>Optional</code> string, which we&rsquo;ll need to import.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 23: </span>Import type hints for function type definition</label><pre class="src src-python" id="orgbc7ed7c"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional
+<label class="org-src-name"><span class="listing-number">Listing 23: </span>Import type hints for function type definition</label><pre class="src src-python" id="orgd5b3a37"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 24: </span>Function signature without its content</label><pre class="src src-python" id="org6e29788"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">check_valid_word</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">tuple</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">bool</span>, Optional<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">]</span>:
+<label class="org-src-name"><span class="listing-number">Listing 24: </span>Function signature without its content</label><pre class="src src-python" id="orgbebea57"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">check_valid_word</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">tuple</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">bool</span>, Optional<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">]</span>:
 </pre>
 </div>
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 25: </span>Fill the function, to give valid-but-nonsensical output</label><pre class="src src-python" id="org6612e3d">    <span style="color: #98be65;">"""Pretends to check if guess is a valid word"""</span>
+<label class="org-src-name"><span class="listing-number">Listing 25: </span>Fill the function, to give valid-but-nonsensical output</label><pre class="src src-python" id="org4c2a7ae">    <span style="color: #98be65;">"""Pretends to check if guess is a valid word"""</span>
     <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">False</span>, <span style="color: #98be65;">"Not implemented"</span>
 </pre>
 </div>
@@ -892,11 +892,11 @@ All right, so we have tests, let&rsquo;s see them fail!
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 26: </span>Run the tests. The <code>2&gt;&amp;1 || true</code> part is to ensure any failed test&rsquo;s output goes to stdout (in this document) and bad exit codes don&rsquo;t get marked as failures of the code block&rsquo;s execution.</label><pre class="src src-shell" id="org4deaab9"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
+<label class="org-src-name"><span class="listing-number">Listing 26: </span>Run the tests. The <code>2&gt;&amp;1 || true</code> part is to ensure any failed test&rsquo;s output goes to stdout (in this document) and bad exit codes don&rsquo;t get marked as failures of the code block&rsquo;s execution.</label><pre class="src src-shell" id="orgfdc6fef"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
 </pre>
 </div>
 
-<pre class="example" id="org96e7097">
+<pre class="example" id="orgb76565c">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -1013,8 +1013,8 @@ Test failure as expected, and enjoy that 100% coverage!<sup><a id="fnr.1" class=
 </div>
 </div>
 
-<div id="outline-container-org356deb0" class="outline-3">
-<h3 id="org356deb0"><span class="section-number-3">2.2.</span> Implementing the feature, one test at a time</h3>
+<div id="outline-container-orga1495c6" class="outline-3">
+<h3 id="orga1495c6"><span class="section-number-3">2.2.</span> Implementing the feature, one test at a time</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 Let&rsquo;s implement the proper feature. First of all, we replace the function stub&rsquo;s
@@ -1023,7 +1023,7 @@ half the feature (by Scenarios), we should be seeing half as many tests fail as 
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgf81fd71"><span style="color: #83898d;">"""Check wordle guess length only, no dict checks"""</span>
+<pre class="src src-python" id="org60b4cb8"><span style="color: #83898d;">"""Check wordle guess length only, no dict checks"""</span>
 <span style="color: #dcaeea;">answer_length</span> = <span style="color: #da8548; font-weight: bold;">5</span>
 <span style="color: #dcaeea;">guess_length</span> = <span style="color: #c678dd;">len</span><span style="color: #FF8811;">(</span>guess<span style="color: #FF8811;">)</span>
 <span style="color: #51afef;">if</span> guess_length &lt; answer_length:
@@ -1036,11 +1036,11 @@ half the feature (by Scenarios), we should be seeing half as many tests fail as 
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 27: </span>Similarly to Listing <a href="#org4deaab9">26</a>, run test without exiting on failure</label><pre class="src src-shell" id="orgb8effa7"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
+<label class="org-src-name"><span class="listing-number">Listing 27: </span>Similarly to Listing <a href="#orgfdc6fef">26</a>, run test without exiting on failure</label><pre class="src src-shell" id="org11cefd8"><span style="color: #ECBE7B;">make</span> test <span style="color: #da8548; font-weight: bold;">2</span>&gt;&amp;<span style="color: #da8548; font-weight: bold;">1</span> || true
 </pre>
 </div>
 
-<pre class="example" id="orgeb6c929">
+<pre class="example" id="org2aed5cc">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -1149,7 +1149,7 @@ benefits down the line.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 28: </span>Generic &ldquo;unzip asset&rdquo; function</label><pre class="src src-python" id="org21dd62c"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_asset_zip_as_set</span><span style="color: #FF8811;">(</span>asset_filename: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">set</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
+<label class="org-src-name"><span class="listing-number">Listing 28: </span>Generic &ldquo;unzip asset&rdquo; function</label><pre class="src src-python" id="org2f1b38e"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">get_asset_zip_as_set</span><span style="color: #FF8811;">(</span>asset_filename: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">set</span><span style="color: #FF8811;">[</span><span style="color: #c678dd;">str</span><span style="color: #FF8811;">]</span>:
     <span style="color: #83898d;">"""Decompress a file in assets module into a set of words, separated by newline"""</span>
     <span style="color: #dcaeea;">compressed_bytes</span> = pkg_resources.read_binary<span style="color: #FF8811;">(</span>assets, asset_filename<span style="color: #FF8811;">)</span>
     <span style="color: #dcaeea;">string</span> = gzip.decompress<span style="color: #FF8811;">(</span>compressed_bytes<span style="color: #FF8811;">)</span>.decode<span style="color: #FF8811;">(</span><span style="color: #98be65;">"ascii"</span><span style="color: #FF8811;">)</span>
@@ -1163,7 +1163,7 @@ Which changes the invocation of <code>pick_answer_word</code> into:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 29: </span>Pick-a-word, revisited to use generic asset unzipping function</label><pre class="src src-python" id="org09f2802"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 29: </span>Pick-a-word, revisited to use generic asset unzipping function</label><pre class="src src-python" id="org7e6aed5"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">pick_answer_word</span><span style="color: #FF8811;">()</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Pick a single word out of the dictionary of answers"""</span>
     <span style="color: #51afef;">return</span> choice<span style="color: #FF8811;">(</span><span style="color: #c678dd;">list</span><span style="color: #8F0;">(</span>get_asset_zip_as_set<span style="color: #55DDFF;">(</span><span style="color: #98be65;">"wordle_answers_dict.txt.gz"</span><span style="color: #55DDFF;">)</span><span style="color: #8F0;">)</span><span style="color: #FF8811;">)</span>
 </pre>
@@ -1174,7 +1174,7 @@ And now we can use the dictionary as a set in our <code>check_valid_word</code> 
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 30: </span>Use the dictionary as a set to check <code>if guess in dictionary</code></label><pre class="src src-python" id="orgd1aa1e4"><span style="color: #83898d;">"""Check a wordle guess is valid: length and in dictionary"""</span>
+<label class="org-src-name"><span class="listing-number">Listing 30: </span>Use the dictionary as a set to check <code>if guess in dictionary</code></label><pre class="src src-python" id="org97bcf1c"><span style="color: #83898d;">"""Check a wordle guess is valid: length and in dictionary"""</span>
 <span style="color: #dcaeea;">answer_length</span> = <span style="color: #da8548; font-weight: bold;">5</span>
 <span style="color: #dcaeea;">guess_length</span> = <span style="color: #c678dd;">len</span><span style="color: #FF8811;">(</span>guess<span style="color: #FF8811;">)</span>
 <span style="color: #51afef;">if</span> guess_length &lt; answer_length:
@@ -1206,7 +1206,7 @@ but also to get linters:
 </pre>
 </div>
 
-<pre class="example" id="orge380d02">
+<pre class="example" id="orgba39f03">
 poetry install
 Installing dependencies from lock file
 
@@ -1358,8 +1358,8 @@ Tests pass, coverage stays strong, and linters are quiet, this is great!
 </div>
 </div>
 
-<div id="outline-container-orgb4a0bf8" class="outline-3">
-<h3 id="orgb4a0bf8"><span class="section-number-3">2.3.</span> Performance trick</h3>
+<div id="outline-container-orgd6883f8" class="outline-3">
+<h3 id="orgd6883f8"><span class="section-number-3">2.3.</span> Performance trick</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 We mentioned before that the whole dictionary would get unzipped on every
@@ -1377,14 +1377,14 @@ add <code>functools.cache</code> on top of our slow function:
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 31: </span>Import the cache function</label><pre class="src src-python" id="orgda2e6ba"><span style="color: #51afef;">from</span> functools <span style="color: #51afef;">import</span> cache
+<label class="org-src-name"><span class="listing-number">Listing 31: </span>Import the cache function</label><pre class="src src-python" id="orgd714aca"><span style="color: #51afef;">from</span> functools <span style="color: #51afef;">import</span> cache
 </pre>
 </div>
 
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 32: </span>Decorator to make a function use cache</label><pre class="src src-python" id="org83c4145"><span style="color: #ECBE7B;">@cache</span>
+<label class="org-src-name"><span class="listing-number">Listing 32: </span>Decorator to make a function use cache</label><pre class="src src-python" id="org5b743bd"><span style="color: #ECBE7B;">@cache</span>
 </pre>
 </div>
 
@@ -1402,7 +1402,7 @@ memoizer. Let&rsquo;s see quick performance numbers of before/after:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 33: </span>Before cacheing, running 5 batches of a thousand double-dict-unzip</label><pre class="src src-shell" id="orgc852e5d">poetry run python3 -m timeit -v -n <span style="color: #da8548; font-weight: bold;">1000</span> --setup <span style="color: #98be65;">"from literate_wordle.words import pick_answer_word, check_valid_word"</span> <span style="color: #98be65;">"check_valid_word(pick_answer_word())"</span>
+<label class="org-src-name"><span class="listing-number">Listing 33: </span>Before cacheing, running 5 batches of a thousand double-dict-unzip</label><pre class="src src-shell" id="orgd8602d0">poetry run python3 -m timeit -v -n <span style="color: #da8548; font-weight: bold;">1000</span> --setup <span style="color: #98be65;">"from literate_wordle.words import pick_answer_word, check_valid_word"</span> <span style="color: #98be65;">"check_valid_word(pick_answer_word())"</span>
 </pre>
 </div>
 
@@ -1430,8 +1430,8 @@ That&rsquo;s a two orders of magnitude gain for a single line of code changed. S
 </div>
 </div>
 
-<div id="outline-container-org95a2063" class="outline-3">
-<h3 id="org95a2063"><span class="section-number-3">2.4.</span> Tangle out all the code</h3>
+<div id="outline-container-org7876a56" class="outline-3">
+<h3 id="org7876a56"><span class="section-number-3">2.4.</span> Tangle out all the code</h3>
 <div class="outline-text-3" id="text-2-4">
 <p>
 The last section of each heading of this document is used for internal purposes.
@@ -1468,7 +1468,7 @@ dummy function defined initially.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 34: </span>The final version of <code>words.py</code>. Note that behind the scene this code block has 0 code, just references to other code block named above.</label><pre class="src src-python" id="org7082522"><span style="color: #83898d;">"""Dictionary features to back wordle solutions"""</span>
+<label class="org-src-name"><span class="listing-number">Listing 34: </span>The final version of <code>words.py</code>. Note that behind the scene this code block has 0 code, just references to other code block named above.</label><pre class="src src-python" id="orgd5cbfc2"><span style="color: #83898d;">"""Dictionary features to back wordle solutions"""</span>
 
 <span style="color: #51afef;">import</span> gzip
 <span style="color: #51afef;">import</span> importlib.resources <span style="color: #51afef;">as</span> pkg_resources
@@ -1514,7 +1514,7 @@ already, but would benefit from two-lines-between-tests to guarantee formatting:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 35: </span>Final version of <code>tests/test_checking_guess_valid_word.py</code></label><pre class="src src-python" id="org6e3d434">
+<label class="org-src-name"><span class="listing-number">Listing 35: </span>Final version of <code>tests/test_checking_guess_valid_word.py</code></label><pre class="src src-python" id="org3dd8a63">
 <span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
 
 
@@ -1565,8 +1565,8 @@ already, but would benefit from two-lines-between-tests to guarantee formatting:
 </div>
 </div>
 
-<div id="outline-container-org976f59f" class="outline-2">
-<h2 id="org976f59f"><span class="section-number-2">3.</span> Calculating guessed word&rsquo;s score</h2>
+<div id="outline-container-org22d82cc" class="outline-2">
+<h2 id="org22d82cc"><span class="section-number-2">3.</span> Calculating guessed word&rsquo;s score</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 We can pick answer words, and we can check if a guess is a valid word, now we
@@ -1575,7 +1575,7 @@ feature:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature" id="orgaad2297"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Scoring guesses</span>
+<pre class="src src-feature" id="org4cbb890"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Scoring guesses</span>
   As a Wordle game
   I need to tell the player how good their guess is
   In order to help them find the proper answer
@@ -1585,13 +1585,13 @@ feature:
 <p>
 This sounds simple, but implementing this feature is tricky, because of edge
 cases like multiple identical character in the answer, which need colored
-appropriately (What&rsquo;s the proper way to do that? We need to pin it down in
-requirements!). So let&rsquo;s define <i>Gherkin Scenarios</i> for that feature, to give
-examples of how the feature works in practice. So we write out
+appropriately (What&rsquo;s the proper way to do that? No clue yet, but we need to pin
+it down in requirements!). So again we&rsquo;ll define Gherkin Scenarios for that
+Feature, to give examples of how the feature works in practice. So we write out:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 36: </span>The winning guess scenario</label><pre class="src src-feature" id="orga0b9e3a"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Perfect guess gives perfect score</span>
+<label class="org-src-name"><span class="listing-number">Listing 36: </span>The winning guess scenario. The green blocks are Unicode characters, may render differently on your device.</label><pre class="src src-feature" id="orgf3fb20b"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Perfect guess gives perfect score</span>
 <span style="color: #51afef;">  Given</span> a wordle answer <span style="color: #98be65;">"crane"</span>
 <span style="color: #51afef;">  When</span> scoring the guess <span style="color: #98be65;">"crane"</span>
 <span style="color: #51afef;">  Then</span> score should be <span style="color: #98be65;">"&#129001;&#129001;&#129001;&#129001;&#129001;"</span>
@@ -1599,24 +1599,24 @@ examples of how the feature works in practice. So we write out
 </div>
 
 <p>
-This seems easy enough, but we notice that we are making an assumption that&rsquo;s
-not written out, which makes this feature depend on another: We&rsquo;re assuming the
+This seems easy enough, but we should notice that we&rsquo;re assuming the
 guess is a valid word! We may want to just add another <code>Given</code>, like:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature"><span style="color: #51afef;">  Given</span> a guess that's a valid dictionary word
+<pre class="src src-feature"><span style="color: #51afef;">Given</span> a guess that's a valid dictionary word
 </pre>
 </div>
 
 <p>
 But this isn&rsquo;t just a hypothesis from the current scenario, it&rsquo;s valid for all
-scenarios of this feature. To avoid the tedious copying of that assumption, we
-can use a <code>Gherkin Background</code> for the feature:
+scenarios of this feature: every scoring of a guess requires the guess to be a
+valid word. To avoid the tedious copying of that assumption in each Scenario, we
+can use a Gherkin Background for the feature:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 37: </span>Pre-condition that applies to all the scenarios of this feature file</label><pre class="src src-feature" id="org21b713c"><span style="color: #51afef;">Background:</span>
+<label class="org-src-name"><span class="listing-number">Listing 37: </span>Pre-condition that applies to all the scenarios of this feature file</label><pre class="src src-feature" id="org4e29c84"><span style="color: #51afef;">Background:</span>
 <span style="color: #51afef;">  Given</span> a guess that's a valid dictionary word
 </pre>
 </div>
@@ -1629,62 +1629,66 @@ initial &ldquo;perfect guess&rdquo; scenario valid again, so we can use it
 </p>
 
 <p>
-Note that our scenario doesn&rsquo;t make assumption of how many attempts at Wordle
-we&rsquo;re at, or the fact of winning or losing. This is purely a hypothetical
-scenario, disjoint from the feature of actually playing a game.
-</p>
-
-<p>
 If we&rsquo;ve got the perfect answer, let&rsquo;s have the opposite:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 38: </span>Flunking out scenario</label><pre class="src src-feature" id="orga20954f"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> No character in common</span>
+<label class="org-src-name"><span class="listing-number">Listing 38: </span>Flunking out scenario</label><pre class="src src-feature" id="org129413c"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> No character in common</span>
 <span style="color: #51afef;">  Given</span> a wordle answer <span style="color: #98be65;">"brave"</span>
 <span style="color: #51afef;">  When</span> scoring the guess <span style="color: #98be65;">"skill"</span>
 <span style="color: #51afef;">  Then</span> score should be <span style="color: #98be65;">"&#11036;&#11036;&#11036;&#11036;&#11036;"</span>
 </pre>
 </div>
+
+<p>
+Note that these scenarios doesn&rsquo;t make assumption of how many attempts at Wordle
+we&rsquo;re at, or the fact of winning or losing. This is purely a hypothetical
+example, disjoint from the actual playing of a Wordle game. We can deal with the
+win/lose consequences later, once we have a proper scoring of guesses implemented.
+</p>
 </div>
 
-<div id="outline-container-org90e14ca" class="outline-3">
-<h3 id="org90e14ca"><span class="section-number-3">3.1.</span> Can we start coding yet?</h3>
+
+<div id="outline-container-org7d30193" class="outline-3">
+<h3 id="org7d30193"><span class="section-number-3">3.1.</span> Can we start coding yet?</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
-At this point, we only need to add a &ldquo;🟨&rdquo; scenario and we could conceivably
-start the implementation work already, we have work to do!
+At this point, we <i>can</i> conceivably start the implementation work: &ldquo;let&rsquo;s go, we
+have work to do!&rdquo; And we can add the &ldquo;🟨&rdquo; scenario later once we have code that
+works.
 </p>
 
 <p>
 The problem of &ldquo;what to do now&rdquo; is interesting, because we can continue thinking
-up scenarios in Gherkin as a design exercise for a while, or we could already
-start writing test code to back these claims, leading to failed tests, and then
-start on implementation early to aim for green tests, only to add scenarios as
-we realize that our implementation is lacking compared to the original intent of
-the game.
+up scenarios in Gherkin for a while, or we could make a start writing test code
+to match these claims, fix the red tests, implement towards green tests, and add
+scenarios as we realize that our implementation is lacking compared to the
+original intent of the game. That can certainly be done!
 </p>
 
 <p>
-While it&rsquo;s tempting to jump into code first, I believe we should pin down the
-exact requirements on a &ldquo;whiteboard&rdquo; of sorts (in that case: Gherkin features
-and scenarios), before starting to touch any code. It&rsquo;s easy to get tunnel
+But while it&rsquo;s tempting to jump into code first, I strongly believe we as
+developers should instead fully scope out the problem-space first. Pin down the
+exact requirements (in that case via Gherkin features and scenarios), before
+starting to touch any code. My reasoning is that <a href="https://jiby.tech/post/gherkin-features-user-requirements/">it&rsquo;s very easy to get tunnel
 vision when writing code, getting excited about the programming problems, losing
-track of what the &ldquo;user&rdquo; wants. We need to write down the exact user needs
-first, so as to have a proper ritual during which to &ldquo;switch from &lsquo;User&rsquo; hat to
-&lsquo;Developer&rsquo; hat&rdquo;.
+track of what the &ldquo;user&rdquo; wants. We should instead write down the exact user
+needs first</a>, and have a proper &ldquo;ritual&rdquo; for switching our &ldquo;User&rdquo; hat to a
+&ldquo;Developer&rdquo; hat.
 </p>
 </div>
 </div>
 
-<div id="outline-container-orgc902406" class="outline-3">
-<h3 id="orgc902406"><span class="section-number-3">3.2.</span> Finalizing the scenarios</h3>
+
+<div id="outline-container-orgd8b2871" class="outline-3">
+<h3 id="orgd8b2871"><span class="section-number-3">3.2.</span> Finalizing the scoring scenarios</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
-Back to our gherkin scenarios, let&rsquo;s add the yellow marker one:
+So, back to our gherkin scenarios, let&rsquo;s add the yellow marker one:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 39: </span>Wrong place case</label><pre class="src src-feature" id="org85a97d6"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Character in wrong place</span>
+<label class="org-src-name"><span class="listing-number">Listing 39: </span>Character in the wrong place score</label><pre class="src src-feature" id="org6d09638"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Character in wrong place</span>
 <span style="color: #51afef;">  Given</span> a wordle answer <span style="color: #98be65;">"rebus"</span>
 <span style="color: #51afef;">  When</span> scoring the guess <span style="color: #98be65;">"skull"</span>
 <span style="color: #51afef;">  Then</span> score should be <span style="color: #98be65;">"&#129000;&#11036;&#129000;&#11036;&#11036;"</span>
@@ -1693,11 +1697,11 @@ Back to our gherkin scenarios, let&rsquo;s add the yellow marker one:
 
 <p>
 And just for having a good sample of tests with which to test, let&rsquo;s use a table
-of example to confirm scoring works out:
+of examples to confirm scoring works out in more cases:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 40: </span>Many examples via Gherkin Scenario Outlines and Examples</label><pre class="src src-feature" id="org37f7ed1"><span style="color: #51afef;">Scenario Outline:</span><span style="color: #c678dd;"> Scoring guesses</span>
+<label class="org-src-name"><span class="listing-number">Listing 40: </span>Many examples via Gherkin Scenario Outlines and Examples</label><pre class="src src-feature" id="org9d6e9b1"><span style="color: #51afef;">Scenario Outline:</span><span style="color: #c678dd;"> Scoring guesses</span>
 <span style="color: #51afef;">  Given</span> a wordle <span style="color: #dcaeea;">&lt;answer&gt;</span>
 <span style="color: #51afef;">  When</span> scoring <span style="color: #dcaeea;">&lt;guess&gt;</span>
 <span style="color: #51afef;">  Then</span> score should be <span style="color: #dcaeea;">&lt;score&gt;</span>
@@ -1713,9 +1717,9 @@ of example to confirm scoring works out:
 </div>
 
 <p>
-Note how the &ldquo;outline&rdquo; system maps really well to the idea of <a href="https://docs.pytest.org/en/6.2.x/parametrize.html">pytest&rsquo;s
-parametrized tests</a>. We can write the test case <i>once</i>, and have a decorator deal
-with the multiple instantiations
+Note how the &ldquo;outline&rdquo; system maps really well to the idea of &ldquo;parametrized
+tests&rdquo;. We can write the test case <i>once</i>, and have a decorator deal with the
+multiple instantiations with different data.
 </p>
 
 <p>
@@ -1724,7 +1728,7 @@ corner case, written out as examples of the previous scenario:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 41: </span>Edge case: duplicate character in answer or guess</label><pre class="src src-feature" id="org0727969"><span style="color: #51afef;">  Examples:</span> Multiple occurences of same character
+<label class="org-src-name"><span class="listing-number">Listing 41: </span>Edge case: duplicate character in answer or guess</label><pre class="src src-feature" id="org3cf707f"><span style="color: #51afef;">  Examples:</span> Multiple occurences of same character
 <span style="color: #a9a1e1;">    | answer | guess    | score     |</span>
 <span style="color: #a9a1e1;">    | abbey  | kebab    | &#11036;&#129000;&#129001;&#129000;&#129000; |</span>
 <span style="color: #a9a1e1;">    | abbey  | babes    | &#129000;&#129000;&#129001;&#129001;&#11036; |</span>
@@ -1736,16 +1740,19 @@ corner case, written out as examples of the previous scenario:
 </div>
 
 <p>
-These sample answers and scores were <a href="https://nerdschalk.com/wordle-same-letter-twice-rules-explained-how-does-it-work/">taken from online example screenshots</a> of
-the original website, hence considered accurate references.
+Because this edge case was worrisome for accuracy, these sample answers and
+scores were <a href="https://nerdschalk.com/wordle-same-letter-twice-rules-explained-how-does-it-work/">taken from online example screenshots</a> of the original Wordle
+website, thus considered accurate references.
 </p>
 
 <p>
-With &ldquo;abbey&rdquo; as reference, the &ldquo;kebab&rdquo; answer seems logical, with first &ldquo;b&rdquo;
-occurence matching as green, and the second being in the wrong place. The
-surprise comes from &ldquo;keeps&rdquo; where the first e counts, but the second doesn&rsquo;t
-have an equivalent in the answer, hence flagged as &ldquo;no such character&rdquo;. That
-makes sense, but that&rsquo;s not how a naive implementation of the game would do it!
+Thinking about it, with &ldquo;abbey&rdquo; as reference, the &ldquo;kebab&rdquo; answer seems logical,
+with first &ldquo;b&rdquo; occurence matching as green, and the second being in the wrong
+place. The surprise comes from &ldquo;keeps&rdquo; where the first &ldquo;e&rdquo; counts, but the
+second doesn&rsquo;t have an equivalent in the answer, hence flagged as &ldquo;no such
+character&rdquo;. That makes sense, but that&rsquo;s not how a naive implementation of the
+game would do it! Hence why it&rsquo;s worth thinking about the full problem before
+rushing the implementation.
 </p>
 
 
@@ -1755,7 +1762,9 @@ identical characters? Let&rsquo;s see!
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">zgrep -i -E <span style="color: #98be65;">"([a-z]).*\1.*\1"</span> src/literate_wordle/assets/wordle_answers_dict.txt.gz | wc -l
+<label class="org-src-name"><span class="listing-number">Listing 42: </span>Regular-expression search for 3 repeated characters in the dictionary of answers</label><pre class="src src-shell">zgrep -i -E <span style="color: #98be65;">"([a-z]).*\1.*\1"</span> <span style="color: #98be65;">\</span>
+    src/literate_wordle/assets/wordle_answers_dict.txt.gz <span style="color: #98be65;">\</span>
+    | wc -l
 </pre>
 </div>
 
@@ -1768,8 +1777,14 @@ identical characters? Let&rsquo;s see!
 Really? 20? That&rsquo;s harsh &#x2026; show me one?
 </p>
 
+<p>
+#CAPTION: Reval the first answer with 3 identical letters
+</p>
 <div class="org-src-container">
-<pre class="src src-shell">zgrep -i -E <span style="color: #98be65;">"([a-z]).*\1.*\1"</span> src/literate_wordle/assets/wordle_answers_dict.txt.gz | head -n <span style="color: #da8548; font-weight: bold;">1</span> | sed <span style="color: #98be65;">'s/\r//'</span>
+<pre class="src src-shell">zgrep -i -E <span style="color: #98be65;">"([a-z]).*\1.*\1"</span> <span style="color: #98be65;">\</span>
+    src/literate_wordle/assets/wordle_answers_dict.txt.gz <span style="color: #98be65;">\</span>
+    | head -n <span style="color: #da8548; font-weight: bold;">1</span> <span style="color: #98be65;">\</span>
+    | sed <span style="color: #98be65;">'s/\r//'</span>  <span style="color: #5B6268;"># </span><span style="color: #5B6268;">gets rid of CR characters in CRLF (DOS line endings)</span>
 </pre>
 </div>
 
@@ -1783,46 +1798,16 @@ Interesting. That must be hard to solve I imagine.
 </p>
 </div>
 </div>
-<div id="outline-container-orge18e08e" class="outline-3">
-<h3 id="orge18e08e"><span class="section-number-3">3.3.</span> Writing up acceptance tests</h3>
+<div id="outline-container-orgb59fec1" class="outline-3">
+<h3 id="orgb59fec1"><span class="section-number-3">3.3.</span> Writing up acceptance tests</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 With no more obvious pathological cases to cover in requirements, it&rsquo;s time to
 switch to our developer hat, and write some (acceptance) tests!
 </p>
 
-<p>
-This involves figuring out what our feature is going to be called, and what
-module it&rsquo;s going to be in.
-</p>
-
-<p>
-Jumping to the obvious here, we&rsquo;ll make the feature a separate <code>guess.py</code>.
-</p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 42: </span>guess.py module-level docstring</label><pre class="src src-python" id="orgb6867bf"><span style="color: #83898d;">"""Score guesses of Wordle game"""</span>
-</pre>
-</div>
-
-<p>
-And I imagine a function called <code>score_guess</code>, initially returning a junk
-string:
-</p>
-
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 43: </span>score_guess first draft</label><pre class="src src-python" id="org3fa5c52"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
-    <span style="color: #83898d;">"""Score an individual guess"""</span>
-    <span style="color: #51afef;">return</span> <span style="color: #98be65;">"&#11036;"</span>
-</pre>
-</div>
-
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 44: </span>Importing the feature, first</label><pre class="src src-python" id="org27e630b"><span style="color: #51afef;">from</span> literate_wordle.guess <span style="color: #51afef;">import</span> score_guess
-</pre>
-</div>
-
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 45: </span>First acceptance test using &ldquo;Perfect guess&rdquo; scenario</label><pre class="src src-python" id="org2dda1b5"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_perfect_guess</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 43: </span>First acceptance test using &ldquo;Perfect guess&rdquo; scenario</label><pre class="src src-python" id="orgfed6c19"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_perfect_guess</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Perfect guess gives perfect score"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer "crane"</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"crane"</span>
@@ -1835,27 +1820,64 @@ string:
 </div>
 
 <p>
-Now the test should fail appropriately, let&rsquo;s add a twist: we&rsquo;ll mark the
-function as expected to fail, because for now it&rsquo;s not been implemented. This
-allows pytest to mark all tests as passed despite failures, and is perfect for
-either bug reports being worked on, or new features being built.
+A <code>score_guess</code> function? sounds reasonable. We&rsquo;ll need to import it from a module&#x2026;
 </p>
 
-
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 46: </span>Importing the pytest module to get to pytest.mark</label><pre class="src src-python" id="org96537b6"><span style="color: #51afef;">import</span> pytest
-</pre>
-</div>
-
-
-
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 47: </span>Marking the feature as expected to fail, causing tests to not alert.</label><pre class="src src-python" id="orgdb53366"><span style="color: #ECBE7B;">@pytest.mark.xfail</span><span style="color: #FF8811;">(</span>reason=<span style="color: #98be65;">"Not implemented yet"</span><span style="color: #FF8811;">)</span>
+<label class="org-src-name"><span class="listing-number">Listing 44: </span>Importing the newly thought-up function inside the test of Listing <a href="#orgfed6c19">43</a></label><pre class="src src-python" id="org4829ef2"><span style="color: #51afef;">from</span> literate_wordle.guess <span style="color: #51afef;">import</span> score_guess
 </pre>
 </div>
 
 <p>
-Confirm these tests work, marked as xfail:
+This means we now need to create such a module.
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 45: </span>New <code>guess.py</code> module, starting with docstring</label><pre class="src src-python" id="org6d48d48"><span style="color: #83898d;">"""Score guesses of Wordle game"""</span>
+</pre>
+</div>
+
+<p>
+We already defined most of the function (name, module, output), so let&rsquo;s just
+write a stub that will make tests go red.
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 46: </span><code>score_guess</code> stub to see the tests go red</label><pre class="src src-python" id="orgd6a1521"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
+    <span style="color: #83898d;">"""Score an individual guess"""</span>
+    <span style="color: #51afef;">return</span> <span style="color: #98be65;">"&#11036;"</span>
+</pre>
+</div>
+
+
+<p>
+Now the test should fail appropriately, let&rsquo;s add a twist: we&rsquo;ll mark the test
+function as expected to fail, because for now it&rsquo;s not been implemented. This
+allows the test runner to mark all tests as OK despite known failures, and
+is perfect for known bugs being worked on, or new features being built.
+Imagine if every time we built new features via TDD, the commit that adds the
+test first makes CI go red! No, we would rather have a nice &ldquo;excuse&rdquo; for this
+new test to fail, and have the build stay green, &ldquo;with an expected failure&rdquo;.
+</p>
+
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 47: </span>Decorator marking a test as expected to fail, &ldquo;excusing&rdquo; assertion failures</label><pre class="src src-python" id="orgc0474f7"><span style="color: #ECBE7B;">@pytest.mark.xfail</span><span style="color: #FF8811;">(</span>reason=<span style="color: #98be65;">"Not implemented yet"</span><span style="color: #FF8811;">)</span>
+</pre>
+</div>
+
+<p>
+In the case of a known bug, the <code>reason</code> field would very likely be a bug
+identifier in the organisation&rsquo;s bug tracker.
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 48: </span>Importing the pytest module to get the <code>pytest.mark.xfail</code> decorator</label><pre class="src src-python" id="org188c5a6"><span style="color: #51afef;">import</span> pytest
+</pre>
+</div>
+
+<p>
+Confirm these tests work, marked as xfail (&ldquo;eXpected FAILure&rdquo;):
 </p>
 
 <div class="org-src-container">
@@ -1863,7 +1885,7 @@ Confirm these tests work, marked as xfail:
 </pre>
 </div>
 
-<pre class="example" id="orge9c18ce">
+<pre class="example" id="org7f1dbba">
 poetry run pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.9.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
@@ -1895,11 +1917,25 @@ Coverage XML written to file test_results/coverage.xml
 
 ========================= 5 passed, 1 xfailed in 0.10s =========================
 </pre>
+
+<p>
+Note that we now have regular tests that pass, and this one test that fails as expected, and
+<code>pytest</code>, expecting it, doesn&rsquo;t shout about the failure. Really handy.
+</p>
+
+<p>
+Remember that &ldquo;disabling&rdquo; (marking as <code>pytest.mark.skip</code>) is different from
+marking as <code>xfail</code>, because skipping a test avoids running it, while <code>xfail</code>
+tests do run, the assertion failure is just not marked as critical. There&rsquo;s even
+a flag to make <code>xpass</code> (expected test failures that ended up being green) become
+an actual fatal testing error, for the cases where it&rsquo;s important to track the
+failure itself.
+</p>
 </div>
 </div>
 
-<div id="outline-container-org291a731" class="outline-3">
-<h3 id="org291a731"><span class="section-number-3">3.4.</span> More tests</h3>
+<div id="outline-container-org0b9aab5" class="outline-3">
+<h3 id="org0b9aab5"><span class="section-number-3">3.4.</span> More tests</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 Let&rsquo;s implement the rest of the failing tests, so we can make it all red, then
@@ -1907,7 +1943,7 @@ fix the implementation:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 48: </span>Second acceptance test using &ldquo;no character in common&rdquo; scenario</label><pre class="src src-python" id="org2c4df5c"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_no_common_character</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 49: </span>Second acceptance test using &ldquo;no character in common&rdquo; scenario</label><pre class="src src-python" id="orgf2f8656"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_no_common_character</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: No character in common"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer "brave"</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"brave"</span>
@@ -1921,7 +1957,7 @@ fix the implementation:
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 49: </span>Third acceptance test using &ldquo;Characters in wrong place&rdquo; scenario</label><pre class="src src-python" id="org6344ded"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_wrong_place</span><span style="color: #FF8811;">()</span>:
+<label class="org-src-name"><span class="listing-number">Listing 50: </span>Third acceptance test using &ldquo;Characters in wrong place&rdquo; scenario</label><pre class="src src-python" id="orgbb75df7"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_wrong_place</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Character in wrong place"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer "rebus"</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"rebus"</span>
@@ -1944,13 +1980,13 @@ this can be done by &ldquo;parametrizing&rdquo; the test with multiple data entr
 </p>
 
 <p>
-Usually this is just a matter of a decorator to signify the data, but since
-we&rsquo;re trying to make multiple separate tests from the different data sets, we
-can use a <a href="https://docs.pytest.org/en/6.2.x/example/parametrize.html#set-marks-or-test-id-for-individual-parametrized-test">stronger kind of parametrization</a>:
+This is a decorator to flag data, but since
+we&rsquo;re trying to group some of those tests as part of different groups, we will
+use the <code>pytest.param.id</code> flag.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 50: </span>Generic acceptance test</label><pre class="src src-python" id="orgdb5682a"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_generic_score</span><span style="color: #FF8811;">(</span>answer, our_guess, expected_score<span style="color: #FF8811;">)</span>:
+<label class="org-src-name"><span class="listing-number">Listing 51: </span>Generic acceptance test, without any data attached</label><pre class="src src-python" id="org34aefc5"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_generic_score</span><span style="color: #FF8811;">(</span>answer, our_guess, expected_score<span style="color: #FF8811;">)</span>:
     <span style="color: #83898d;">"""Scenario Outline: Scoring guesses"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle &lt;answer&gt;</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">When scoring &lt;guess&gt;</span>
@@ -1964,7 +2000,7 @@ can use a <a href="https://docs.pytest.org/en/6.2.x/example/parametrize.html#set
 Just need to fill in the parameters:
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 51: </span>Parameters for generic test</label><pre class="src src-python" id="orgb1030fa"><span style="color: #ECBE7B;">@pytest.mark.parametrize</span><span style="color: #FF8811;">(</span>
+<label class="org-src-name"><span class="listing-number">Listing 52: </span>Parameters for generic test. Notice how <code>id</code> is used to cluster test data source, making <code>multi_occur</code> tests look separate to <code>normal_guess</code> ones.</label><pre class="src src-python" id="orga8521a9"><span style="color: #ECBE7B;">@pytest.mark.parametrize</span><span style="color: #FF8811;">(</span>
     <span style="color: #98be65;">"answer,our_guess,expected_score"</span>,
     <span style="color: #8F0;">[</span>
         pytest.param<span style="color: #55DDFF;">(</span><span style="color: #98be65;">"adage"</span>, <span style="color: #98be65;">"adobe"</span>, <span style="color: #98be65;">"&#129001;&#129001;&#11036;&#11036;&#129001;"</span>, <span style="color: #c678dd;">id</span>=<span style="color: #98be65;">"normal_guess1"</span><span style="color: #55DDFF;">)</span>,
@@ -1983,30 +2019,27 @@ Just need to fill in the parameters:
 </div>
 </div>
 
-<div id="outline-container-orgf9768a2" class="outline-3">
-<h3 id="orgf9768a2"><span class="section-number-3">3.5.</span> Implementing the feature</h3>
+<div id="outline-container-orgbe53151" class="outline-3">
+<h3 id="orgbe53151"><span class="section-number-3">3.5.</span> Implementing the feature</h3>
 <div class="outline-text-3" id="text-3-5">
 <p>
-With the amount of prep we did, the little scoring function can be safely done.
+With the strong test harness we have, this scoring function can be done conveniently.
 </p>
 
 <p>
 Let&rsquo;s experiment with the solution, iterating over naive solution and seeing how
-close they get to implementing the feature, by number of tests failed.
+close they get to implementing the feature, by number of tests failed. This
+isn&rsquo;t required, we have already identified edge cases that make naive solutions
+break, but this is the fun experimenting part.
 </p>
 
 <p>
-Before anything, we go to the bottom of this file, where the tangling happens,
-and remove the &ldquo;xfail&rdquo; marker, so that test failures actually notify us as
-failures.
-</p>
-
-<p>
-First, a simple string matching by iterating over both lists at once:
+Before any actual code change, first we remove the &ldquo;xfail&rdquo; marker, so that test
+failures actually notify us as failures, as we&rsquo;re actually implementing things now.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgbc2734f"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 53: </span>A simple string matching by iterating over both lists at once</label><pre class="src src-python" id="orgb2024cd"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Score an individual guess naively"""</span>
     <span style="color: #dcaeea;">NO</span> = <span style="color: #98be65;">"&#11036;"</span>
     <span style="color: #dcaeea;">OK</span> = <span style="color: #98be65;">"&#129001;"</span>
@@ -2022,12 +2055,12 @@ First, a simple string matching by iterating over both lists at once:
 
 <p>
 That only passes 3 tests of the 12 we just defined, obviously because we don&rsquo;t
-deal with incorrect characters. So let&rsquo;s add keeping track of characters in the
-wrong places:
+deal with incorrect characters at all. So let&rsquo;s add keeping track of characters
+in the wrong places:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 52: </span>Keep track of all answer characters</label><pre class="src src-python" id="orgd18da00"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 54: </span>Keep track of all answer characters while iterating through both list</label><pre class="src src-python" id="orgd9043f4"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Score an individual guess a little less naively"""</span>
     <span style="color: #dcaeea;">NO</span> = <span style="color: #98be65;">"&#11036;"</span>
     <span style="color: #dcaeea;">OK</span> = <span style="color: #98be65;">"&#129001;"</span>
@@ -2052,8 +2085,8 @@ edge case we were fortunate to identify early.
 </p>
 
 <p>
-Looking at the tests, it seems that our scoring technique needs to remember how
-many occurences of each characters of the answer exists, and grade only the
+Looking at the examples, it seems that our scoring function needs to keep track of how
+many occurences of each characters of the answer exists overall, and grade only the
 first occurence of such characters as &ldquo;wrong place&rdquo;, reducing the counter.
 </p>
 
@@ -2062,7 +2095,7 @@ Fortunately, Python implements a good Counter function which we can import:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org093df9b"><span style="color: #51afef;">from</span> collections <span style="color: #51afef;">import</span> Counter
+<label class="org-src-name"><span class="listing-number">Listing 55: </span>Import the <code>Counter</code> class, which generates a dictionary of <code>item</code> to <code>count</code> on whatever it&rsquo;s given</label><pre class="src src-python" id="orga205af4"><span style="color: #51afef;">from</span> collections <span style="color: #51afef;">import</span> Counter
 </pre>
 </div>
 
@@ -2082,11 +2115,11 @@ We want something like this:
 </div>
 
 <p>
-So we try it
+So we try the Counter way
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 53: </span>Use a Counter for character multiple occurences</label><pre class="src src-python" id="orgf033309"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 56: </span>Use a <code>Counter</code> for character multiple occurences</label><pre class="src src-python" id="org2311014"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Score an individual guess with Counter"""</span>
     <span style="color: #dcaeea;">NO</span> = <span style="color: #98be65;">"&#11036;"</span>
     <span style="color: #dcaeea;">OK</span> = <span style="color: #98be65;">"&#129001;"</span>
@@ -2117,7 +2150,7 @@ bit of reshuffling:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 54: </span>Use a Counter for character multiple occurences</label><pre class="src src-python" id="org5c92fe8"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
+<label class="org-src-name"><span class="listing-number">Listing 57: </span>Use a Counter, keeping track of both Green and Yellow</label><pre class="src src-python" id="org3eeb3a0"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">score_guess</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, answer: <span style="color: #c678dd;">str</span><span style="color: #FF8811;">)</span> -&gt; <span style="color: #c678dd;">str</span>:
     <span style="color: #83898d;">"""Score an individual guess with Counter"""</span>
     <span style="color: #dcaeea;">NO</span> = <span style="color: #98be65;">"&#11036;"</span>
     <span style="color: #dcaeea;">OK</span> = <span style="color: #98be65;">"&#129001;"</span>
@@ -2146,14 +2179,15 @@ bit of reshuffling:
 </div>
 
 
-<div id="outline-container-orgfcbb623" class="outline-3">
-<h3 id="orgfcbb623"><span class="section-number-3">3.6.</span> Tangle it all out</h3>
+<div id="outline-container-orgaaace1e" class="outline-3">
+<h3 id="orgaaace1e"><span class="section-number-3">3.6.</span> Tangle it all out</h3>
 <div class="outline-text-3" id="text-3-6">
 <p>
-Reorder the blocks from above to export with formatting enabled:
+As before, we reorder the blocks from snippets above to export code in a way
+that keeps proper formatting.
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 55: </span>guess.py</label><pre class="src src-python" id="orgfa55c8b"><span style="color: #83898d;">"""Score guesses of Wordle game"""</span>
+<label class="org-src-name"><span class="listing-number">Listing 58: </span>Final <code>guess.py</code></label><pre class="src src-python" id="orgfbab60b"><span style="color: #83898d;">"""Score guesses of Wordle game"""</span>
 
 
 <span style="color: #51afef;">from</span> collections <span style="color: #51afef;">import</span> Counter
@@ -2186,7 +2220,7 @@ Reorder the blocks from above to export with formatting enabled:
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 56: </span>The tests</label><pre class="src src-python" id="org0270342"><span style="color: #83898d;">"""Validates the Gherkin file features/scoring_guess.feature:</span>
+<label class="org-src-name"><span class="listing-number">Listing 59: </span>Final <code>tests/test_scoring_guess.py</code></label><pre class="src src-python" id="orgf7ad9fa"><span style="color: #83898d;">"""Validates the Gherkin file features/scoring_guess.feature:</span>
 
 <span style="color: #83898d;">Feature: Scoring guesses</span>
 <span style="color: #83898d;">  As a Wordle game</span>
@@ -2259,8 +2293,8 @@ Reorder the blocks from above to export with formatting enabled:
 </div>
 </div>
 
-<div id="outline-container-orgfe09d4d" class="outline-2">
-<h2 id="orgfe09d4d"><span class="section-number-2">4.</span> Playing a round of Wordle</h2>
+<div id="outline-container-org6664576" class="outline-2">
+<h2 id="org6664576"><span class="section-number-2">4.</span> Playing a round of Wordle</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 With all the subfeatures we have, we can now play a round of wordle, we&rsquo;re
@@ -2268,7 +2302,7 @@ missing only the &ldquo;state&rdquo; of the game board, with the interactivity o
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature" id="org395984f"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Track number of guesses</span>
+<pre class="src src-feature" id="org145f2e6"><span style="color: #51afef;">Feature:</span><span style="color: #ECBE7B;"> Track number of guesses</span>
   As a Wordle game
   I need to track how many guesses were already given
   In order to announce win or game over
@@ -2280,7 +2314,7 @@ There are a few obvious cases we want to see:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature" id="orgdd1fdfd"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> First guess is allowed</span>
+<pre class="src src-feature" id="org6507918"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> First guess is allowed</span>
 <span style="color: #51afef;">  Given</span> a wordle answer
 <span style="color: #51afef;">  And</span> I didn't guess before
 <span style="color: #51afef;">  When</span> I guess the word
@@ -2290,7 +2324,7 @@ There are a few obvious cases we want to see:
 
 
 <div class="org-src-container">
-<pre class="src src-feature" id="org4fd4206"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Fifth guess still allowed</span>
+<pre class="src src-feature" id="orga7a650a"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Fifth guess still allowed</span>
 <span style="color: #51afef;">  Given</span> a wordle answer
 <span style="color: #51afef;">  And</span> I guessed 4 times
 <span style="color: #51afef;">  When</span> I guess the word
@@ -2300,7 +2334,7 @@ There are a few obvious cases we want to see:
 
 
 <div class="org-src-container">
-<pre class="src src-feature" id="org0756f50"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Six failed guess is game over</span>
+<pre class="src src-feature" id="orgd98762f"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Six failed guess is game over</span>
 <span style="color: #51afef;">  Given</span> a wordle answer
 <span style="color: #51afef;">  And</span> I guessed 6 times already
 <span style="color: #51afef;">  When</span> I guess the word
@@ -2330,7 +2364,7 @@ Let&rsquo;s test it out: New test file, with docstring from Gherkin Feature.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org9126e27"><span style="color: #83898d;">"""Validates the Gherkin file features/track_guesses.feature</span>
+<pre class="src src-python" id="org5fc92ac"><span style="color: #83898d;">"""Validates the Gherkin file features/track_guesses.feature</span>
 
 <span style="color: #83898d;">Feature: Track number of guesses</span>
 <span style="color: #83898d;">  As a Wordle game</span>
@@ -2355,14 +2389,14 @@ This will mean some data structures (maybe a little overkill, but fun!):
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 57: </span>Imports for enumeration of state and data-holding classes</label><pre class="src src-python" id="orgffe2d71"><span style="color: #51afef;">from</span> dataclasses <span style="color: #51afef;">import</span> dataclass
+<label class="org-src-name"><span class="listing-number">Listing 60: </span>Imports for enumeration of state and data-holding classes</label><pre class="src src-python" id="org879eb21"><span style="color: #51afef;">from</span> dataclasses <span style="color: #51afef;">import</span> dataclass
 <span style="color: #51afef;">from</span> enum <span style="color: #51afef;">import</span> Enum
 <span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Optional
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 58: </span>Enum for outcomes of a single move</label><pre class="src src-python" id="org1326be3"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">WordleMoveOutcome</span><span style="color: #FF8811;">(</span>Enum<span style="color: #FF8811;">)</span>:
+<label class="org-src-name"><span class="listing-number">Listing 61: </span>Enum for outcomes of a single move</label><pre class="src src-python" id="org970f28b"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">WordleMoveOutcome</span><span style="color: #FF8811;">(</span>Enum<span style="color: #FF8811;">)</span>:
     <span style="color: #83898d;">"""Outcome of a single move"""</span>
 
     <span style="color: #dcaeea;">GAME_OVER_LOST</span> = <span style="color: #da8548; font-weight: bold;">1</span>
@@ -2372,7 +2406,7 @@ This will mean some data structures (maybe a little overkill, but fun!):
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 59: </span>Objects necessary to keep state of the game</label><pre class="src src-python" id="org7a1ab71"><span style="color: #ECBE7B;">@dataclass</span>
+<label class="org-src-name"><span class="listing-number">Listing 62: </span>Objects necessary to keep state of the game</label><pre class="src src-python" id="org2f3ff94"><span style="color: #ECBE7B;">@dataclass</span>
 <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">WordleGame</span>:
     <span style="color: #83898d;">"""A Wordle game's internal state, before a move is played"""</span>
 
@@ -2396,7 +2430,7 @@ So we can now define our function:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org2b52cad"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_round</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, game: WordleGame<span style="color: #FF8811;">)</span> -&gt; WordleMove:
+<pre class="src src-python" id="org0ec1519"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_round</span><span style="color: #FF8811;">(</span>guess: <span style="color: #c678dd;">str</span>, game: WordleGame<span style="color: #FF8811;">)</span> -&gt; WordleMove:
     <span style="color: #83898d;">"""Use guess on the given game, resulting in WordleMove"""</span>
 </pre>
 </div>
@@ -2408,14 +2442,14 @@ Before we finish implementing this function, let&rsquo;s define its acceptance t
 
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgadd1fcf"><span style="color: #51afef;">from</span> literate_wordle.game <span style="color: #51afef;">import</span> WordleGame, WordleMoveOutcome, play_round
+<pre class="src src-python" id="orgbbca779"><span style="color: #51afef;">from</span> literate_wordle.game <span style="color: #51afef;">import</span> WordleGame, WordleMoveOutcome, play_round
 </pre>
 </div>
 
 
 
 <div class="org-src-container">
-<pre class="src src-python" id="org5d5f9fe"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_first_guess_allowed</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org48a6e07"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_first_guess_allowed</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: First guess is allowed"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"orbit"</span>
@@ -2438,7 +2472,7 @@ Before we finish implementing this function, let&rsquo;s define its acceptance t
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org045b756"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_fifth_guess_allowed</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org444ae44"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_fifth_guess_allowed</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Fifth guess still allowed"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"orbit"</span>
@@ -2462,7 +2496,7 @@ Before we finish implementing this function, let&rsquo;s define its acceptance t
 
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgd9818e3"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_sixth_guess_fails_game</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org296c553"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_sixth_guess_fails_game</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Sixth failed guess is game over"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"orbit"</span>
@@ -2489,7 +2523,7 @@ scenario for winning the game!
 </p>
 
 <div class="org-src-container">
-<pre class="src src-feature" id="orgfd4820a"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Winning guess</span>
+<pre class="src src-feature" id="orga9114a4"><span style="color: #51afef;">Scenario:</span><span style="color: #c678dd;"> Winning guess</span>
 <span style="color: #51afef;">  Given</span> a wordle answer
 <span style="color: #51afef;">  And</span> I guessed 3 times
 <span style="color: #51afef;">  When</span> I guess the word
@@ -2505,7 +2539,7 @@ Accordingly, we write a test:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org3d519c1"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_winning_guess_wins</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="org9373c27"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_winning_guess_wins</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Winning guess"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"orbit"</span>
@@ -2532,7 +2566,7 @@ dummy prototype for the benefit of red tests.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 60: </span>A dummy move result to make tests run but fail</label><pre class="src src-python" id="org89f3cad"><span style="color: #dcaeea;">result</span> = WordleMoveOutcome.GAME_OVER_LOST
+<label class="org-src-name"><span class="listing-number">Listing 63: </span>A dummy move result to make tests run but fail</label><pre class="src src-python" id="org150eaca"><span style="color: #dcaeea;">result</span> = WordleMoveOutcome.GAME_OVER_LOST
 <span style="color: #51afef;">return</span> WordleMove<span style="color: #FF8811;">(</span>game=game, outcome=result, message=<span style="color: #98be65;">"You suck!"</span>, score=<span style="color: #a9a1e1;">None</span><span style="color: #FF8811;">)</span>
 </pre>
 </div>
@@ -2550,8 +2584,8 @@ All right, the tests do fail, right?
 All right, let&rsquo;s implement this:
 </p>
 </div>
-<div id="outline-container-orgc0fae2f" class="outline-3">
-<h3 id="orgc0fae2f"><span class="section-number-3">4.1.</span> Implementing the feature</h3>
+<div id="outline-container-org8d4fa43" class="outline-3">
+<h3 id="org8d4fa43"><span class="section-number-3">4.1.</span> Implementing the feature</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 First, if we have too many guesses already (before this one), we return game
@@ -2560,7 +2594,7 @@ beginning of the sixth.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgaa62be7"><span style="color: #51afef;">if</span> game.guess_number &gt;= <span style="color: #da8548; font-weight: bold;">6</span>:
+<pre class="src src-python" id="org3c86845"><span style="color: #51afef;">if</span> game.guess_number &gt;= <span style="color: #da8548; font-weight: bold;">6</span>:
     <span style="color: #dcaeea;">message</span> = f<span style="color: #98be65;">"Too many guesses: Game Over. Answer was: {game.answer}"</span>
     <span style="color: #dcaeea;">outcome</span> = WordleMoveOutcome.GAME_OVER_LOST
     <span style="color: #51afef;">return</span> WordleMove<span style="color: #FF8811;">(</span>game=game, outcome=outcome, message=message, score=<span style="color: #a9a1e1;">None</span><span style="color: #FF8811;">)</span>
@@ -2573,7 +2607,7 @@ some of our local module.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org7365f6a"><span style="color: #51afef;">from</span> literate_wordle.guess <span style="color: #51afef;">import</span> score_guess
+<pre class="src src-python" id="orgad47510"><span style="color: #51afef;">from</span> literate_wordle.guess <span style="color: #51afef;">import</span> score_guess
 <span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> check_valid_word
 </pre>
 </div>
@@ -2587,7 +2621,7 @@ finish implementing this first.
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 61: </span>Fourth possibility: guess wasn&rsquo;t valid, not counted</label><pre class="src src-python" id="org136973b"><span style="color: #dcaeea;">GUESS_NOTVALID_CONTINUE</span> = <span style="color: #da8548; font-weight: bold;">4</span>
+<label class="org-src-name"><span class="listing-number">Listing 64: </span>Fourth possibility: guess wasn&rsquo;t valid, not counted</label><pre class="src src-python" id="org6e4fe57"><span style="color: #dcaeea;">GUESS_NOTVALID_CONTINUE</span> = <span style="color: #da8548; font-weight: bold;">4</span>
 </pre>
 </div>
 
@@ -2598,7 +2632,7 @@ fourth possibility in the correct place, so the code looks legit.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org804df8d"><span style="color: #dcaeea;">valid</span>, <span style="color: #dcaeea;">validity_msg</span> = check_valid_word<span style="color: #FF8811;">(</span>guess<span style="color: #FF8811;">)</span>
+<pre class="src src-python" id="org37262ba"><span style="color: #dcaeea;">valid</span>, <span style="color: #dcaeea;">validity_msg</span> = check_valid_word<span style="color: #FF8811;">(</span>guess<span style="color: #FF8811;">)</span>
 <span style="color: #51afef;">if</span> <span style="color: #51afef;">not</span> valid <span style="color: #51afef;">and</span> validity_msg <span style="color: #51afef;">is</span> <span style="color: #51afef;">not</span> <span style="color: #a9a1e1;">None</span>:
     <span style="color: #dcaeea;">outcome</span> = WordleMoveOutcome.GUESS_NOTVALID_CONTINUE
     <span style="color: #51afef;">return</span> WordleMove<span style="color: #FF8811;">(</span>game=game, outcome=outcome, message=validity_msg, score=<span style="color: #a9a1e1;">None</span><span style="color: #FF8811;">)</span>
@@ -2611,19 +2645,19 @@ interpreting this guess, which means counting it, incrementing guess number:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org2b8e913"><span style="color: #5B6268;"># </span><span style="color: #5B6268;">Guess now guaranteed to be valid: count it</span>
+<pre class="src src-python" id="org9572f63"><span style="color: #5B6268;"># </span><span style="color: #5B6268;">Guess now guaranteed to be valid: count it</span>
 <span style="color: #dcaeea;">game.guess_number</span> += <span style="color: #da8548; font-weight: bold;">1</span>
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 62: </span>The now-valid guess, should be scored</label><pre class="src src-python" id="org35953c4"><span style="color: #dcaeea;">score</span> = score_guess<span style="color: #FF8811;">(</span>guess, game.answer<span style="color: #FF8811;">)</span>
+<label class="org-src-name"><span class="listing-number">Listing 65: </span>The now-valid guess, should be scored</label><pre class="src src-python" id="orge425b1c"><span style="color: #dcaeea;">score</span> = score_guess<span style="color: #FF8811;">(</span>guess, game.answer<span style="color: #FF8811;">)</span>
 </pre>
 </div>
 
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 63: </span>With a valid guess, can it be won?</label><pre class="src src-python" id="org5fef7fe"><span style="color: #51afef;">if</span> score == <span style="color: #98be65;">"&#129001;&#129001;&#129001;&#129001;&#129001;"</span>:
+<label class="org-src-name"><span class="listing-number">Listing 66: </span>With a valid guess, can it be won?</label><pre class="src src-python" id="org5f24a1f"><span style="color: #51afef;">if</span> score == <span style="color: #98be65;">"&#129001;&#129001;&#129001;&#129001;&#129001;"</span>:
     <span style="color: #dcaeea;">outcome</span> = WordleMoveOutcome.GAME_WON
     <span style="color: #dcaeea;">message</span> = f<span style="color: #98be65;">"Correct! Game won in {game.guess_number - 1} guesses"</span>
     <span style="color: #51afef;">return</span> WordleMove<span style="color: #FF8811;">(</span>game=game, outcome=outcome, message=message, score=score<span style="color: #FF8811;">)</span>
@@ -2631,7 +2665,7 @@ interpreting this guess, which means counting it, incrementing guess number:
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 64: </span>Last possibility remains: scored, try another guess</label><pre class="src src-python" id="org6d82765"><span style="color: #5B6268;"># </span><span style="color: #5B6268;">Only case left is "try another guess"</span>
+<label class="org-src-name"><span class="listing-number">Listing 67: </span>Last possibility remains: scored, try another guess</label><pre class="src src-python" id="org9a9c8e8"><span style="color: #5B6268;"># </span><span style="color: #5B6268;">Only case left is "try another guess"</span>
 <span style="color: #dcaeea;">outcome</span> = WordleMoveOutcome.GUESS_SCORED_CONTINUE
 <span style="color: #dcaeea;">message</span> = f<span style="color: #98be65;">"Try again! Guess number {game.guess_number - 1}. Score is: {score}"</span>
 <span style="color: #51afef;">return</span> WordleMove<span style="color: #FF8811;">(</span>game=game, outcome=outcome, message=message, score=score<span style="color: #FF8811;">)</span>
@@ -2656,7 +2690,7 @@ Back to the implementation: tests should all pass now, <code>make</code> is happ
 there&rsquo;s an interesting issue:
 </p>
 
-<div class="verbatim" id="orgb8c4c7b">
+<div class="verbatim" id="orgec6d4ad">
 <p>
 ------&#x2013;&#x2014; coverage: platform linux, python 3.9.5-final-0 ------&#x2013;&#x2014;
 Name                                     Stmts   Miss  Cover
@@ -2702,7 +2736,7 @@ requirement.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org6604536"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_invalid_guess_not_counted</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="orgffdba5a"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">test_invalid_guess_not_counted</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Scenario: Invalid guess isn't counted"""</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Given a wordle answer</span>
     <span style="color: #dcaeea;">answer</span> = <span style="color: #98be65;">"orbit"</span>
@@ -2751,8 +2785,8 @@ And with this new test, we&rsquo;re back to passing tests and 100% coverage!
 </div>
 </div>
 
-<div id="outline-container-org9da524f" class="outline-3">
-<h3 id="org9da524f"><span class="section-number-3">4.2.</span> Tangling out the whole thing</h3>
+<div id="outline-container-orgdbb8153" class="outline-3">
+<h3 id="orgdbb8153"><span class="section-number-3">4.2.</span> Tangling out the whole thing</h3>
 <div class="outline-text-3" id="text-4-2">
 <p>
 The tests:
@@ -2939,8 +2973,8 @@ The tests:
 </div>
 </div>
 
-<div id="outline-container-org9f8ba54" class="outline-2">
-<h2 id="org9f8ba54"><span class="section-number-2">5.</span> Final round: command line interface</h2>
+<div id="outline-container-org20e420d" class="outline-2">
+<h2 id="org20e420d"><span class="section-number-2">5.</span> Final round: command line interface</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 We have assembled lego bricks into an almost finished product, as we have enough to
@@ -2967,7 +3001,7 @@ So let&rsquo;s define an entrypoint for the game, generating a new one:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org11268f9"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">new_game</span><span style="color: #FF8811;">()</span> -&gt; WordleGame:
+<pre class="src src-python" id="org4a1bf90"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">new_game</span><span style="color: #FF8811;">()</span> -&gt; WordleGame:
     <span style="color: #83898d;">"""Generate a new WordleGame"""</span>
     <span style="color: #51afef;">return</span> WordleGame<span style="color: #FF8811;">(</span>answer=pick_answer_word<span style="color: #8F0;">()</span>, guess_number=<span style="color: #da8548; font-weight: bold;">1</span><span style="color: #FF8811;">)</span>
 </pre>
@@ -2978,7 +3012,7 @@ And how to play until we lose, printing to stdout as we go:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgd668747"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_game</span><span style="color: #FF8811;">(</span>game: WordleGame, guess_fetcher: Callable, response_logger: Callable<span style="color: #FF8811;">)</span>:
+<pre class="src src-python" id="org39d6578"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_game</span><span style="color: #FF8811;">(</span>game: WordleGame, guess_fetcher: Callable, response_logger: Callable<span style="color: #FF8811;">)</span>:
     <span style="color: #83898d;">"""Plays the given WordleGame until completion.</span>
 
 <span style="color: #83898d;">    Asks guess_fetcher for guess, and prints response to response_logger</span>
@@ -3003,12 +3037,12 @@ Add a few imports needed:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgd55d7e5"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Callable
+<pre class="src src-python" id="org918a7e9"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> Callable
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgf78987e"><span style="color: #51afef;">from</span> literate_wordle.game <span style="color: #51afef;">import</span> WordleGame, WordleMoveOutcome, play_round
+<pre class="src src-python" id="orgc8d2461"><span style="color: #51afef;">from</span> literate_wordle.game <span style="color: #51afef;">import</span> WordleGame, WordleMoveOutcome, play_round
 <span style="color: #51afef;">from</span> literate_wordle.words <span style="color: #51afef;">import</span> pick_answer_word
 </pre>
 </div>
@@ -3019,7 +3053,7 @@ Now we can add command line argument parsing in a separate file:
 
 
 <div class="org-src-container">
-<pre class="src src-python" id="org6e285f3"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">parse_args</span><span style="color: #FF8811;">(</span>raw_args: List<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">)</span> -&gt; argparse.Namespace:
+<pre class="src src-python" id="orgfbcfd69"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">parse_args</span><span style="color: #FF8811;">(</span>raw_args: List<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">)</span> -&gt; argparse.Namespace:
     <span style="color: #83898d;">"""Parse given command line arguments"""</span>
     <span style="color: #dcaeea;">description</span> = <span style="color: #98be65;">"Wordle implementation in Python, as literate programming"</span>
     <span style="color: #5B6268;"># </span><span style="color: #5B6268;">Bit overkill since there is no real argument to parse yet</span>
@@ -3029,17 +3063,17 @@ Now we can add command line argument parsing in a separate file:
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orge8daad8"><span style="color: #51afef;">import</span> argparse
+<pre class="src src-python" id="org6df51b6"><span style="color: #51afef;">import</span> argparse
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org099dd3e"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> List
+<pre class="src src-python" id="orgb16414e"><span style="color: #51afef;">from</span> typing <span style="color: #51afef;">import</span> List
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org9e389ff"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_game_args</span><span style="color: #FF8811;">(</span>raw_args: List<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">)</span>:
+<pre class="src src-python" id="org2c1d724"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">play_game_args</span><span style="color: #FF8811;">(</span>raw_args: List<span style="color: #8F0;">[</span><span style="color: #c678dd;">str</span><span style="color: #8F0;">]</span><span style="color: #FF8811;">)</span>:
     <span style="color: #83898d;">"""Play a standard Wordle game from stdin to stdout, given args"""</span>
     <span style="color: #dcaeea;">_</span> = parse_args<span style="color: #FF8811;">(</span>raw_args<span style="color: #FF8811;">)</span>
     <span style="color: #dcaeea;">game</span> = new_game<span style="color: #FF8811;">()</span>
@@ -3048,19 +3082,19 @@ Now we can add command line argument parsing in a separate file:
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgd26c10c"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">main</span><span style="color: #FF8811;">()</span>:
+<pre class="src src-python" id="orgfab1594"><span style="color: #51afef;">def</span> <span style="color: #c678dd;">main</span><span style="color: #FF8811;">()</span>:
     <span style="color: #83898d;">"""Pass sys.argv to the play_game_args function"""</span>
     play_game_args<span style="color: #FF8811;">(</span>sys.argv<span style="color: #8F0;">[</span><span style="color: #da8548; font-weight: bold;">1</span>:<span style="color: #8F0;">]</span><span style="color: #FF8811;">)</span>
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgcce50a9"><span style="color: #51afef;">import</span> sys
+<pre class="src src-python" id="org2a7a3fb"><span style="color: #51afef;">import</span> sys
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orgd029151"><span style="color: #51afef;">from</span> literate_wordle.main <span style="color: #51afef;">import</span> new_game, play_game
+<pre class="src src-python" id="orgf06aef5"><span style="color: #51afef;">from</span> literate_wordle.main <span style="color: #51afef;">import</span> new_game, play_game
 </pre>
 </div>
 
@@ -3080,8 +3114,8 @@ blacklist these two files, preventing them weighing down coverage metric.
 </div>
 </div>
 
-<div id="outline-container-orgecf74e5" class="outline-3">
-<h3 id="orgecf74e5"><span class="section-number-3">5.1.</span> Tangling it out</h3>
+<div id="outline-container-orga236eb9" class="outline-3">
+<h3 id="orga236eb9"><span class="section-number-3">5.1.</span> Tangling it out</h3>
 <div class="outline-text-3" id="text-5-1">
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #83898d;">"""Entrypoint for pywordle"""</span>
@@ -3152,8 +3186,8 @@ blacklist these two files, preventing them weighing down coverage metric.
 </div>
 
 
-<div id="outline-container-org0ac5901" class="outline-3">
-<h3 id="org0ac5901"><span class="section-number-3">5.2.</span> Launching as CLI</h3>
+<div id="outline-container-orgd8d1a07" class="outline-3">
+<h3 id="orgd8d1a07"><span class="section-number-3">5.2.</span> Launching as CLI</h3>
 <div class="outline-text-3" id="text-5-2">
 <p>
 In Python, when using <a href="https://python-poetry.org/">Poetry</a> like we are, the package is defined in
@@ -3173,7 +3207,7 @@ help message should be available:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 65: </span>Invoking the help menu. Note &ldquo;poetry run&rdquo; prefix to ensure we&rsquo;re running inside virtualenv, where the package is installed</label><pre class="src src-shell">poetry run pywordle --help
+<label class="org-src-name"><span class="listing-number">Listing 68: </span>Invoking the help menu. Note &ldquo;poetry run&rdquo; prefix to ensure we&rsquo;re running inside virtualenv, where the package is installed</label><pre class="src src-shell">poetry run pywordle --help
 </pre>
 </div>
 
@@ -3191,7 +3225,7 @@ optional arguments:
 And we can play a round!
 </p>
 
-<div class="result" id="orgbae3eb0">
+<div class="result" id="org6df9452">
 <p>
 $ poetry shell
 $ pywordle
@@ -3253,8 +3287,8 @@ issues<sup><a id="fnr.4" class="footref" href="#fn.4" role="doc-backlink">4</a><
 </div>
 </div>
 </div>
-<div id="outline-container-orgb63f480" class="outline-2">
-<h2 id="orgb63f480"><span class="section-number-2">6.</span> Conclusion</h2>
+<div id="outline-container-org4c1a26d" class="outline-2">
+<h2 id="org4c1a26d"><span class="section-number-2">6.</span> Conclusion</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 We just walked through building a simple wordle program from scratch, using
@@ -3335,7 +3369,7 @@ best a fun heuristic.</p></div></div>
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Jb Doyon</p>
-<p class="date">Created: 2022-04-13 Wed 22:06</p>
+<p class="date">Created: 2022-04-13 Wed 23:16</p>
 </div>
 </body>
 </html>

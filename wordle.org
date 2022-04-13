@@ -1139,12 +1139,12 @@ Feature: Scoring guesses
 
 This sounds simple, but implementing this feature is tricky, because of edge
 cases like multiple identical character in the answer, which need colored
-appropriately (What's the proper way to do that? We need to pin it down in
-requirements!). So let's define /Gherkin Scenarios/ for that feature, to give
-examples of how the feature works in practice. So we write out
+appropriately (What's the proper way to do that? No clue yet, but we need to pin
+it down in requirements!). So again we'll define Gherkin Scenarios for that
+Feature, to give examples of how the feature works in practice. So we write out:
 
 #+NAME: scoring-scenario-perfect
-#+CAPTION: The winning guess scenario
+#+CAPTION: The winning guess scenario. The green blocks are Unicode characters, may render differently on your device.
 #+begin_src feature :tangle no
 Scenario: Perfect guess gives perfect score
   Given a wordle answer "crane"
@@ -1152,17 +1152,17 @@ Scenario: Perfect guess gives perfect score
   Then score should be "🟩🟩🟩🟩🟩"
 #+end_src
 
-This seems easy enough, but we notice that we are making an assumption that's
-not written out, which makes this feature depend on another: We're assuming the
+This seems easy enough, but we should notice that we're assuming the
 guess is a valid word! We may want to just add another =Given=, like:
 
 #+begin_src feature :tangle no
-  Given a guess that's a valid dictionary word
+Given a guess that's a valid dictionary word
 #+end_src
 
 But this isn't just a hypothesis from the current scenario, it's valid for all
-scenarios of this feature. To avoid the tedious copying of that assumption, we
-can use a =Gherkin Background= for the feature:
+scenarios of this feature: every scoring of a guess requires the guess to be a
+valid word. To avoid the tedious copying of that assumption in each Scenario, we
+can use a Gherkin Background for the feature:
 
 #+NAME: scoring-background
 #+CAPTION: Pre-condition that applies to all the scenarios of this feature file
@@ -1176,13 +1176,12 @@ dependency on having implemented the previous feature, but we're not specifying
 the guess word itself, which can still be scenario specific. This makes our
 initial "perfect guess" scenario valid again, so we can use it
 
+# Not-rendered, but since we're trying to avoid being out of order = having a
+# final weave block at the end, we tangle the scenario for perfect score NOW
+# after avoiding it due to the BACKGROUND step.
 #+begin_src feature :tangle features/scoring_guess.feature :noweb yes :exports none
 <<scoring-scenario-perfect>>
 #+end_src
-
-Note that our scenario doesn't make assumption of how many attempts at Wordle
-we're at, or the fact of winning or losing. This is purely a hypothetical
-scenario, disjoint from the feature of actually playing a game.
 
 If we've got the perfect answer, let's have the opposite:
 
@@ -1195,31 +1194,39 @@ Scenario: No character in common
   Then score should be "⬜⬜⬜⬜⬜"
 #+end_src
 
+Note that these scenarios doesn't make assumption of how many attempts at Wordle
+we're at, or the fact of winning or losing. This is purely a hypothetical
+example, disjoint from the actual playing of a Wordle game. We can deal with the
+win/lose consequences later, once we have a proper scoring of guesses implemented.
+
+
 ** Can we start coding yet?
-At this point, we only need to add a "🟨" scenario and we could conceivably
-start the implementation work already, we have work to do!
+At this point, we /can/ conceivably start the implementation work: "let's go, we
+have work to do!" And we can add the "🟨" scenario later once we have code that
+works.
 
 The problem of "what to do now" is interesting, because we can continue thinking
-up scenarios in Gherkin as a design exercise for a while, or we could already
-start writing test code to back these claims, leading to failed tests, and then
-start on implementation early to aim for green tests, only to add scenarios as
-we realize that our implementation is lacking compared to the original intent of
-the game.
+up scenarios in Gherkin for a while, or we could make a start writing test code
+to match these claims, fix the red tests, implement towards green tests, and add
+scenarios as we realize that our implementation is lacking compared to the
+original intent of the game. That can certainly be done!
 
-While it's tempting to jump into code first, I believe we should pin down the
-exact requirements on a "whiteboard" of sorts (in that case: Gherkin features
-and scenarios), before starting to touch any code. It's easy to get tunnel
+But while it's tempting to jump into code first, I strongly believe we as
+developers should instead fully scope out the problem-space first. Pin down the
+exact requirements (in that case via Gherkin features and scenarios), before
+starting to touch any code. My reasoning is that [[https://jiby.tech/post/gherkin-features-user-requirements/][it's very easy to get tunnel
 vision when writing code, getting excited about the programming problems, losing
-track of what the "user" wants. We need to write down the exact user needs
-first, so as to have a proper ritual during which to "switch from 'User' hat to
-'Developer' hat".
+track of what the "user" wants. We should instead write down the exact user
+needs first]], and have a proper "ritual" for switching our "User" hat to a
+"Developer" hat.
 
-** Finalizing the scenarios
 
-Back to our gherkin scenarios, let's add the yellow marker one:
+** Finalizing the scoring scenarios
+
+So, back to our gherkin scenarios, let's add the yellow marker one:
 
 #+NAME: scoring-scenario-wrongplace
-#+CAPTION: Wrong place case
+#+CAPTION: Character in the wrong place score
 #+begin_src feature :tangle features/scoring_guess.feature
 Scenario: Character in wrong place
   Given a wordle answer "rebus"
@@ -1228,7 +1235,7 @@ Scenario: Character in wrong place
 #+end_src
 
 And just for having a good sample of tests with which to test, let's use a table
-of example to confirm scoring works out:
+of examples to confirm scoring works out in more cases:
 
 #+NAME: scoring-scenario-multi
 #+CAPTION: Many examples via Gherkin Scenario Outlines and Examples
@@ -1247,9 +1254,9 @@ Scenario Outline: Scoring guesses
     | raise   | radix	| 🟩🟩⬜🟨⬜	|
 #+end_src
 
-Note how the "outline" system maps really well to the idea of [[https://docs.pytest.org/en/6.2.x/parametrize.html][pytest's
-parametrized tests]]. We can write the test case /once/, and have a decorator deal
-with the multiple instantiations
+Note how the "outline" system maps really well to the idea of "parametrized
+tests". We can write the test case /once/, and have a decorator deal with the
+multiple instantiations with different data.
 
 All right, that's a few, moving on. But here is the most difficult to implement
 corner case, written out as examples of the previous scenario:
@@ -1267,14 +1274,17 @@ corner case, written out as examples of the previous scenario:
     | abbey  | abate	| 🟩🟩⬜⬜🟨	|
 #+end_src
 
-These sample answers and scores were [[https://nerdschalk.com/wordle-same-letter-twice-rules-explained-how-does-it-work/][taken from online example screenshots]] of
-the original website, hence considered accurate references.
+Because this edge case was worrisome for accuracy, these sample answers and
+scores were [[https://nerdschalk.com/wordle-same-letter-twice-rules-explained-how-does-it-work/][taken from online example screenshots]] of the original Wordle
+website, thus considered accurate references.
 
-With "abbey" as reference, the "kebab" answer seems logical, with first "b"
-occurence matching as green, and the second being in the wrong place. The
-surprise comes from "keeps" where the first e counts, but the second doesn't
-have an equivalent in the answer, hence flagged as "no such character". That
-makes sense, but that's not how a naive implementation of the game would do it!
+Thinking about it, with "abbey" as reference, the "kebab" answer seems logical,
+with first "b" occurence matching as green, and the second being in the wrong
+place. The surprise comes from "keeps" where the first "e" counts, but the
+second doesn't have an equivalent in the answer, hence flagged as "no such
+character". That makes sense, but that's not how a naive implementation of the
+game would do it! Hence why it's worth thinking about the full problem before
+rushing the implementation.
 
 
 # Seems to be that we need to count the answer's occurences of each character,
@@ -1289,8 +1299,11 @@ makes sense, but that's not how a naive implementation of the game would do it!
 Out of curiosity, I wonder if there's any wordle answers that contain three
 identical characters? Let's see!
 
+#+CAPTION: Regular-expression search for 3 repeated characters in the dictionary of answers
 #+begin_src shell :exports both
-zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt.gz | wc -l
+zgrep -i -E "([a-z]).*\1.*\1" \
+    src/literate_wordle/assets/wordle_answers_dict.txt.gz \
+    | wc -l
 #+end_src
 
 #+RESULTS:
@@ -1298,8 +1311,12 @@ zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt
 
 Really? 20? That's harsh ... show me one?
 
+#CAPTION: Reval the first answer with 3 identical letters
 #+begin_src shell :exports both
-zgrep -i -E "([a-z]).*\1.*\1" src/literate_wordle/assets/wordle_answers_dict.txt.gz | head -n 1 | sed 's/\r//'
+zgrep -i -E "([a-z]).*\1.*\1" \
+    src/literate_wordle/assets/wordle_answers_dict.txt.gz \
+    | head -n 1 \
+    | sed 's/\r//'  # gets rid of CR characters in CRLF (DOS line endings)
 #+end_src
 
 #+RESULTS:
@@ -1309,33 +1326,6 @@ Interesting. That must be hard to solve I imagine.
 ** Writing up acceptance tests
 With no more obvious pathological cases to cover in requirements, it's time to
 switch to our developer hat, and write some (acceptance) tests!
-
-This involves figuring out what our feature is going to be called, and what
-module it's going to be in.
-
-Jumping to the obvious here, we'll make the feature a separate =guess.py=.
-#+NAME: scoring-guessmod-header
-#+CAPTION: guess.py module-level docstring
-#+begin_src python :tangle no
-"""Score guesses of Wordle game"""
-#+end_src
-
-And I imagine a function called =score_guess=, initially returning a junk
-string:
-
-#+NAME: scoring-guessfunc-proto1
-#+CAPTION: score_guess first draft
-#+begin_src python :tangle no
-def score_guess(guess: str, answer: str) -> str:
-    """Score an individual guess"""
-    return "⬜"
-#+end_src
-
-#+NAME: scoring-test-import
-#+CAPTION: Importing the feature, first
-#+begin_src python :tangle no
-from literate_wordle.guess import score_guess
-#+end_src
 
 #+NAME: scoring-test1
 #+CAPTION: First acceptance test using "Perfect guess" scenario
@@ -1351,27 +1341,59 @@ def test_perfect_guess():
     assert score == "🟩🟩🟩🟩🟩", "Perfect answer should give Perfect Score"
 #+end_src
 
-Now the test should fail appropriately, let's add a twist: we'll mark the
-function as expected to fail, because for now it's not been implemented. This
-allows pytest to mark all tests as passed despite failures, and is perfect for
-either bug reports being worked on, or new features being built.
+A =score_guess= function? sounds reasonable. We'll need to import it from a module...
 
-
-#+NAME: scoring-test-import-pytest
-#+CAPTION: Importing the pytest module to get to pytest.mark
+#+NAME: scoring-test-import
+#+CAPTION: Importing the newly thought-up function inside the test of Listing [[scoring-test1]]
 #+begin_src python :tangle no
-import pytest
+from literate_wordle.guess import score_guess
+#+end_src
+
+This means we now need to create such a module.
+
+#+NAME: scoring-guessmod-header
+#+CAPTION: New =guess.py= module, starting with docstring
+#+begin_src python :tangle no
+"""Score guesses of Wordle game"""
+#+end_src
+
+We already defined most of the function (name, module, output), so let's just
+write a stub that will make tests go red.
+
+#+NAME: scoring-guessfunc-proto1
+#+CAPTION: =score_guess= stub to see the tests go red
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess"""
+    return "⬜"
 #+end_src
 
 
+Now the test should fail appropriately, let's add a twist: we'll mark the test
+function as expected to fail, because for now it's not been implemented. This
+allows the test runner to mark all tests as OK despite known failures, and
+is perfect for known bugs being worked on, or new features being built.
+Imagine if every time we built new features via TDD, the commit that adds the
+test first makes CI go red! No, we would rather have a nice "excuse" for this
+new test to fail, and have the build stay green, "with an expected failure".
+
 
 #+NAME: scoring-test-xfail
-#+CAPTION: Marking the feature as expected to fail, causing tests to not alert.
+#+CAPTION: Decorator marking a test as expected to fail, "excusing" assertion failures
 #+begin_src python :tangle no
 @pytest.mark.xfail(reason="Not implemented yet")
 #+end_src
 
-Confirm these tests work, marked as xfail:
+In the case of a known bug, the =reason= field would very likely be a bug
+identifier in the organisation's bug tracker.
+
+#+NAME: scoring-test-import-pytest
+#+CAPTION: Importing the pytest module to get the =pytest.mark.xfail= decorator
+#+begin_src python :tangle no
+import pytest
+#+end_src
+
+Confirm these tests work, marked as xfail ("eXpected FAILure"):
 
 #+begin_src shell :exports both
 make test
@@ -1410,6 +1432,16 @@ Coverage XML written to file test_results/coverage.xml
 
 ========================= 5 passed, 1 xfailed in 0.10s =========================
 #+end_example
+
+Note that we now have regular tests that pass, and this one test that fails as expected, and
+=pytest=, expecting it, doesn't shout about the failure. Really handy.
+
+Remember that "disabling" (marking as =pytest.mark.skip=) is different from
+marking as =xfail=, because skipping a test avoids running it, while =xfail=
+tests do run, the assertion failure is just not marked as critical. There's even
+a flag to make =xpass= (expected test failures that ended up being green) become
+an actual fatal testing error, for the cases where it's important to track the
+failure itself.
 
 ** More tests
 
@@ -1451,12 +1483,12 @@ For the Scenario Outline, it's interesting to notice that a pattern emerged,
 which allows the same test skeleton to be reused with different data. In Pytest,
 this can be done by "parametrizing" the test with multiple data entries.
 
-Usually this is just a matter of a decorator to signify the data, but since
-we're trying to make multiple separate tests from the different data sets, we
-can use a [[https://docs.pytest.org/en/6.2.x/example/parametrize.html#set-marks-or-test-id-for-individual-parametrized-test][stronger kind of parametrization]]:
+This is a decorator to flag data, but since
+we're trying to group some of those tests as part of different groups, we will
+use the =pytest.param.id= flag.
 
 #+NAME: scoring-multi-skeleton
-#+CAPTION: Generic acceptance test
+#+CAPTION: Generic acceptance test, without any data attached
 #+begin_src python :tangle no
 def test_generic_score(answer, our_guess, expected_score):
     """Scenario Outline: Scoring guesses"""
@@ -1469,7 +1501,7 @@ def test_generic_score(answer, our_guess, expected_score):
 
 Just need to fill in the parameters:
 #+NAME: scoring-multi-parameters
-#+CAPTION: Parameters for generic test
+#+CAPTION: Parameters for generic test. Notice how =id= is used to cluster test data source, making =multi_occur= tests look separate to =normal_guess= ones.
 #+begin_src python :tangle no
 @pytest.mark.parametrize(
     "answer,our_guess,expected_score",
@@ -1489,17 +1521,17 @@ Just need to fill in the parameters:
 
 ** Implementing the feature
 
-With the amount of prep we did, the little scoring function can be safely done.
+With the strong test harness we have, this scoring function can be done conveniently.
 
 Let's experiment with the solution, iterating over naive solution and seeing how
-close they get to implementing the feature, by number of tests failed.
+close they get to implementing the feature, by number of tests failed. This
+isn't required, we have already identified edge cases that make naive solutions
+break, but this is the fun experimenting part.
 
-Before anything, we go to the bottom of this file, where the tangling happens,
-and remove the "xfail" marker, so that test failures actually notify us as
-failures.
+Before any actual code change, first we remove the "xfail" marker, so that test
+failures actually notify us as failures, as we're actually implementing things now.
 
-First, a simple string matching by iterating over both lists at once:
-
+#+CAPTION: A simple string matching by iterating over both lists at once
 #+NAME: scoring-guessfunc-naive
 #+begin_src python :tangle no
 def score_guess(guess: str, answer: str) -> str:
@@ -1516,11 +1548,11 @@ def score_guess(guess: str, answer: str) -> str:
 #+end_src
 
 That only passes 3 tests of the 12 we just defined, obviously because we don't
-deal with incorrect characters. So let's add keeping track of characters in the
-wrong places:
+deal with incorrect characters at all. So let's add keeping track of characters
+in the wrong places:
 
 #+NAME: scoring-guessfunc-naive2
-#+CAPTION: Keep track of all answer characters
+#+CAPTION: Keep track of all answer characters while iterating through both list
 #+begin_src python :tangle no
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess a little less naively"""
@@ -1543,13 +1575,14 @@ That version now passes 8 of 12 tests, with the issue being the multiple
 occurence of the same character in the answer being treated wrong, clearly an
 edge case we were fortunate to identify early.
 
-Looking at the tests, it seems that our scoring technique needs to remember how
-many occurences of each characters of the answer exists, and grade only the
+Looking at the examples, it seems that our scoring function needs to keep track of how
+many occurences of each characters of the answer exists overall, and grade only the
 first occurence of such characters as "wrong place", reducing the counter.
 
 Fortunately, Python implements a good Counter function which we can import:
 
 #+NAME: scoring-guessfunc-import
+#+CAPTION: Import the =Counter= class, which generates a dictionary of =item= to =count= on whatever it's given
 #+begin_src python :tangle no
 from collections import Counter
 #+end_src
@@ -1566,10 +1599,10 @@ if guess_char in answer_chars and answer_chars[guess_char] > 0:
         del answer_chars[guess_char]
 #+end_src
 
-So we try it
+So we try the Counter way
 
 #+NAME: scoring-guessfunc-impl1
-#+CAPTION: Use a Counter for character multiple occurences
+#+CAPTION: Use a =Counter= for character multiple occurences
 #+begin_src python :tangle no
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
@@ -1599,7 +1632,7 @@ we only did the reduction of counter for yellow, not also greens. This needs a
 bit of reshuffling:
 
 #+NAME: scoring-guessfunc-impl
-#+CAPTION: Use a Counter for character multiple occurences
+#+CAPTION: Use a Counter, keeping track of both Green and Yellow
 #+begin_src python :tangle no
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
@@ -1629,9 +1662,10 @@ def score_guess(guess: str, answer: str) -> str:
 
 ** Tangle it all out
 
-Reorder the blocks from above to export with formatting enabled:
+As before, we reorder the blocks from snippets above to export code in a way
+that keeps proper formatting.
 #+NAME: scoring-impl-tangleweb
-#+CAPTION: guess.py
+#+CAPTION: Final =guess.py=
 #+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
 <<scoring-guessmod-header>>
 
@@ -1643,7 +1677,7 @@ Reorder the blocks from above to export with formatting enabled:
 #+end_src
 
 #+NAME: scoring-test1-tangleweb
-#+CAPTION: The tests
+#+CAPTION: Final =tests/test_scoring_guess.py=
 #+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
 """Validates the Gherkin file features/scoring_guess.feature:
 
