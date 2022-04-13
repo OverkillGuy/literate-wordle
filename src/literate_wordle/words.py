@@ -4,7 +4,7 @@ import gzip
 import importlib.resources as pkg_resources
 from functools import cache
 from random import choice
-from typing import Optional, Tuple
+from typing import Optional
 
 from . import assets  # Relative import of the assets/ folder
 
@@ -14,7 +14,7 @@ def get_asset_zip_as_set(asset_filename: str) -> set[str]:
     """Decompress a file in assets module into a set of words, separated by newline"""
     compressed_bytes = pkg_resources.read_binary(assets, asset_filename)
     string = gzip.decompress(compressed_bytes).decode("ascii")
-    string_list = [word.strip().lower() for word in string.split("\n")]
+    string_list = [word.strip().lower().strip() for word in string.split("\n")]
     return set(string_list)
 
 
@@ -23,7 +23,7 @@ def pick_answer_word() -> str:
     return choice(list(get_asset_zip_as_set("wordle_answers_dict.txt.gz")))
 
 
-def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
+def check_valid_word(guess: str) -> tuple[bool, Optional[str]]:
     """Check a wordle guess is valid: length and in dictionary"""
     answer_length = 5
     guess_length = len(guess)

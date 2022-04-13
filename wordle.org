@@ -33,12 +33,12 @@ word that will become our secret answer.
 As the first iteration in a test-driven project, it's important that we set up
 all the components we'll need going forwards.
 
-First, let's formalise a little our first requirement, using Gherkin Feature.
-
-For context as to why/how we're doing this, read THIS ARTICLE.
+First, let's formalise a little our first requirement, using Gherkin Features.
+For context as to why/how we're doing this, read [[https://jiby.tech/post/gherkin-features-user-requirements/][my post on gathering
+requirements via Gherkin.]]
 
 #+NAME: feature1
-#+CAPTION: Our first requirement. Tangled to features/pick_answer_word.feature
+#+CAPTION: Our first requirement. Tangled (exported) to =features/pick_answer_word.feature=
 #+begin_src feature :tangle features/pick_answer_word.feature
 Feature: Pick an answer word
   As a Wordle game
@@ -52,22 +52,19 @@ pick from.
 
 ** TDD for picking word functionality
 
-We want to write a test that validates that we can indeed pick a random word.
-
-But "Random" and "test" together should make anybody wince at the idea of
+We want to write a test that validates that we can indeed pick a random word. But "Random" and "test" together should make anybody wince at the idea of
 non-deterministic testing.
 
 We /could/ write a test that picks a word, then confirm the word came
-from the dictionary file, but that test would implement the entirety of the
-feature we're testing, as well as rely on the internals of the implementation.
-That's very wrong.
+from the dictionary file, but writing test would mean re-implementing the entirety of the
+feature we're testing, as well as rely on the internals of the implementation
+being correct. That's very wrong.
 
-A good alternative would be to pin the randomness, making the test deterministic
-by anchoring the randomness seed to known value, allowing repeatable testing.
-
-But this is just the first test in a new project, we want a simple check to start
-with, so we compromise by making the assertion "is the random word picked a five
-letter word"?
+A good alternative would be to pin down the randomness (making the test
+deterministic) by anchoring the randomness seed to known value, allowing
+repeatable testing. But this is just the first test in a new project, so we want a
+simple check to start with, so we compromise by making the assertion "is the
+random word picked of five letter length"?
 
 So we write down a new test file, under =tests/= folder, starting with a
 file-level docstring that references the Gherkin feature this enforces.
@@ -160,8 +157,8 @@ As pytest mentions, we should see a wordle solution of 5 letters, not zero.
 So the test indeed failed as expected, we can now make it pass by implementing
 the feature.
 
-Taking a quick step back, look at how conveniently TDD lets us "dream up an
-API", by describing functions and files that don't need to exist.
+Taking a quick step back, think of how conveniently TDD lets us "dream up an
+API", by describing functions and files that don't need to exist yet.
 
 ** Solutions dictionary file
 
@@ -216,10 +213,10 @@ someone's computer. Our code needs to refer to the file as "the file XYZ inside
 the assets folder of our package". We need to look up how to express that.
 
 From [[https://stackoverflow.com/a/20885799][Stackoverflow on reading static files from inside Python package]], we can
-use the =importlib.resources= module, since our project requires =Python >3.9=.
+use the =importlib.resources= module, since our project requires =Python  3.9= onwards.
 
-So we'll move our dictionary zip file into a new module called =assets=, which
-will be a proper python module that can be imported from:
+So we'll move our dictionary zip file into a new module (folder) called
+=assets=, which will be a proper python module that can be imported from:
 
 #+CAPTION: Moving our dictionary to the new =assets= sub-module.
 #+begin_src shell :tangle no
@@ -229,10 +226,11 @@ echo '"""Static binary assets (dictionaries) required to perform Wordle"""' > sr
 mv wordle_answers_dict.txt.gz src/literate_wordle/
 #+end_src
 
-So let's define the new =words=, which will provide the =pick_answer_word= feature.
+With the file in correct position, let's redefine the =words= module we left empty, to provide the =pick_answer_word= function.
 
-#+CAPTION: Defining new python module under =src/literate_wordle/words.py=, docstrings first.
-#+begin_src python :tangle src/literate_wordle/words.py
+#+CAPTION: Defining new python module under =src/literate_wordle/words.py=, starting with docstrings.
+#+NAME: choice-module-docstring
+#+begin_src python :tangle no
 """Dictionary features to back wordle solutions"""
 #+end_src
 
@@ -254,7 +252,7 @@ We need a convenience function to load the zip file into a list of strings.
 
 
 #+NAME: choice-func-unzipdict
-#+CAPTION: Actual function to unzip dictionary
+#+CAPTION: Actual function to unzip dictionary. Note newline-delimited words now lowercased into a list-of-word strings with no trailing whitespace
 #+begin_src python :tangle no
 def get_words_list() -> list[str]:
     """Decompress the wordle dictionary"""
@@ -262,7 +260,7 @@ def get_words_list() -> list[str]:
         assets, "wordle_answers_dict.txt.gz"
     )
     dict_string = gzip.decompress(dict_compressed_bytes).decode("ascii")
-    answer_word_list = [word.strip().lower() for word in dict_string.split("\n")]
+    answer_word_list = [word.strip().lower().strip() for word in dict_string.split("\n")]
     return answer_word_list
 #+end_src
 
@@ -287,15 +285,16 @@ def pick_answer_word() -> str:
     return choice(get_words_list())
 #+end_src
 
-With the function implemented, we can try it out in a Python REPL:
+With the function implemented, we can try it out in a Python REPL (Read Eval
+Print Loop, also known as an interactive interpreter):
 
-#+CAPTION: Open an interactive python session, ask twice for random word.
+#+CAPTION: Open an interactive python session, ask for a random word twice.
 #+begin_src shell :tangle no :exports both
 poetry run python3
 >> from literate_wordle import words
->> print(words.pick_answer_word());
+>> print(words.pick_answer_word())
 stink
->> print(words.pick_answer_word())'
+>> print(words.pick_answer_word())
 blank
 #+end_src
 
@@ -341,9 +340,11 @@ explicit the feature via acceptance test, and iterate on the new RED test until 
 green, then ship the feature.
 
 Common TDD workflow adds a refactor or "blue" component to the cycle, which is
-indeed necessary for production code, as it lends to maintainability. But this
-project is entertainment material, refactoring would mean refactoring the =wordle.org= source file,
-which would drown out the nice narrative we're building here.
+indeed necessary for production code, as it lends maintainability (the first
+draft of a codebase is usually taking big shortcuts). But this project is
+meant as entertainment material, and proper refactoring would mean refactoring the =wordle.org=
+source file, which would drown out the nice narrative we're building here, so
+let's leave it here.
 
 Along the way, the code blocks spelled out in this narrative-oriented file is
 tangled out into proper code paths, so that the =Makefile= can pick it up and
@@ -354,9 +355,9 @@ such a weaving of code snippets works.
 * Confirming guess is a valid word
 
 Now that we can pick secret words, we need to start processing guesses. The very
-first thing a guess needs is validating guesses are proper words of the right
-length. This feature will give us a familiar context (dictionaries), while
-slowly ramping up the details of the Gherkin features:
+first thing we need is validating guesses are proper words, and of the right
+size. This feature will give us a familiar context (dictionaries), while slowly
+ramping up the details of the Gherkin features:
 
 #+NAME: feature-check-valid-guess
 #+CAPTION: New Gherkin feature file =features/checking_guess_valid_word.feature=
@@ -392,12 +393,12 @@ Scenario: Accept five letter dictionary words
   Then the guess is accepted
 #+end_src
 
-So, with a feature covering two scenarios, we can start laying out acceptance
+So, with a feature covering these scenarios, we can start laying out acceptance
 tests.
 
 Since I quite like to use the Gherkin feature file inside the
 docstrings of Python tests, I'm going to take advantage of having already
-written it above to reference it for export, so I can template it out:
+written the feature above, to reference it, so I can template it out in code snippets:
 
 #+NAME: scenario-check-tangle-noweb
 #+CAPTION: New test file's module-level docstring, using (invisible during rendering) templating to fill in the gherkin feature from Listing [[feature-check-valid-guess]]
@@ -424,12 +425,12 @@ Just this once, I'll show how the templating happens behind the scene:
 With the feature described, let's import our hypothetical test code
 
 #+NAME: test-valid-import
+#+CAPTION: Import a new function we'll be defining
 #+begin_src python :tangle no
 from literate_wordle.words import check_valid_word
 #+end_src
 
-And write out a simple test using the first scenario:
-
+#+CAPTION: A simple test using the first scenario
 #+NAME: test-valid-1
 #+begin_src python :tangle no
 def test_reject_long_words():
@@ -443,8 +444,12 @@ def test_reject_long_words():
     assert reject_reason == "Guess too long"
 #+end_src
 
-And in a similar way, we write the opposite test for too short:
+Notice the pattern of referencing the Gherkin Scenario as comments inside the
+test. This practice is something I came up with on my own after being a bit
+disappointed with Cucumber. You can read more about it in [[https://jiby.tech/post/low-tech-cucumber-replacement/][my post on low-tech
+cucumber replacement]].
 
+#+CAPTION: The opposite test, text too short
 #+NAME: test-valid-2
 #+begin_src python :tangle no
 def test_reject_overly_short_words():
@@ -460,6 +465,7 @@ def test_reject_overly_short_words():
 
 And finally, the dictionary checks:
 
+#+CAPTION: Non-dictionary words test
 #+NAME: test-valid-3
 #+begin_src python :tangle no
 def test_reject_nondict_words():
@@ -474,6 +480,7 @@ def test_reject_nondict_words():
 #+end_src
 
 
+#+CAPTION: Dictionary words test
 #+NAME: test-valid-4
 #+begin_src python :tangle no
 def test_accept_dict_words():
@@ -488,15 +495,17 @@ def test_accept_dict_words():
 One tiny detail regarding this last example, which highlights why separating
 Gherkin from actual code is important: We describe in the positive scenario the
 need to accept a correct word in terms of "not rejecting", which in code maps to
-the =is_valid= boolean. That's suffficient to make the Gherkin scenario, which
-is what we think of when designing the software, but as we see in the
-implementation, there's also the matter of the =reject_reason= component, which
-we should check for emptiness. That is an implementation detail, which has no
-reason to be laid out in the original scenario, but is still valid to make
-assertions on. So we shall:
+the =is_valid= boolean. That's suffficient to validate the originalGherkin
+scenario, which is what we think of when designing the software.
+
+But as we see in the implementation, there's also the matter of the
+=reject_reason= component, which we should check for emptiness. That emptiness is an
+implementation detail, which has no reason to be laid out in the original
+scenario, but is still valid to make assertions on as part of the
+implementation's check. So we add the following line to the test:
 
 #+NAME: reject-reason-none
-#+CAPTION: This line isn't defined in Gherkin, because it separates the implementation from the feature's requirement
+#+CAPTION: Appended line to Listing [[test-valid-4]]. Doesn't map back to Gherkin, because it is an implementation detail, not part of the feature's requirement itself. Still worth checking, in practice.
 #+begin_src python :tangle no
     assert reject_reason is None, "Accepted word should have no reason to be rejected"
 #+end_src
@@ -504,30 +513,35 @@ assertions on. So we shall:
 With all these (high level) tests in hand, let's write up some small
 implementation to get RED tests instead of a crash.
 
-First up is defining a signature: We take a guess in, and return a boolean and a
-string. Except sometimes (as seen in Listing [[reject-reason-none]]) it's
-=None=, so that's more of an =Optional= string, which we'll need to import:
+First up is defining the function's signature: Simple enough, we take a string guess
+in, and return a boolean and a string for justification. Except sometimes (as
+seen in Listing [[reject-reason-none]]) the reason is =None=, so that's more of an
+=Optional= string, which we'll need to import.
 
+#+CAPTION: Import type hints for function type definition
 #+NAME: valid-stdlib
 #+begin_src python :tangle no
-from typing import Optional, Tuple
+from typing import Optional
 #+end_src
 
+#+CAPTION: Function signature without its content
 #+NAME: valid-func-proto
 #+begin_src python :tangle no
-def check_valid_word(guess: str) -> Tuple[bool, Optional[str]]:
+def check_valid_word(guess: str) -> tuple[bool, Optional[str]]:
 #+end_src
 
-And to fill it with junk:
 
+#+CAPTION: Fill the function, to give valid-but-nonsensical output
 #+NAME: valid-func-junk
 #+begin_src python :tangle no
-    """Implement fake checking a valid word"""
+    """Pretends to check if guess is a valid word"""
     return False, "Not implemented"
 #+end_src
 
 All right, so we have tests, let's see them fail!
 
+#+CAPTION: Run the tests. The =2>&1 || true= part is to ensure any failed test's output goes to stdout (in this document) and bad exit codes don't get marked as failures of the code block's execution.
+#+NAME: valid-func-failrun1
 #+begin_src shell :tangle no :exports both :async
 make test 2>&1 || true
 #+end_src
@@ -652,9 +666,9 @@ indeed) and we're pushing this even more to explicit our user requirements as
 acceptance tests, it should be no surprise the coverage gets good.]
 
 ** Implementing the feature, one test at a time
-Let's implement the proper feature. First, we fill a dummy function body to
-check length, and test it out, seeing less tests fail as we implemented half the
-feature:
+Let's implement the proper feature. First of all, we replace the function stub's
+body to do only guess-length checks, run tests against it. Since we implement
+half the feature (by Scenarios), we should be seeing half as many tests fail as before.
 
 #+NAME: valid-func-lenbody
 #+begin_src python
@@ -668,6 +682,9 @@ elif guess_length > answer_length:
 return True, None  # No dictionary check
 #+end_src
 
+
+#+NAME: valid-func-failrun2
+#+CAPTION: Similarly to Listing [[valid-func-failrun1]], run test without exiting on failure
 #+begin_src shell :tangle no :exports both :async
 make test 2>&1 || true
 #+end_src
@@ -721,13 +738,17 @@ FAILED tests/test_checking_guess_valid_word.py::test_reject_nondict_words - A...
 make: *** [Makefile:16: test] Error 1
 #+end_example
 
-Progress! Four of five tests pass, so we now need the dictionary.
+Progress! Four of five tests pass[fn::Since the remaining two tests we didn't
+implement code for each check one of the =is_valid= boolean, it's normal that we spuriously pass
+one of the remaining tests, because our dummy function returns the same boolean
+answer always, and a broken clock is right twice a day.], so we now need the dictionary.
 
 
-Note that in Wordle, the list of possible solutions is a subset of the word
-dictionary used for guess validation. We previously loaded the answers, now we
-need the larger set of accepted words. While it does mean there will be
-duplicates, we're talking kilobytes, we can afford that.
+Note that in Wordle's original implementation, the list of possible solutions is
+a subset of the word dictionary used for guess validation. We previously loaded
+the answers, now we need the larger set of accepted words. While it does mean
+there will be duplicate entries, we're talking single-digit kilobytes, we can
+afford that.
 
 We fetch the dictionary like before:
 
@@ -754,13 +775,15 @@ du -k "${ANSWERS_FILE}.gz"
 
 This time is more like two thirds shaved off, sweet.
 
-We reach to add a function for decompressing, but realize we mostly wrote this
-before, except for the different filename. So let's edit the previous iteration
-to be more generic. One way this can be more generic is returning a =set= of
-strings, instead of the previous =list=. This means we assume no ordering and
-use hash addressing, rather than strict string ordering. After all, we will not
-iterate through the list, as much as we want to randomly access entries, so the
-=set= will provide benefits
+We reach to add a function for decompressing, but realize we wrote all this
+before, except for a different filename. So let's edit the zip extraction code
+to be more generic.
+
+One way this can be more generic is returning a =set= of strings, instead of the
+previous =list=. This means we assume no ordering and use hash addressing,
+rather than strict string ordering. After all, we will not iterate through the
+list, as much as we want to randomly access entries, so the =set= will provide
+benefits down the line.
 
 #+NAME: choice-func-unzipdict-generic
 #+CAPTION: Generic "unzip asset" function
@@ -769,14 +792,14 @@ def get_asset_zip_as_set(asset_filename: str) -> set[str]:
     """Decompress a file in assets module into a set of words, separated by newline"""
     compressed_bytes = pkg_resources.read_binary(assets, asset_filename)
     string = gzip.decompress(compressed_bytes).decode("ascii")
-    string_list = [word.strip().lower() for word in string.split("\n")]
+    string_list = [word.strip().lower().strip() for word in string.split("\n")]
     return set(string_list)
 #+end_src
 
 Which changes the invocation of =pick_answer_word= into:
 
 #+NAME: choice-func-pickanswer-generic
-#+CAPTION: Pick-a-word, revisited to generic asset fetching
+#+CAPTION: Pick-a-word, revisited to use generic asset unzipping function
 #+begin_src python :tangle no
 def pick_answer_word() -> str:
     """Pick a single word out of the dictionary of answers"""
@@ -785,6 +808,7 @@ def pick_answer_word() -> str:
 
 And now we can use the dictionary as a set in our =check_valid_word= function:
 
+#+CAPTION: Use the dictionary as a set to check =if guess in dictionary=
 #+NAME: valid-func-len-dict
 #+begin_src python
 """Check a wordle guess is valid: length and in dictionary"""
@@ -799,6 +823,12 @@ if guess in valid_words_dict:
     return True, None
 return False, "Not a word from the dictionary"
 #+end_src
+
+Small performance note: Having a =set= of strings means =guess in answers_set= comparison is
+=O(1)= (instead of =O(n)= on dictionary size for =list=), because the
+hash-addressing of =set= is a =O(1)= operation. On very very long list of words,
+iterating through it could be expensive, hence using =set= for lookup if we
+don't need sequential access.
 
 And we're done! Let's run our system through =make= again, to spot test failures
 but also to get linters:
@@ -958,14 +988,14 @@ Tests pass, coverage stays strong, and linters are quiet, this is great!
 
 ** Performance trick
 
-We mentioned before in footnotes that the whole dictionary would get unzipped on
-every request for such an asset. Now we're validating guessed words, we may want
-to be processing guesses quite quickly, certainly quicker than one would pick
+We mentioned before that the whole dictionary would get unzipped on every
+request for assets. Now we're validating guessed words, we may want to be
+processing guesses quite often, certainly quicker than one would pick secret
 words!
 
-What we want to make all this fast, is to make the dictionary unzipping cached,
+What we want to make all this fast, is to cache the unzipped dictionary,
 so that repeated calls to the function =get_asset_zip_as_set= don't bother with
-file open and unzip. There's a handy python decorator that does the trick! Let's
+file open and unzip, just serve the few hundred kilobytes content from memory again. There's a handy python decorator that does the trick! Let's
 add =functools.cache= on top of our slow function:
 
 
@@ -988,9 +1018,9 @@ After rerunning our tests, we now have a (theoretically) faster function, yey!
 Remember that we committed a couple of performance/optimization sins just then,
 by both: optimizing prematurely (with no proof of slowness), and by doing
 optimization without using profiling information to optimize, we very likely
-just optimized something that isn't our bottleneck. I'm fine with that, just
+just optimized something that isn't our bottleneck. I'm fine with that, I just
 wanted to showcase this cool decorator, which functions like an unbounded
-memoizer. But just in case, let's see quick performance numbers of before/after:
+memoizer. Let's see quick performance numbers of before/after:
 
 #+NAME: valid-perf-before
 #+CAPTION: Before cacheing, running 5 batches of a thousand double-dict-unzip
@@ -1014,33 +1044,42 @@ poetry run python3 -m timeit -v -n 1000 --setup "from literate_wordle.words impo
 :
 : 1000 loops, best of 5: 12.4 usec per loop
 
-That's a two orders of magnitude gain for a single line of code changed.
+That's a two orders of magnitude gain for a single line of code changed. Sweet.
 
 ** Tangle out all the code
 
-Last section of this file used for internal purposes:
-Code defined above is usually out of order, especially the imports. To avoid
-having nonsence python files with import-feature-import-feature sequences, which
-formatters would go crazy over, we define below some reordered code blocks,
-using the =noweb= feature of org-mode, that tangle out into the proper files
-with proper ordering and spacing.
+The last section of each heading of this document is used for internal purposes.
+The Code snippets defined above are usually out of order, especially the
+imports, or functions defined once as stubs, then re-defined with proper
+implementation.
 
-This means we need to manually weave the code blocks, instead of just stating
-they all point to the same file and rely on file top-to-bottom order, we have an
-explicit code block where we template out "add this bit, now 2 lines below add
-that snippet, and then...". Not ideal, but it has the added benefit of allowing
-custom layout like number of lines jumped between functions, which was blocking
-adoption of the formatter "black" in this repository.
+To avoid having nonsense python file ordering, with import-feature-import-feature
+sequences, which formatters would go crazy over, we define below the reordered
+code blocks as they should be output, using the =noweb= feature of org-mode.
+This lets us reference code blocks above by name, tangle out into the
+proper files with proper ordering and spacing as one would expect a real
+codebase to look like.
 
-First, fix words.py imports being out of order in our narrative by tangling them
-via noweb to weave the part 1 imports with the part 2. This means =isort=
-(import sorter) is now happy, won't thrash these python files. Also insert the
-cache decorator before the assets function, and substitute the
+This means we need to manually weave the code blocks, instead of pointing them
+all to the same file and rely on code snippet's top-to-bottom order, we now have
+an explicit code block where we template out "add this bit, now 2 lines below
+add that snippet, and then...". This isn't super pretty, but it gives complete
+control over layout like number of lines jumped between functions, which was
+blocking adoption of the formatter "black" in this repository.
+
+First, fix =words.py= imports being out of order in our narrative by tangling
+them via noweb to weave the part 1 imports with the part 2. This means =isort=
+(import sorter[fn::Sorts import-code first by category, then alphabetically.
+Category of imports is in decreasing order: stdlib, then third party packages,
+then local module imports.]) is now happy and won't thrash these python files.
+Also insert the cache decorator before the assets function, and substitute the
 =check_valid_word= function body with the real implementation instead of the
 dummy function defined initially.
 
+#+CAPTION: The final version of =words.py=. Note that behind the scene this code block has 0 code, just references to other code block named above.
 #+NAME: words-py-tangle
 #+begin_src python :tangle src/literate_wordle/words.py :noweb yes
+<<choice-module-docstring>>
 
 <<choice-stdlib>>
 <<valid-cache-import>>
@@ -1064,6 +1103,7 @@ dummy function defined initially.
 Now the same thing with the tests file, which indeed /is/ in proper order
 already, but would benefit from two-lines-between-tests to guarantee formatting:
 
+#+CAPTION: Final version of =tests/test_checking_guess_valid_word.py=
 #+NAME: words-py-tangle
 #+begin_src python :tangle tests/test_checking_guess_valid_word.py :noweb yes
 
