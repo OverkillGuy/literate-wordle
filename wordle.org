@@ -796,15 +796,28 @@ def get_asset_zip_as_set(asset_filename: str) -> set[str]:
     return set(string_list)
 #+end_src
 
-Which changes the invocation of =pick_answer_word= into:
-
-#+NAME: choice-func-pickanswer-generic
-#+CAPTION: Pick-a-word, revisited to use generic asset unzipping function
+In order to avoid hardcoded filenames, we yank out the file names and fetching
+of files:
+#+CAPTION: Magic strings defined as module-level constants
+#+NAME: choice-magicstrings
 #+begin_src python :tangle no
-def pick_answer_word() -> str:
-    """Pick a single word out of the dictionary of answers"""
-    return choice(list(get_asset_zip_as_set("wordle_answers_dict.txt.gz")))
+ANSWERS_FILENAME = "wordle_answers_dict.txt.gz"
+ACCEPTED_FILENAME = "wordle_accepted_words_dict.txt.gz"
 #+end_src
+
+#+CAPTION: Wrappers to the specific files to grab
+#+NAME: choice-func-getdicts
+#+begin_src python :tangle no
+def get_answers() -> set[str]:
+    """Grab the Wordle answers as a set of string words"""
+    return get_asset_zip_as_set(ANSWERS_FILENAME)
+
+
+def get_accepted_words() -> set[str]:
+    """Grab the Wordle accepted words dictionary as a set of string words"""
+    return get_asset_zip_as_set(ACCEPTED_FILENAME)
+#+end_src
+
 
 And now we can use the dictionary as a set in our =check_valid_word= function:
 
@@ -818,7 +831,7 @@ if guess_length < answer_length:
     return False, "Guess too short"
 elif guess_length > answer_length:
     return False, "Guess too long"
-valid_words_dict = get_asset_zip_as_set("wordle_accepted_words_dict.txt.gz")
+valid_words_dict = get_accepted_words()
 if guess in valid_words_dict:
     return True, None
 return False, "Not a word from the dictionary"
@@ -829,6 +842,17 @@ Small performance note: Having a =set= of strings means =guess in answers_set= c
 hash-addressing of =set= is a =O(1)= operation. On very very long list of words,
 iterating through it could be expensive, hence using =set= for lookup if we
 don't need sequential access.
+
+
+We changes the invocation of =pick_answer_word= to use the new functions too
+
+#+NAME: choice-func-pickanswer-generic
+#+CAPTION: Pick-a-word, revisited to use generic asset unzipping function. Note that =choice= needs an iterable object, hence convert back to list
+#+begin_src python :tangle no
+def pick_answer_word() -> str:
+    """Pick a single word out of the dictionary of answers"""
+    return choice(list(get_answers()))
+#+end_src
 
 And we're done! Let's run our system through =make= again, to spot test failures
 but also to get linters:
@@ -1087,6 +1111,11 @@ dummy function defined initially.
 <<valid-stdlib>>
 
 <<choice-locallib>>
+
+<<choice-magicstrings>>
+
+
+<<choice-func-getdicts>>
 
 
 <<valid-cache-decorator>>
@@ -2297,10 +2326,10 @@ def test_invalid_guess_not_counted():
 Hmm, after some thought, it seems that the function we implemented, compared to the
 feature being described in Gherkin, is different!
 
-The Gherkin feature is about tracking specific number of guesses. But the
-implemented feature is the wider "play round" feature, which indeed needs to
-cover more cases than just how many guesses, it needs to understand that the
-guess is correct or not.
+As mentioned before, the Gherkin feature is about tracking specific number of
+guesses, but we increased scope to consider the wider win scenario, using the
+"play round" feature. Expanding the feature again to cover more cases than just how many guesses, it needs to understand that the
+guess is correct word or not.
 
 So for the specific purpose of tracking guesses as a feature, we're already
 covered by existing scenarios. But as we saw in coverage metrics, we're missing

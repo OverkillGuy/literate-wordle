@@ -8,6 +8,19 @@ from typing import Optional
 
 from . import assets  # Relative import of the assets/ folder
 
+ANSWERS_FILENAME = "wordle_answers_dict.txt.gz"
+ACCEPTED_FILENAME = "wordle_accepted_words_dict.txt.gz"
+
+
+def get_answers() -> set[str]:
+    """Grab the Wordle answers as a set of string words"""
+    return get_asset_zip_as_set(ANSWERS_FILENAME)
+
+
+def get_accepted_words() -> set[str]:
+    """Grab the Wordle accepted words dictionary as a set of string words"""
+    return get_asset_zip_as_set(ACCEPTED_FILENAME)
+
 
 @cache
 def get_asset_zip_as_set(asset_filename: str) -> set[str]:
@@ -20,7 +33,7 @@ def get_asset_zip_as_set(asset_filename: str) -> set[str]:
 
 def pick_answer_word() -> str:
     """Pick a single word out of the dictionary of answers"""
-    return choice(list(get_asset_zip_as_set("wordle_answers_dict.txt.gz")))
+    return choice(list(get_answers()))
 
 
 def check_valid_word(guess: str) -> tuple[bool, Optional[str]]:
@@ -31,7 +44,7 @@ def check_valid_word(guess: str) -> tuple[bool, Optional[str]]:
         return False, "Guess too short"
     elif guess_length > answer_length:
         return False, "Guess too long"
-    valid_words_dict = get_asset_zip_as_set("wordle_accepted_words_dict.txt.gz")
+    valid_words_dict = get_accepted_words()
     if guess in valid_words_dict:
         return True, None
     return False, "Not a word from the dictionary"
