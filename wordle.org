@@ -785,7 +785,7 @@ rather than strict string ordering. After all, we will not iterate through the
 list, as much as we want to randomly access entries, so the =set= will provide
 benefits down the line.
 
-#+NAME: choice-func-unzipdict-generic
+#+NAME: choice-func-unzipdict-generic1
 #+CAPTION: Generic "unzip asset" function
 #+begin_src python :tangle no
 def get_asset_zip_as_set(asset_filename: str) -> set[str]:
@@ -1070,6 +1070,60 @@ poetry run python3 -m timeit -v -n 1000 --setup "from literate_wordle.words impo
 
 That's a two orders of magnitude gain for a single line of code changed. Sweet.
 
+** Bug!
+
+Doing some exploration of the accepted/answer word sets, I noticed an issue:
+
+#+CAPTION: Count word size in each dictionary
+#+begin_src python :tangle no :exports both :eval no-export
+from literate_wordle.words import get_answers, get_accepted_words
+
+answer_lengths = [len(word) for word in list(get_answers())]
+accepted_lengths = [len(word) for word in list(get_accepted_words())]
+
+print(set(answer_lengths))
+print(set(accepted_lengths))
+#+end_src
+
+#+RESULTS:
+: {0, 5}
+: {0, 5}
+
+Each have a 0-length words, in other word, the empty string.
+
+This is likely a classic issue due to DOS line endings, the last line of the
+file is only a carriage return, which is technically whitespace, and the call to
+=strip()= removes it, leaving an empty space item in the list.
+
+If this was a proper production issue we just discovered, we would first turn
+the above snippet into a proper test case (asserting no 0 length word exist,
+seeing it be red), commit that, raise it as bug, and work on a fix. But this
+code hasn't reached production yet, and the bug itself is minor enough to not
+warrant that during our exploration phase.
+
+We can fix this multiple ways. We /could/ make the =get_accepted_words= and
+=get_answers= functions change their behaviours (either via set operations to
+remove the empty item from the set, returning =set(words) - set([""])=, or more
+likely removing empty entries during iteration), but that wouldn't prevent
+future users of the buggy function =get_asset_zip_as_set= to get the same issue.
+
+So let's fix it at the root, the =get_asset_zip_as_set= function:
+
+#+NAME: choice-func-unzipdict-generic2
+#+CAPTION: Generic "unzip asset" function, filtering the whitespace-only words
+#+begin_src python :tangle no
+def get_asset_zip_as_set(asset_filename: str) -> set[str]:
+    """Decompress a file in assets module into a set of words, separated by newline"""
+    compressed_bytes = pkg_resources.read_binary(assets, asset_filename)
+    string = gzip.decompress(compressed_bytes).decode("ascii")
+    string_list = [word.strip().lower().strip() for word in string.split("\n")]
+    # Protect against whitespace-only lines during file-read causing empty stripped word
+    non_empty_words = [word for word in string_list if len(word) != 0]
+    return set(non_empty_words)
+#+end_src
+
+This was a good opportunity to play with List Comprehensions with filters, yey.
+
 ** Tangle out all the code
 
 The last section of each heading of this document is used for internal purposes.
@@ -1119,7 +1173,7 @@ dummy function defined initially.
 
 
 <<valid-cache-decorator>>
-<<choice-func-unzipdict-generic>>
+<<choice-func-unzipdict-generic2>>
 
 
 <<choice-func-pickanswer-generic>>

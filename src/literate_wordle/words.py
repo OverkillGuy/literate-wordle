@@ -28,7 +28,9 @@ def get_asset_zip_as_set(asset_filename: str) -> set[str]:
     compressed_bytes = pkg_resources.read_binary(assets, asset_filename)
     string = gzip.decompress(compressed_bytes).decode("ascii")
     string_list = [word.strip().lower().strip() for word in string.split("\n")]
-    return set(string_list)
+    # Protect against whitespace-only lines during file-read causing empty stripped word
+    non_empty_words = [word for word in string_list if len(word) != 0]
+    return set(non_empty_words)
 
 
 def pick_answer_word() -> str:
