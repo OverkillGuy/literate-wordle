@@ -677,7 +677,7 @@ answer_length = 5
 guess_length = len(guess)
 if guess_length < answer_length:
     return False, "Guess too short"
-elif guess_length > answer_length:
+if guess_length > answer_length:
     return False, "Guess too long"
 return True, None  # No dictionary check
 #+end_src
@@ -829,7 +829,7 @@ answer_length = 5
 guess_length = len(guess)
 if guess_length < answer_length:
     return False, "Guess too short"
-elif guess_length > answer_length:
+if guess_length > answer_length:
     return False, "Guess too long"
 valid_words_dict = get_accepted_words()
 if guess in valid_words_dict:

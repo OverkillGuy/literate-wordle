@@ -44,7 +44,7 @@ def check_valid_word(guess: str) -> tuple[bool, Optional[str]]:
     guess_length = len(guess)
     if guess_length < answer_length:
         return False, "Guess too short"
-    elif guess_length > answer_length:
+    if guess_length > answer_length:
         return False, "Guess too long"
     valid_words_dict = get_accepted_words()
     if guess in valid_words_dict:
