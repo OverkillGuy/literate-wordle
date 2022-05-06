@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "literate_wordle"
-version = "0.1.0"
+version = "1.0.0"
 description = "Wordle implementation in literate programming"
 authors = ["Jb Doyon <jb@jiby.tech>"]
 license = "GPL-3.0-or-later"
