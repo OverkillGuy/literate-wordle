@@ -15,7 +15,7 @@ def new_game() -> WordleGame:
 def play_game(game: WordleGame, guess_fetcher: Callable, response_logger: Callable):
     """Plays the given WordleGame until completion.
 
-    Asks guess_fetcher for guess, and prints response to response_logger
+    Asks guess_fetcher for guess, and sends response to response_logger
     """
     outcome = WordleMoveOutcome.GUESS_SCORED_CONTINUE  # Gotta start somehow
     while outcome not in {WordleMoveOutcome.GAME_WON, WordleMoveOutcome.GAME_OVER_LOST}:

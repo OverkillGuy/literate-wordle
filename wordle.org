@@ -2553,6 +2553,7 @@ We have assembled lego bricks into an almost finished product, as we have enough
 play a single round. Let's give this project a shell command to invoke, tying
 together all the other disjointed features.
 
+#+CAPTION: Final feature of our system: play the game!
 #+begin_src feature :tangle features/command_line_entrypoint.feature
 Feature: Pywordle shell command
   As a Wordle game
@@ -2566,6 +2567,7 @@ assemble it into a shell command.
 
 So let's define an entrypoint for the game, generating a new one:
 
+#+CAPTION: Create a new game (object)
 #+NAME: cli-main1
 #+begin_src python :tangle no
 def new_game() -> WordleGame:
@@ -2575,12 +2577,13 @@ def new_game() -> WordleGame:
 
 And how to play until we lose, printing to stdout as we go:
 
+#+CAPTION: The main game loop. Notice the trick: dependency injection of all input and output as "callables", which we can inject later to be =print= and =input=, or automate instead for testing.
 #+NAME: cli-main2
 #+begin_src python :tangle no
 def play_game(game: WordleGame, guess_fetcher: Callable, response_logger: Callable):
     """Plays the given WordleGame until completion.
 
-    Asks guess_fetcher for guess, and prints response to response_logger
+    Asks guess_fetcher for guess, and sends response to response_logger
     """
     outcome = WordleMoveOutcome.GUESS_SCORED_CONTINUE  # Gotta start somehow
     while outcome not in {WordleMoveOutcome.GAME_WON, WordleMoveOutcome.GAME_OVER_LOST}:
@@ -2591,16 +2594,15 @@ def play_game(game: WordleGame, guess_fetcher: Callable, response_logger: Callab
         outcome = result.outcome
 #+end_src
 
-Note how both the guess and the response are dependency-injected, to allow for
-fully automated testing later (though we won't use that too much).
+Pepper in the few imports we need:
 
-Add a few imports needed:
-
+#+CAPTION: Callable is the type of anything that can be called (function but also classes with =__init__= methods...)
 #+NAME: cli-main-import-std
 #+begin_src python :tangle no
 from typing import Callable
 #+end_src
 
+#+CAPTION: Other functions we referenced
 #+NAME: cli-main-import-mod
 #+begin_src python :tangle no
 from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
@@ -2609,10 +2611,10 @@ from literate_wordle.words import pick_answer_word
 
 Now we can add command line argument parsing in a separate file:
 
-
+#+CAPTION: An argument parser with no argument, to give us usage via =--help= flags. Notice the =raw_args=, if passed, is given, and defaults to =None=. This allows us to call this function ourselves to test it, but still use =None= to use =sys.argv= automatically.
 #+NAME: cli-pargs1
 #+begin_src python :tangle no
-def parse_args(raw_args: List[str]) -> argparse.Namespace:
+def parse_args(raw_args: Optional[Sequence[str]] = None) -> argparse.Namespace:
     """Parse given command line arguments"""
     description = "Wordle implementation in Python, as literate programming"
     # Bit overkill since there is no real argument to parse yet
@@ -2620,25 +2622,29 @@ def parse_args(raw_args: List[str]) -> argparse.Namespace:
     return parser.parse_args(raw_args)
 #+end_src
 
+#+CAPTION: The Python arguments parsing library. =click= is fancier, but this is neat and self-contained.
 #+NAME: cli-pargs-import-std1
 #+begin_src python :tangle no
 import argparse
 #+end_src
 
+#+CAPTION: Typing hints for our arguments. =Sequence= is a generalized version of List that is "anything we can iterate over", so a linked list would match.
 #+NAME: cli-pargs-import-std2
 #+begin_src python :tangle no
-from typing import List
+from typing import Optional, Sequence
 #+end_src
 
+#+CAPTION: Inject the input and output functions to =play_game=
 #+NAME: cli-pargs2
 #+begin_src python :tangle no
-def play_game_args(raw_args: List[str]):
+def play_game_args(raw_args: Optional[Sequence[str]] = None):
     """Play a standard Wordle game from stdin to stdout, given args"""
     _ = parse_args(raw_args)
     game = new_game()
     play_game(game=game, guess_fetcher=input, response_logger=print)
 #+end_src
 
+#+CAPTION: Defining an explicit function for the python package to enter through
 #+NAME: cli-pargs3
 #+begin_src python :tangle no
 def main():
@@ -2646,11 +2652,13 @@ def main():
     play_game_args(sys.argv[1:])
 #+end_src
 
+#+CAPTION: More stdlib imports
 #+NAME: cli-pargs-import-std3
 #+begin_src python :tangle no
 import sys
 #+end_src
 
+#+CAPTION: More custom imports
 #+NAME: cli-pargs-import-mod
 #+begin_src python :tangle no
 from literate_wordle.main import new_game, play_game
@@ -2737,24 +2745,21 @@ poetry run pywordle --help
 
 And we can play a round!
 
-#+begin_result
-$ poetry shell
-$ pywordle
-hello
-Try again! Guess number 1. Score is: ⬜🟨🟨⬜🟨
-lobes
-Try again! Guess number 2. Score is: 🟨🟩⬜🟩⬜
-cranes
-Guess too long
-crane
-Try again! Guess number 3. Score is: ⬜⬜⬜🟨🟨
-novel
-Correct! Game won in 4 guesses
-#+end_result
+: $ poetry shell
+: $ pywordle
+: hello
+: Try again! Guess number 1. Score is: ⬜🟨🟨⬜🟨
+: lobes
+: Try again! Guess number 2. Score is: 🟨🟩⬜🟩⬜
+: cranes
+: Guess too long
+: crane
+: Try again! Guess number 3. Score is: ⬜⬜⬜🟨🟨
+: novel
+: Correct! Game won in 4 guesses
 
-Taking a step back, we've got command line launch of the game, and it gave
-us proper play feature. We're done here, especially for a short experimental
-project like this one.
+Taking a step back, we've got command line launch of the game, and we can play
+with it. We're done here, especially for a short experimental project.
 
 But if this codebase was to be maintained, extended, reused, the bar for
 "acceptable" test coverage would be much higher.
@@ -2766,6 +2771,8 @@ advantage of the dependency injection we set up to make proper UI-oriented
 tests. These would reveal, for instance, that when launching the game, there is
 nothing greeting us, no prompt for a guess, which is a usability issue.
 
+In our case, that's an exercise left for the reader.
+
 Remember that testing's primary goal is to increase our trust in the system we
 build.
 
@@ -2776,15 +2783,6 @@ usage would look like. This calls for exploring the edge cases that code may
 have, regardless of intended features. Every string parameter should be tried
 with empty string, uppercase vs lowercase, different encoding, etc.
 
-To give ideas on how to do this, I recently rediscovered that there's an
-interesting way to look for code that wasn't yet tested much: Use test coverage
-measurements, show lines that no tests hit (=if= that never get triggered), and
-build tests around that. Obviously, this won't be sufficient to get all the
-issues[fn::Test coverage marks a line as "covered" if it is hit by any test, but
-not why and how in depth. Classic example is for loops, which mark the loop as
-covered, but the loop could have been hit only once, hiding edge cases when the
-feature iterates over the loop multiple (or no) times. As always, this is at
-best a fun heuristic.], but it's a good way to poke at existing test code.
 * Conclusion
 
 We just walked through building a simple wordle program from scratch, using
@@ -2821,3 +2819,6 @@ Gherkin usage for requirements traceability purposes (without overly zealous
 extremes of Cucumber automation). All these ideas were until now scattered,
 implemented each without the others in different places, and this project
 fuses them into something I hope is more valuable than the sum of its parts.
+
+If you like what you see here, have a look at my other writings, available on
+my blog: https://jiby.tech.
