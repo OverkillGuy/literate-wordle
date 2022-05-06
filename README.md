@@ -25,9 +25,9 @@ In this case, the "novel" is the file `wordle.org` (written in
 [org-mode](https://orgmode.org)), and "tangles" most of the repository's source
 code folders (mostly `src/`, `features/`, and `tests/`).
 
-In terms of code, other than the `wordle.org` file and its mix of code and
-prose, and the fact this file can re-generate the project's source code, the
-rest of the repository is a completely normal python project.
+In terms of code repository, other than the `wordle.org` file and its mix of
+code and prose, and the fact this file can re-generate the project's source
+code, the rest of the repository is a completely normal python project.
 
 ## Usage
 
