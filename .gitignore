@@ -1,9 +1,9 @@
 # Poetry.lock is an exact version pinning tool (down to SHA256 of libs)
 # If writing a (reusable) library, exact versions don't matter that
-# much so it may make sense to gitignore that file, commenting the following line:
+# much so it may make sense to gitignore that file, uncomment the following line:
 # poetry.lock
-# If writing an App (binary-deployable), then exact library versions
-# do matter a lot, and you'll want to keep Poetry.lock tracked = keep uncommented
+# But we're writing an App (binary-deployable), then exact library versions
+# do matter a lot, and we want to keep Poetry.lock tracked = keep commented
 
 test_results/
 
