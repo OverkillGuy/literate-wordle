@@ -2,25 +2,31 @@
 
 
 from collections import Counter
+from enum import Enum
+
+
+class CharacterScore(str, Enum):
+    """A single character's score"""
+
+    OK = "🟩"
+    NO = "⬜"
+    WRONG_PLACE = "🟨"
 
 
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
-    NO = "⬜"
-    OK = "🟩"
-    WRONG_PLACE = "🟨"
     # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
     answer_chars = Counter(answer)
     response = ""
     for guess_char, answer_char in zip(guess, answer):
         if guess_char not in answer_chars:
-            response += NO
+            response += CharacterScore.NO
             continue  # Early exit for this character, skip to next
         # From here on, we MUST have a char in common, regardless of place
         if answer_char == guess_char:
-            response += OK
+            response += CharacterScore.OK
         elif answer_chars[guess_char] > 0:
-            response += WRONG_PLACE
+            response += CharacterScore.WRONG_PLACE
         # Either way, reduce occurence counter since we "used" this occurence
         answer_chars[guess_char] -= 1
         # No more hits = pretend character isn't even seen (remove from dict)

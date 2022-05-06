@@ -1604,7 +1604,8 @@ Just need to fill in the parameters:
 
 ** Implementing the feature
 
-With the strong test harness we have, this scoring function can be done conveniently.
+With the strong test harness we have, this scoring function can be done
+conveniently.
 
 Let's experiment with the solution, iterating over naive solution and seeing how
 close they get to implementing the feature, by number of tests failed. This
@@ -1743,6 +1744,54 @@ def score_guess(guess: str, answer: str) -> str:
 #+end_src
 
 
+Now that we're happy with this, we can refactor out the ugly hardcoded glyphs:
+
+#+CAPTION: No more hardcoded glyphs
+#+NAME: scoring-guess-enum
+#+begin_src python :tangle no
+class CharacterScore(str, Enum):
+    """A single character's score"""
+
+    OK = "🟩"
+    NO = "⬜"
+    WRONG_PLACE = "🟨"
+#+end_src
+
+#+CAPTION: Imports for the Enum
+#+NAME: scoring-guess-enum-import
+#+begin_src python :tangle no
+from enum import Enum
+#+end_src
+
+And to use it as part of our scoring function:
+
+#+NAME: scoring-guessfunc-impl2
+#+CAPTION: Refactored function to avoid magic glyphs
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess with Counter"""
+    # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
+    answer_chars = Counter(answer)
+    response = ""
+    for guess_char, answer_char in zip(guess, answer):
+        if guess_char not in answer_chars:
+            response += CharacterScore.NO
+            continue  # Early exit for this character, skip to next
+        # From here on, we MUST have a char in common, regardless of place
+        if answer_char == guess_char:
+            response += CharacterScore.OK
+        elif answer_chars[guess_char] > 0:
+            response += CharacterScore.WRONG_PLACE
+        # Either way, reduce occurence counter since we "used" this occurence
+        answer_chars[guess_char] -= 1
+        # No more hits = pretend character isn't even seen (remove from dict)
+        if answer_chars[guess_char] == 0:
+            del answer_chars[guess_char]
+    return response
+#+end_src
+
+
+
 ** Tangle it all out
 
 As before, we reorder the blocks from snippets above to export code in a way
@@ -1754,9 +1803,13 @@ that keeps proper formatting.
 
 
 <<scoring-guessfunc-import>>
+<<scoring-guess-enum-import>>
 
 
-<<scoring-guessfunc-impl>>
+<<scoring-guess-enum>>
+
+
+<<scoring-guessfunc-impl2>>
 #+end_src
 
 #+NAME: scoring-test1-tangleweb
