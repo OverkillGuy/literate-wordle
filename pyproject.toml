@@ -22,20 +22,28 @@ python = ">=3.9,<3.11"
 [tool.poetry.scripts]
 pywordle = "literate_wordle.cli:main"
 
+# Note that I'm quite lax with version pinning:
+# I don't really _want_ to pin specific versions here, because apart from "good
+# enough for current features", I don't have incompatibilities, and am happy to
+# pick up new versions. Remember that because we committed poetry.lock file, we
+# have exact versions of dependencies locked, so the below is just our
+# "intentions" regarding versions.
 [tool.poetry.dev-dependencies]
-# Various test
-pytest = "6.*"
-pytest-cov = "3.*"
-pytest-clarity = "1.*"
+pytest = ">=6.1.2"
+pytest-cov = ">=3.0.0"
+pytest-clarity = ">=1.0.1"
 
 # Documentation
-Sphinx = "4.*"
-sphinx-rtd-theme = "1.*"
-myst-parser = "0.15.*"
-sphinx-autoapi = "1.*"
-sphinx-collections = "^0.0.1"
-sphinxcontrib-needs = "0.7.*"
-sphinxcontrib-plantuml = "^0.22"
+Sphinx = ">=4.5.0"
+sphinx-rtd-theme = ">=1.0.0"
+myst-parser = ">=0.15.2"
+sphinx-autoapi = ">=1.8.4"
+sphinx-collections = ">=0.0.1"
+# Needs is nice, but brings in numpy + matplotlib etc,  which we don't need.
+# See the issue I raised + PR, waiting on maintainer:
+# https://github.com/useblocks/sphinxcontrib-needs/issues/222
+sphinxcontrib-needs = ">=0.7.8"
+sphinxcontrib-plantuml = ">=0.22"
 # Note: linters etc are not defined here, but in .pre-commit-config.yaml
 # The "pre-commit" tool will install/manage each in its isolated virtualenv
 
