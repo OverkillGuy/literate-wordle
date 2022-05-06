@@ -1,13 +1,14 @@
 """Validates the Gherkin file features/track_guesses.feature
 
-Feature: Track number of guesses
+Feature: Playing a round
   As a Wordle game
-  I need to track how many guesses were already given
-  In order to announce win or game over
+  I need to track how many guesses were already given, stating wins/losses
+  In order to play the game
 """
 
 
 from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
+from literate_wordle.guess import CharacterScore as Score
 
 
 def test_first_guess_allowed():
@@ -25,9 +26,9 @@ def test_first_guess_allowed():
     assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
     assert result.score is not None, "No score given as result"
     assert len(result.score) == 5, "Score of incorrect length"
-    OK_CHARS = ["🟩", "🟨", "⬜"]
+    ALLOWED_CHARS = [score.value for score in Score]
     assert all(
-        char in OK_CHARS for char in list(result.score)
+        char in ALLOWED_CHARS for char in list(result.score)
     ), "Score doesn't match score's characters"
 
 
@@ -92,7 +93,7 @@ def test_winning_guess_wins():
     assert "game won" in result.message.lower()
 
 
-# Not a Scenario covered by existing gherkin feature:
+# Case covered by existing gherkin feature:
 # Intentional, see wordle.org for reasoning
 def test_invalid_guess_not_counted():
     """Scenario: Invalid guess isn't counted"""

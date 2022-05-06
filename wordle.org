@@ -1844,7 +1844,7 @@ With all the subfeatures we have, we can now play a round of wordle, we're
 missing only the "state" of the game board, with the interactivity of the game.
 
 #+NAME: track-guess-feat
-#+begin_src feature :tangle features/track_guesses.feature
+#+begin_src feature :tangle no
 Feature: Track number of guesses
   As a Wordle game
   I need to track how many guesses were already given
@@ -1855,7 +1855,7 @@ There are a few obvious cases we want to see:
 
 #+CAPTION: Allow the first guess
 #+NAME: track-guess-scenario1
-#+begin_src feature :tangle features/track_guesses.feature
+#+begin_src feature :tangle no
 Scenario: First guess is allowed
   Given a wordle answer
   And I didn't guess before
@@ -1865,7 +1865,7 @@ Scenario: First guess is allowed
 
 #+CAPTION: Still allow the sixth guess (skipping 2 through 5)
 #+NAME: track-guess-scenario2
-#+begin_src feature :tangle features/track_guesses.feature
+#+begin_src feature :tangle no
 Scenario: Sixth guess still allowed
   Given a wordle answer
   And I guessed 5 times
@@ -1875,7 +1875,7 @@ Scenario: Sixth guess still allowed
 
 #+CAPTION: Sixth guess is last guess (fail on seventh)
 #+NAME: track-guess-scenario3
-#+begin_src feature :tangle features/track_guesses.feature
+#+begin_src feature :tangle no
 Scenario: Six failed guess is game over
   Given a wordle answer
   And I guessed 6 times already
@@ -1902,7 +1902,7 @@ Let's write the test:
 #+begin_src python :tangle no :noweb yes
 """Validates the Gherkin file features/track_guesses.feature
 
-<<track-guess-feat>>
+<<track-guess-feat2>>
 """
 #+end_src
 
@@ -1924,9 +1924,9 @@ def test_first_guess_allowed():
     assert result.outcome == OUTCOME_CONTINUE, "Game shouldn't be over yet"
     assert result.score is not None, "No score given as result"
     assert len(result.score) == 5, "Score of incorrect length"
-    OK_CHARS = ["🟩", "🟨", "⬜"]
+    ALLOWED_CHARS = [score.value for score in Score]
     assert all(
-        char in OK_CHARS for char in list(result.score)
+        char in ALLOWED_CHARS for char in list(result.score)
     ), "Score doesn't match score's characters"
 #+end_src
 
@@ -1936,12 +1936,12 @@ In the test above, I've done quite a bit of world-building:
 - Used a new =play_round= function that takes a game + guess
 - Implied in =result= variable at a structure for new Game state after a move
 
-#+CAPTION: The imports for the test of Listing [[track-guess-test1]]
+#+CAPTION: The other imports for the test of Listing [[track-guess-test1]]
 #+NAME: track-guess-test-import
 #+begin_src python :tangle no :noweb yes
 from literate_wordle.game import WordleGame, WordleMoveOutcome, play_round
+from literate_wordle.guess import CharacterScore as Score
 #+end_src
-
 
 
 This practice of calling an API that doesn't exist yet is the coolest part of
@@ -2059,7 +2059,7 @@ the game!
 
 #+CAPTION: Winning scenario
 #+NAME: track-guess-scenario4
-#+begin_src feature :tangle features/track_guesses.feature
+#+begin_src feature :tangle no
 Scenario: Winning guess
   Given a wordle answer
   And I guessed 3 times
@@ -2071,14 +2071,15 @@ Scenario: Winning guess
 #+end_src
 
 A little thought later, it seems we mixed up the requirements a little here (it
-happens): When designing the Gherkin Feature, we wrote about exhausting the
+happens!). When designing the Gherkin Feature, we wrote about exhausting the
 amounts of guesses, we weren't thinking of win/lose conditions. But when writing
 a =play_round= function, it's indeed very relevant, especially since the
 existing scenarios covered most of the cases already. Ideally, we could have
 added a separate Feature describing winning and losing, and dealt with it
-separately. In practice, here, it's simpler to just expand the feature's scope.
-This is what real engineering is about, aiming for perfection, but making
-compromises to match our imperfect world.
+separately. In practice, here, it's simpler to just expand the feature's scope,
+even if it means the scope has creeped out a little. This is what real
+engineering is about, aiming for perfection, but making compromises to match our
+imperfect world where deadlines and tired developers exist.
 
 Let's fill in our winning case test:
 
@@ -2104,6 +2105,7 @@ def test_winning_guess_wins():
     assert result.outcome == WordleMoveOutcome.GAME_WON, "Should have won game"
     assert "game won" in result.message.lower()
 #+end_src
+
 
 With all the tests ready, we cobble together a stub for =play_round= to execute
 the tests and see them go red.
@@ -2364,15 +2366,15 @@ return WordleMove(game=game, outcome=outcome, message=message, score=score)
 #+end_src
 
 
-Note that throughout this codebase, we made a lot of assumptions and repetitions
-around the length of a Wordle answer/guess, and this translate to repeated
-hardcoded-ness like above regarding emojis. These could have been addressed
-right away during implementation, but it's important to consider if the scope
-increase is worth it: generalized Wordle to N characters isn't super interesting
-to me, as it would require cutting new dictionaries, etc, and I'm just not that
-into Wordle. This is the kind of technical design decision we can do by having a
-firm grasp on project scope, another advantage of deep understanding of project
-requirements.
+Note that throughout this codebase, we made a lot of assumptions and
+repetitions around the length of a Wordle answer/guess, and this translate to
+repeated hardcoded-ness like above regarding emojis. These could have been
+addressed right away during implementation, and indeed we did, but it's
+important to consider if the scope increase is worth it: generalized Wordle to
+N characters isn't super interesting to me, as it would require cutting new
+dictionaries, etc, and I'm just not that into Wordle. This is the kind of
+technical design decision we can do by having a firm grasp on project scope,
+another advantage of deep understanding of project requirements.
 
 Back to the implementation: tests should all pass now, =make= is happy, but
 there's an interesting issue:
@@ -2395,19 +2397,23 @@ Coverage XML written to file test_results/coverage.xml
 We lowered coverage, nooo! Exploring the coverage HTML file in a browser, we see
 that the lines in question that aren't covered are:
 
+#+CAPTION: Lines of code that weren't hit in any test, as witnessed by test coverage library
 #+begin_src python :tangle no
 if not valid and validity_msg is not None:
     outcome = WordleMoveOutcome.GUESS_NOTVALID_CONTINUE
     return WordleMove(game=game, outcome=outcome, message=validity_msg, score=None)
 #+end_src
 
-Oh! Well that's the test case we put a pin in! Cool, back to writing that test.
-I wonder if we should write a whole scenario to back it up?
-It's not really obvious! If this test case spins out of an edge case of our
-implementation, it's not really coming from a business requirement, so it's
-probably not worth writing a Gherkin Scenario alongside the other ones. If it is
-indeed an overlooked requirement, then yes, add it to the pile.
-Hmm, let's write the test, and see if the scenario it plays up is a
+Oh! That's the test case we put a pin in! Right, so we're back to writing that
+test. I wonder if we should write a whole scenario to back it up? It's not
+really obvious!
+
+If this test case spins out of an edge case of our implementation, it's not
+really coming from a business requirement, so it's probably not worth writing a
+Gherkin Scenario alongside the other ones. If it is indeed an overlooked
+requirement, then yes, add it to the requirements pile and write a feature.
+
+Hmm, let's write the test first, and see if the scenario that emerges is a
 requirement.
 
 #+NAME: track-guess-test5
@@ -2430,25 +2436,66 @@ def test_invalid_guess_not_counted():
     assert result.score is None, "No score should be given on bad word"
 #+end_src
 
-Hmm, after some thought, it seems that the function we implemented, compared to the
-feature being described in Gherkin, is different!
+Hmm, after some thought, it seems that the function we implemented, compared to
+the feature being described in Gherkin, is indeed different!
 
-As mentioned before, the Gherkin feature is about tracking specific number of
+As mentioned before, the Gherkin feature was about tracking specific number of
 guesses, but we increased scope to consider the wider win scenario, using the
-"play round" feature. Expanding the feature again to cover more cases than just how many guesses, it needs to understand that the
-guess is correct word or not.
+"play round" feature. Expanding the feature again to cover more cases than just
+how many guesses, it needs to understand if the guess is correct word or not.
 
 So for the specific purpose of tracking guesses as a feature, we're already
-covered by existing scenarios. But as we saw in coverage metrics, we're missing
-some edge cases, which maybe a wider feature like "play a round" would cover.
+covered by existing scenarios. But not only are we missing edge cases of
+implementation, as we saw in coverage metrics, but this is the wider feature
+that a /play a round/ Feature would cover.
 
-This game's implementation being so very near completion, I am making the
-decision to not split feature files, and simply consider the missing tests an
-implementation detail, just to keep this narrative on track.
+This game's implementation being so very near completion, I am not interested
+in creating another feature file, I'll just expand a bit the original feature
+to be about being able to play a whole round, wins and losses included, just to
+keep this narrative barely on track.
+
+#+NAME: track-guess-feat2
+#+begin_src feature :tangle no
+Feature: Playing a round
+  As a Wordle game
+  I need to track how many guesses were already given, stating wins/losses
+  In order to play the game
+#+end_src
+
+
+#+CAPTION: New scenario
+#+NAME: track-guess-scenario5
+#+begin_src feature :tangle no
+Scenario: Invalid guess isn't counted
+  Given a wordle answer
+  And I guessed 3 times
+  When I guess the word
+  But my guess isn't a dictionary word
+  Then my guess is rejected as invalid word
+  And my guess is not scored
+#+end_src
+
 
 And with this new test, we're back to passing tests and 100% coverage!
 
 ** Tangling out the whole thing
+
+The feature first:
+
+#+begin_src feature :tangle features/track_guesses.feature :noweb yes
+<<track-guess-feat2>>
+
+<<track-guess-scenario1>>
+
+<<track-guess-scenario2>>
+
+<<track-guess-scenario3>>
+
+<<track-guess-scenario4>>
+
+<<track-guess-scenario5>>
+#+end_src
+
 The tests:
 
 #+begin_src python :tangle tests/test_track_guess_number.py :noweb yes
@@ -2470,7 +2517,7 @@ The tests:
 <<track-guess-test4>>
 
 
-# Not a Scenario covered by existing gherkin feature:
+# Case covered by existing gherkin feature:
 # Intentional, see wordle.org for reasoning
 <<track-guess-test5>>
 #+end_src

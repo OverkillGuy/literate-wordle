@@ -1,7 +1,7 @@
-Feature: Track number of guesses
+Feature: Playing a round
   As a Wordle game
-  I need to track how many guesses were already given
-  In order to announce win or game over
+  I need to track how many guesses were already given, stating wins/losses
+  In order to play the game
 
 Scenario: First guess is allowed
   Given a wordle answer
@@ -32,3 +32,11 @@ Scenario: Winning guess
   Then my guess is scored
   And score is perfect
   And game shows "Game Won"
+
+Scenario: Invalid guess isn't counted
+  Given a wordle answer
+  And I guessed 3 times
+  When I guess the word
+  But my guess isn't a dictionary word
+  Then my guess is rejected as invalid word
+  And my guess is not scored
