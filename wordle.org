@@ -25,6 +25,9 @@ Literate programming is the art of writing code as if it was a novel (or blogpos
 For more context on the code repository (how to use, etc), please read the project
 readme.
 
+See also the online, pretty rendered version of this document on my personal
+website: https://jiby.tech/project/literate_wordle/wordle.html
+
 * Mise en bouche: picking an answer
 
 To get us started, let's cover the very first behaviour Wordle has to do: pick a
