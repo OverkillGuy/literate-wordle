@@ -1798,7 +1798,7 @@ As before, we reorder the blocks from snippets above to export code in a way
 that keeps proper formatting.
 #+NAME: scoring-impl-tangleweb
 #+CAPTION: Final =guess.py=
-#+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
+#+begin_src python :tangle no :noweb yes
 <<scoring-guessmod-header>>
 
 
@@ -2299,7 +2299,7 @@ if game.guess_number >= 7:
 In order to count a guess, it needs to be a valid word. This means importing
 some of our package's functions.
 
-#+NAME: track-guess-import-module
+#+NAME: track-guess-import-module-tooshort
 #+begin_src python :tangle no
 from literate_wordle.guess import score_guess
 from literate_wordle.words import check_valid_word
@@ -2348,13 +2348,43 @@ score = score_guess(guess, game.answer)
 
 
 #+CAPTION: Knowing a valid guess, scored, is game won?
-#+NAME: track-guess-impl5
+#+NAME: track-guess-impl5-hardcoded
 #+begin_src python :tangle no
 if score == "🟩🟩🟩🟩🟩":
     outcome = WordleMoveOutcome.GAME_WON
     message = f"Correct! Game won in {game.guess_number - 1} guesses"
     return WordleMove(game=game, outcome=outcome, message=message, score=score)
 #+end_src
+
+Hmm, but wouldn't it be nice to avoid this hardcoded blob?
+Let's extend the =CharacterScore= to give this.
+
+#+CAPTION: A property of the class that returns The Perfect Score
+#+NAME: track-guess-perfectscore
+#+begin_src python :tangle no
+@classmethod
+@property
+def perfect_score(cls) -> str:
+    """All-good Wordle score for perfect guess"""
+    return "".join([cls.OK] * 5)
+#+end_src
+
+#+CAPTION: Knowing a valid guess, scored, is game won? (Without hardcoded string)
+#+NAME: track-guess-impl5
+#+begin_src python :tangle no
+if score == CharacterScore.perfect_score:
+    outcome = WordleMoveOutcome.GAME_WON
+    message = f"Correct! Game won in {game.guess_number - 1} guesses"
+    return WordleMove(game=game, outcome=outcome, message=message, score=score)
+#+end_src
+
+#+CAPTION: Re-do the imports, because we needed CharacterScore too
+#+NAME: track-guess-import-module
+#+begin_src python :tangle no
+from literate_wordle.guess import CharacterScore, score_guess
+from literate_wordle.words import check_valid_word
+#+end_src
+
 
 #+CAPTION: Last possibility remains: scored, not won/lost, try another guess
 #+NAME: track-guess-impl6
@@ -2545,6 +2575,26 @@ The tests:
     <<track-guess-impl4>>
     <<track-guess-impl5>>
     <<track-guess-impl6>>
+#+end_src
+
+And remember that we had to expand the =CharacterScore=, so we need to re-tangle
+it here:
+
+#+NAME: scoring-impl-tangleweb2
+#+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
+<<scoring-guessmod-header>>
+
+
+<<scoring-guessfunc-import>>
+<<scoring-guess-enum-import>>
+
+
+<<scoring-guess-enum>>
+
+    <<track-guess-perfectscore>>
+
+
+<<scoring-guessfunc-impl2>>
 #+end_src
 
 * Final round: command line interface

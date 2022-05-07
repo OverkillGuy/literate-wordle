@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
-from literate_wordle.guess import score_guess
+from literate_wordle.guess import CharacterScore, score_guess
 from literate_wordle.words import check_valid_word
 
 
@@ -49,7 +49,7 @@ def play_round(guess: str, game: WordleGame) -> WordleMove:
     # Guess now guaranteed to be valid: count it
     game.guess_number += 1
     score = score_guess(guess, game.answer)
-    if score == "🟩🟩🟩🟩🟩":
+    if score == CharacterScore.perfect_score:
         outcome = WordleMoveOutcome.GAME_WON
         message = f"Correct! Game won in {game.guess_number - 1} guesses"
         return WordleMove(game=game, outcome=outcome, message=message, score=score)

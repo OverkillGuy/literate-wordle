@@ -63,11 +63,14 @@ multi_line_output = 3
 [tool.pytest.ini_options]
 addopts = """-vv \
     --color=yes \
-    --doctest-modules \
     --junit-xml=test_results/results.xml
     --cov=literate_wordle \
     --cov-report=xml:test_results/coverage.xml \
     --cov-report=html:test_results/coverage.html \
     --cov-report=term"""
+# No doctests in this package, and doctest detection interacts with
+# CharacterScore string-enum's classmethod/property: disable!
+#    --doctest-modules \
+
 # Don't let conf.py and other irrelevant folders be detectable as tests by pytest
 norecursedirs = ".git build docs"

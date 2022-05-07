@@ -12,6 +12,12 @@ class CharacterScore(str, Enum):
     NO = "⬜"
     WRONG_PLACE = "🟨"
 
+    @classmethod
+    @property
+    def perfect_score(cls) -> str:
+        """All-good Wordle score for perfect guess"""
+        return "".join([cls.OK] * 5)
+
 
 def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
