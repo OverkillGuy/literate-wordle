@@ -9,7 +9,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- New link to website-rendered version of `wordle.org`
+- New link to website-rendered version of `wordle.org`.
+- New docs section "Changelog" including this document.
 
 ### Fixed
 - Removed hardcoded "perfect score" string in `play_round`.
