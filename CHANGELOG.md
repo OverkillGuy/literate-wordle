@@ -8,6 +8,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+
+## [1.0.1] - 2022-05-07
 ### Added
 - New link to website-rendered version of `wordle.org`.
 - New docs section "Changelog" including this document.
