@@ -8,7 +8,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.0.0] - 2020-05-06
+## [1.0.0] - 2022-05-06
 ### Added
 - New module `literate_wordle`, implementing simple wordle, with narration in
   literate programming style.
