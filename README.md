@@ -4,6 +4,8 @@ Writing up a Python implementation of Wordle using literate programming.
 
 > Follow along on the journey to implement Wordle in Python using Behaviour-driven Development techniques.
 
+See my blogpost about the project: https://jiby.tech/post/literate-wordle/.
+
 ### Dependencies
 
 - [Python](https://www.python.org/) 3.9 or later (use of typing hints)
