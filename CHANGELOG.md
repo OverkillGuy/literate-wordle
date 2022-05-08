@@ -9,6 +9,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 
+### Fixed
+- Typo in a source block's caption field.
+
+
 ## [1.0.1] - 2022-05-07
 ### Added
 - New link to website-rendered version of `wordle.org`.

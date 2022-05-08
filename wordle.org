@@ -1397,7 +1397,7 @@ zgrep -i -E "([a-z]).*\1.*\1" \
 
 Really? 20? That's harsh ... show me one?
 
-#CAPTION: Reval the first answer with 3 identical letters
+#+CAPTION: Reval the first answer with 3 identical letters
 #+begin_src shell :exports both
 zgrep -i -E "([a-z]).*\1.*\1" \
     src/literate_wordle/assets/wordle_answers_dict.txt.gz \
