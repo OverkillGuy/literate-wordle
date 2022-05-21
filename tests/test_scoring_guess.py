@@ -56,7 +56,7 @@ def test_wrong_place():
         pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
         pytest.param("abbey", "keeps", "⬜🟨⬜⬜⬜", id="multi_occur5"),
         pytest.param("abbey", "abate", "🟩🟩⬜⬜🟨", id="multi_occur6"),
-        pytest.param("uncut", "zebus", "⬜⬜⬜🟩⬜", id="multi_occur_issue1"),
+        pytest.param("train", "xenon", "⬜⬜⬜⬜🟩", id="multi_occur_issue1"),
     ],
 )
 def test_generic_score(answer, our_guess, expected_score):
