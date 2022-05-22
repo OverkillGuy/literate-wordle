@@ -23,17 +23,14 @@ def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
     # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
     answer_chars = Counter(answer)
-    # NO is the default score, no need to detect it
+    # NO is the default score, no need to detect it explicitly
     response: list[str] = [CharacterScore.NO] * len(answer)
     # First pass to detect perfect scores
-    perfect_scores = [
-        answer_char == guess_char for guess_char, answer_char in zip(guess, answer)
-    ]
-    for char_index, is_score_perfect in enumerate(perfect_scores):
-        if is_score_perfect:
+    for char_index, (answer_char, guess_char) in enumerate(zip(guess, answer)):
+        if answer_char == guess_char:
             response[char_index] = CharacterScore.OK
-            answer_chars[guess[char_index]] -= 1
-    # Last, the yellows
+            answer_chars[guess_char] -= 1
+    # Second pass for the yellows
     for char_num, (guess_char, existing_score) in enumerate(zip(guess, response)):
         if existing_score == CharacterScore.OK:
             continue  # It's already green: skip
