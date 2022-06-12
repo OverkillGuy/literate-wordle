@@ -42,3 +42,7 @@ Scenario Outline: Scoring guesses
     | abbey  | algae	| 🟩⬜⬜⬜🟨	|
     | abbey  | keeps	| ⬜🟨⬜⬜⬜	|
     | abbey  | abate	| 🟩🟩⬜⬜🟨	|
+
+  Examples: Reported bug: multiple occurence of same character in guess
+    | answer | guess	| score		|
+    | train  | xenon	| ⬜⬜⬜⬜🟩	|

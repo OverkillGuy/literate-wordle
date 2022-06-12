@@ -3119,6 +3119,16 @@ wouldn't make sense.
 
 So we redefine a few files here:
 
+#+NAME: scoring-scenario-multi-identicalanswerchar2
+#+CAPTION: Adding bug =xenon= and =trains= to examples in documentation
+#+begin_src feature :tangle features/scoring_guess.feature
+  Examples: Reported bug: multiple occurence of same character in guess
+    | answer | guess	| score		|
+    | train  | xenon	| ⬜⬜⬜⬜🟩	|
+#+end_src
+
+
+
 #+NAME: scoring-test1-tangleweb2
 #+CAPTION: =tests/test_scoring_guess.py= with our extra testcase at the bottom
 #+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
@@ -3158,8 +3168,6 @@ So we redefine a few files here:
 <<scoring-guess-enum>>
 
     <<track-guess-perfectscore>>
-
-    <<scoring-worst-score>>
 
 
 <<scoring-guessfunc-impl3>>
