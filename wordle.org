@@ -2885,10 +2885,10 @@ present how dissecting the issue made the fix emerge, and reflect on how such a
 bug could sneak in despite our careful approach.
 
 I'm painfully aware of the ironic (and embarassing) aspect of writing a whole
-novel about "how to do things right" only to get such a crucial point very, very
-wrong. It would be all too easy to hide this, retroactively change the narrative
-above, and pretend we got it right the first time. Instead, I believe this a
-lesson worth learning.
+novel about "programming using best practices" only to get such a crucial point
+very, very wrong. It would be easy to hide this bug, retroactively change
+the narrative above, and pretend we got it right the first time. Instead, I
+believe there's a lesson worth learning and sharing in there.
 
 ** The bug report
 The [[https://github.com/OverkillGuy/literate-wordle/issues/1#issue-1244097196][original bug report]] states (slightly abridged):
@@ -2899,15 +2899,15 @@ a letter, and that letter is present only once in the answer, and the second
 copy in the guess matches that letter in the answer, the first copy will be
 marked as WRONG_PLACE, while the second copy will be marked as NO.
 
-[...] Let's say we have "A__A_" as our guess and "___A_" as the answer.
-Your score_guess function will return "🟨__⬜_" instead of "⬜__🟩_".
+[...] Let's say we have =A__A_= as our guess and =___A_= as the answer.
+Your score_guess function will return =🟨__⬜_= instead of =⬜__🟩_=.
 #+end_quote
 
 Incorrect scoring function sounds very serious indeed, so the first step is
 confirming the issue with a good testcase. Can we find words that match the
 rule:
 
-#+CAPTION: Search for words matching the bug report, using letter =N=
+#+CAPTION: Search for words matching the bug report, arbitrarily using letter =N=
 #+begin_src shell :tangle no
 # Pick an answer word ending with "n"
 zgrep -iE "n\b" ./src/literate_wordle/assets/wordle_answers_dict.txt.gz
@@ -2915,13 +2915,13 @@ zgrep -iE "n\b" ./src/literate_wordle/assets/wordle_answers_dict.txt.gz
 zgrep -iE "n.*n\b" ./src/literate_wordle/assets/wordle_accepted_words_dict.txt.gz
 #+end_src
 
-From the results (those regular expressions are fairly vague), I manually chose
-the answer =train= and the guess =xenon=.
+From the many results (those regular expressions are fairly vague), I manually
+chose the answer =train= and the guess =xenon=.
 
 We want to show that =score_guess= is wrong, which is best done by adding a
 case to =test_generic_score=:
 
-#+CAPTION: Adding a test case, named =multi_occur_issue1=
+#+CAPTION: Adding a test case at the end, named =multi_occur_issue1=
 #+NAME: scoring-multi-parameters2
 #+begin_src python :tangle no
 @pytest.mark.parametrize(
@@ -3040,22 +3040,40 @@ Bug confirmed! Whoops.
 
 ** Why are we scoring badly?
 
-We can step through the example code to figure out what's wrong, but overall, it
-seems that when scoring, we look at characters first-to-last in a single pass,
-checking if the characters match one by one by comparing guess character to
-answer character.
-But that approach falls down in the case we were given, because the first =n= of
-=xenon= should be scored (⬜) /after/ the score (🟩) of the /second/ =n=.
+If necessary, we can step through the example code to figure out what's wrong,
+and I did. But overall, it seems that our approach to scoring by looking at
+character in a single pass is at fault.
 
-It means that the single-pass scoring approach cannot work, as we need to
+The approach falls down with the example we were given, because we don't /first/
+detect the second =n= of =xenon= as matching the last =n= of =train=, which
+would make it scored OK (🟩), then in another pass detecting remaining,
+non-matching (⬜) in the first =n=. Instead, we run over characters in order,
+detect a =n= in the wrong place, score it as wrong-place (🟨), and by decreasing
+the occurence counter, the next one is counted non-matching (⬜), hence the bad
+score.
+
+Thinking it through, it means that the single-pass scoring approach just /cannot/ work, as we /need/ to
 "look ahead", knowing already the OK-ness of all guess characters /before/
-scoring the wrong-place-ness.
+scoring the wrong-place-ness. Interesting!
 
-So we can try re-writing this algorithm in two passes: First, detect exact
+So we will re-write this algorithm to work in two passes: First, detect exact
 matches of guess/answer character pairs, recording those as perfect score. Then,
-a second pairwise check looks for wrong-place score, defaulting with non-score.
+a second pairwise check looks for wrong-place score, defaulting to the mismatch "zero" score.
 
-** TODO Fixing the issue
+** Fixing the issue
+
+In order to score "out of order" (in two passes), the =response= needs to change
+from the original empty string being built, to some random-access structure: a
+=list=.
+
+In designing the fix, we realise that a zero score, aka all-mismatch
+(⬜⬜⬜⬜⬜) is the "default" case of scoring. That is we "start" from that
+score, and score "up" by marking individual characters as matching.
+
+We reflect that in the list initialisation, starting with the worst score as it
+means we avoid having to "detect" it anymore. That's a tiny optimization of the
+code. But more importantly, this list is now randomly accessible, as we can now
+"peek ahead" when we couldn't before.
 
 #+CAPTION: Bug fixed, solution in two passes, defaulting score to NO
 #+NAME: scoring-guessfunc-impl3
@@ -3081,13 +3099,28 @@ def score_guess(guess: str, answer: str) -> str:
             answer_chars[guess_char] -= 1
     return "".join(response)
 #+end_src
-** TODO Why didn't we catch this earlier?
 
+Note another minor change, using Python's =get= operator with a default of =0=
+to catch both the "key is not set" as well as "key is set to zero" in the same
+way. We're trading off clarity for briefness, which only works by assuming our
+readers know about Python's =get= operator, and how it sets default via the
+second parameter in case of a missing key.
+
+Bug fixed, as attested by tests going green again. We also check linters are
+happy and coverage is good. All is well!
 
 ** Tangling again
 
+We just re-defined (overwrote) a few code blocks from previous sections, so we need
+to re-weave them together into a real file.
+
+If we just "fixed" the tangling blocks of above, the story wouldn't be in order,
+wouldn't make sense.
+
+So we redefine a few files here:
+
 #+NAME: scoring-test1-tangleweb2
-#+CAPTION: =tests/test_scoring_guess.py= with our extra testcase
+#+CAPTION: =tests/test_scoring_guess.py= with our extra testcase at the bottom
 #+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
 """Validates the Gherkin file features/scoring_guess.feature:
 
@@ -3112,6 +3145,7 @@ def score_guess(guess: str, answer: str) -> str:
 <<scoring-multi-skeleton>>
 #+end_src
 
+#+CAPTION: Re-defining =src/literate_wordle/guess.py= with our fix
 #+NAME: scoring-impl-tangleweb3
 #+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
 <<scoring-guessmod-header>>
@@ -3125,6 +3159,80 @@ def score_guess(guess: str, answer: str) -> str:
 
     <<track-guess-perfectscore>>
 
+    <<scoring-worst-score>>
+
 
 <<scoring-guessfunc-impl3>>
 #+end_src
+
+** Why didn't you catch this earlier? Is it TDD/BDD's fault or are you just a bad dev?
+
+We just found a bug, and fixed it. But why didn't we catch it earlier!? Is TDD
+and BDD at fault? Can we just go back to coding without tests!?
+
+I like to think that the process didn't fail as much as my imagination did.
+
+First, note how the Gherkin features, requirements gathering and so on did their
+job, we adequately planned for features, defined scenarios that did make sense,
+and implemented those correctly. So the BDD side delivered its value!
+
+Purely TDD-wise, all the tests we defined /were/ valid, and covered reasonable
+aspect of the features to help design the new functions' shapes, nothing to say
+there either.
+
+The failing was in the (lack of) diversity of scores used as examples: we didn't
+cover a broad enough set of score samples to find issues like this one.
+
+But finding this bug isn't obvious: if you didn't know about this particular bug
+(by reading the sourcecode and seeing a really non-obvious flaw), finding the
+bug would instead require playing randomly this game's implementation until you
+find a bad score (which could take minutes or hours, due to the randomness
+involved), then reproducing the example + reporting it. This is likely what the
+bug reporter did, played around and found a bad case.
+
+As a developer, I didn't have any particular reason to suspect this specific scoring
+issue, so I didn't develop a test case with it.
+
+But I like to think that I was so close!
+
+As you see in sections above, I /was/ worried about scoring for multiple
+letters, as shown in the scoring example table. I remember this being a concern,
+because any naive implementation of wordle could miss the nuance of "the real
+Worlde". I even broke out screenshots from the real Wordle website to make up
+some references, because I couldn't explain to myself how the scoring /should/
+happen.
+
+Unfortunately, my attention was on multiple identical characters in the /answer/, not in
+the /guess/.
+
+So, again, I was close enough to look for similar bugs, but didn't quite find a
+diverse enough set of sample scores to unearth this particular issue.
+
+** Why should this be a failure story?
+
+Before we go, I want to flip the narrative around this bug:
+
+The way I see it, I built a fun implementation of Wordle to play with
+Python, TDD and BDD. I spent a reasonable amount of time on "due diligence
+research" around edge cases (seen in above section) to feel good about the
+solution.
+
+Finding the bug (by extending our test cases in one single line), and fixing it
+(a few more line being redefined) was a /tiny amount/ of additional effort,
+thanks in major part to our strong test harness.
+
+Avoiding the bug in the first place would have cost a lot more time, doing
+research into 100% compatibility with existing Wordle implementations, likely
+having to connect someone else's Wordle code to ours to compare (with all the
+associated issues to deal with), for comparatively minor benefits.
+
+So, despite having to issue a rectification to this narrative, I still believe
+the amount of pre-production research was adequate.
+
+This story also reinforces the iterative nature of software development: Earlier
+sections showed feature addition as incremental changes, but in this case we see
+that even refining the solution when it's subtly wrong is an iterative process!
+
+So, yeah, building code to be correct the first time is hard, and maybe not
+possible or the best course of action for you! The Agile way, I hear, is to
+"make it work, make it right, then make it fast" (/in that order/).
