@@ -106,30 +106,29 @@ if __name__ == "__main__":
     dbcon.commit()
 
     # Insert scoring data
-    # TODO iterate over guess
-    guess = "crane"
-    guess_index = accepted_word_index_dict[guess]
+    for guess_counter, guess in enumerate(SORTED_ACCEPTED_WORDS):
+        print(f"Processing [{guess_counter:05}/{ACCEPTED_WORDS_SIZE:05}]")
+        guess_index = accepted_word_index_dict[guess]
 
+        # for answer in SORTED_ANSWER_WORDS: (via list comprehension below)
 
-    # for answer in SORTED_ANSWER_WORDS: ...
-
-    # Relying on dict iteration order being dict insertion order (!!!)
-    answer_indexes =  list(answer_word_acceptindex_dict.values())
-    scores = [score_guess(guess, answer) for answer in SORTED_ANSWER_WORDS]
-    score_indexes= [scores_index_dict[score] for score in scores]
-    # print(
-    #     f"Score for {guess=}({guess_index=}) against {answer=}({answer_index=}): "
-    #     f"{score=}({score_index=})"
-    # )
-    #
-    # We HAVE 3 x long arrays, one for each structure: ([guesses], [answer], [scores])
-    # We NEED a long array of TRIPLES [(guess1, answer1, score1), (guess2, answer2, score2),]
-    # Classic problem of structure-of-array vs array-of-structure:
-    array_of_structure_score = [(guess_index, answer_index, score_index) for answer_index, score_index in zip(answer_indexes, score_indexes)]
-    dbcon.executemany(
-        "INSERT INTO scores(guessidx, answeridx, scoreidx) VALUES (?,?,?)", array_of_structure_score
-    )
-    dbcon.commit()
+        # Relying on dict iteration order being dict insertion order (!!!)
+        answer_indexes =  list(answer_word_acceptindex_dict.values())
+        scores = [score_guess(guess, answer) for answer in SORTED_ANSWER_WORDS]
+        score_indexes= [scores_index_dict[score] for score in scores]
+        # print(
+        #     f"Score for {guess=}({guess_index=}) against {answer=}({answer_index=}): "
+        #     f"{score=}({score_index=})"
+        # )
+        #
+        # We HAVE 3 x long arrays, one for each structure: ([guesses], [answer], [scores])
+        # We NEED a long array of TRIPLES [(guess1, answer1, score1), (guess2, answer2, score2),]
+        # Classic problem of structure-of-array vs array-of-structure:
+        array_of_structure_score = [(guess_index, answer_index, score_index) for answer_index, score_index in zip(answer_indexes, score_indexes)]
+        dbcon.executemany(
+            "INSERT INTO scores(guessidx, answeridx, scoreidx) VALUES (?,?,?)", array_of_structure_score
+        )
+        dbcon.commit()
     # Close is not a shortcut method and it's not called automatically,
     # so the connection object should be closed manually
     dbcon.close()
