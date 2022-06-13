@@ -14,6 +14,11 @@ code changes being just patching bugs.
 
 <!-- This section kept empty on purpose to help write un-released changelogs. See https://keepachangelog.com/en/1.0.0/#effort for more reasoning.   -->
 
+### Added
+- New python file `sqlite_solve.py` for solving Wordle via brute-force
+  pre-computation of scores given known guesses/answers, saved in database file.
+
+
 ## [1.1.0] - 2022-06-13
 ### Fixed
 - Bug in guess scoring when a letter occurs twice in guess, but only once (second time) in answer, see [bug #1](https://github.com/OverkillGuy/literate-wordle/issues/1). Thanks to [@gpiancastelli](https://github.com/gpiancastelli) for reporting!
