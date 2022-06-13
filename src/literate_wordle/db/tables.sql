@@ -7,4 +7,4 @@ CREATE table word_index (wordidx int, word text);
 -- Wordle answers = subset of accepted guesses, referencing word_index
 CREATE table answers_index (wordidx int);
 -- Computed score of a guess (word) against an answer (word), all via index
-CREATE table score_by_answer (guessidx int, answeridx int, scoreidx int);
+CREATE table scores (guessidx int, answeridx int, scoreidx int);
