@@ -8,3 +8,5 @@ CREATE table word_index (wordidx int, word text);
 CREATE table answers_index (wordidx int);
 -- Computed score of a guess (word) against an answer (word), all via index
 CREATE table scores (guessidx int, answeridx int, scoreidx int);
+--
+-- TODO: Separate SQL file to create indexes for analytics AFTER data upload.
