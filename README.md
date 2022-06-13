@@ -80,6 +80,27 @@ Use this package as you would any python module:
     >> print(f"Hello! The secret wordle answer is '{answer}'.")
     Hello! The secret wordle answer is 'blank'.
 
+### Solve Wordle!
+
+An exploration of solving Wordle via statitical brute-force is done in the
+`src/literate_wordle/sqlite_solve.py` module. Pre-compute the scores for all answers for all valid
+guesses by running:
+
+    make wordle_solve.db
+
+This should create ~500MB sqlite3 database for you to explore. Table schema is
+in `src/literate_wordle/db/tables.sql`.
+
+Some exploratory SQL queries can be found in
+`src/literate_wordle/db/find_solution.sql`.
+
+Try the database once created via:
+
+    sqlite3 wordle_solve.db
+    # Try asking this to list available tables:
+    .tables
+
+
 ## Development
 
 ### Python setup

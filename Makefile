@@ -28,6 +28,12 @@ docs-serve:
 build:
 	poetry build
 
+# Not a phony target = real file!
+wordle_solve.db:
+	poetry run python src/literate_wordle/sqlite_solve.py
+
+
+
 # Proper Makefile target:
 # The file wordle.html is actually generated from wordle.org with that command
 # Note: Any modifications (last edit time) of wordle.org will cause rebuild wordle.html

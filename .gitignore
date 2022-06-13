@@ -1,3 +1,8 @@
+# Experiments in Wordle solving via SQLite pre-computations.
+# Results in ~500MB database of this name via "make wordle_solve.db"
+wordle_solve.db
+
+
 # Poetry.lock is an exact version pinning tool (down to SHA256 of libs)
 # If writing a (reusable) library, exact versions don't matter that
 # much so it may make sense to gitignore that file, uncomment the following line:
