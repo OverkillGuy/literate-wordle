@@ -8,6 +8,11 @@ To minimize storage requirements, words and scores are replaced by their indexes
 
 Statistical analysis will be done in later phase in SQL, exploiting the data this file
 provides.
+
+In practice, this is a reimplementation using my own Python wordle + sqlite storage, of
+the 3blue1brown information-theory wordle solving video:
+https://www.youtube.com/watch?v=v68zYyaEmEA
+
 """
 
 
