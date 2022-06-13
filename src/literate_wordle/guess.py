@@ -23,19 +23,19 @@ def score_guess(guess: str, answer: str) -> str:
     """Score an individual guess with Counter"""
     # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
     answer_chars = Counter(answer)
-    response = ""
-    for guess_char, answer_char in zip(guess, answer):
-        if guess_char not in answer_chars:
-            response += CharacterScore.NO
-            continue  # Early exit for this character, skip to next
-        # From here on, we MUST have a char in common, regardless of place
+    # NO is the default score, no need to detect it explicitly
+    response: list[str] = [CharacterScore.NO] * len(answer)
+    # First pass to detect perfect scores
+    for char_index, (answer_char, guess_char) in enumerate(zip(guess, answer)):
         if answer_char == guess_char:
-            response += CharacterScore.OK
-        elif answer_chars[guess_char] > 0:
-            response += CharacterScore.WRONG_PLACE
-        # Either way, reduce occurence counter since we "used" this occurence
-        answer_chars[guess_char] -= 1
-        # No more hits = pretend character isn't even seen (remove from dict)
-        if answer_chars[guess_char] == 0:
-            del answer_chars[guess_char]
-    return response
+            response[char_index] = CharacterScore.OK
+            answer_chars[guess_char] -= 1
+    # Second pass for the yellows
+    for char_num, (guess_char, existing_score) in enumerate(zip(guess, response)):
+        if existing_score == CharacterScore.OK:
+            continue  # It's already green: skip
+        if answer_chars.get(guess_char, 0) > 0:
+            response[char_num] = CharacterScore.WRONG_PLACE
+            # Reduce occurence counter since we "used" this occurence
+            answer_chars[guess_char] -= 1
+    return "".join(response)

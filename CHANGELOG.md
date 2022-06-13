@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic
-Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+This project adheres to [Semantic
+Versioning](https://semver.org/spec/v2.0.0.html), but the narrative piece in
+`wordle.org` is considered a central feature, so additions of content to this
+file are seen as worth feature-adding (minor) version bumps, regardless of the
+code changes being just patching bugs.
 
 ## [Unreleased]
+
+
+### Fixed
+- Bug in guess scoring when a letter occurs twice in guess, but only once (second time) in answer, see [bug #1](https://github.com/OverkillGuy/literate-wordle/issues/1). Thanks to [@gpiancastelli](https://github.com/gpiancastelli) for reporting!
+
+### Added
+- New "Post-scriptum" section in `wordle.org`, narrating and reflecting about [bug #1](https://github.com/OverkillGuy/literate-wordle/issues/1).
 
 
 ## [1.0.2] - 2022-05-08

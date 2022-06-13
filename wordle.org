@@ -1817,7 +1817,7 @@ that keeps proper formatting.
 
 #+NAME: scoring-test1-tangleweb
 #+CAPTION: Final =tests/test_scoring_guess.py=
-#+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
+#+begin_src python :tangle no :noweb yes
 """Validates the Gherkin file features/scoring_guess.feature:
 
 <<scoring-feature>>
@@ -2584,7 +2584,7 @@ And remember that we had to expand the =CharacterScore=, so we need to re-tangle
 it here:
 
 #+NAME: scoring-impl-tangleweb2
-#+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
+#+begin_src python :tangle no :noweb yes
 <<scoring-guessmod-header>>
 
 
@@ -2875,3 +2875,379 @@ fuses them into something I hope is more valuable than the sum of its parts.
 
 If you like what you see here, have a look at my other writings, available on
 my blog: https://jiby.tech.
+
+
+* Post-script: scoring bug
+A few weeks after initial release of the project, reader [[https://github.com/gpiancastelli][@gpiancastelli]]
+helpfully [[https://github.com/OverkillGuy/literate-wordle/issues/1][reported a major bug relating to guess scoring via Github]]. In this
+post-script note, I want to report here the process of investigating the bug,
+present how dissecting the issue made the fix emerge, and reflect on how such a
+bug could sneak in despite our careful approach.
+
+I'm painfully aware of the ironic (and embarassing) aspect of writing a whole
+novel about "programming using best practices" only to get such a crucial point
+very, very wrong. It would be easy to hide this bug, retroactively change
+the narrative above, and pretend we got it right the first time. Instead, I
+believe there's a lesson worth learning and sharing in there.
+
+** The bug report
+The [[https://github.com/OverkillGuy/literate-wordle/issues/1#issue-1244097196][original bug report]] states (slightly abridged):
+
+#+begin_quote
+There's a bug in your score_guess function. If the guess contains two copies of
+a letter, and that letter is present only once in the answer, and the second
+copy in the guess matches that letter in the answer, the first copy will be
+marked as WRONG_PLACE, while the second copy will be marked as NO.
+
+[...] Let's say we have =A__A_= as our guess and =___A_= as the answer.
+Your score_guess function will return =🟨__⬜_= instead of =⬜__🟩_=.
+#+end_quote
+
+Incorrect scoring function sounds very serious indeed, so the first step is
+confirming the issue with a good testcase. Can we find words that match the
+rule:
+
+#+CAPTION: Search for words matching the bug report, arbitrarily using letter =N=
+#+begin_src shell :tangle no
+# Pick an answer word ending with "n"
+zgrep -iE "n\b" ./src/literate_wordle/assets/wordle_answers_dict.txt.gz
+# Pick a guess-word ending with "n", and with another "n"
+zgrep -iE "n.*n\b" ./src/literate_wordle/assets/wordle_accepted_words_dict.txt.gz
+#+end_src
+
+From the many results (those regular expressions are fairly vague), I manually
+chose the answer =train= and the guess =xenon=.
+
+We want to show that =score_guess= is wrong, which is best done by adding a
+case to =test_generic_score=:
+
+#+CAPTION: Adding a test case at the end, named =multi_occur_issue1=
+#+NAME: scoring-multi-parameters2
+#+begin_src python :tangle no
+@pytest.mark.parametrize(
+    "answer,our_guess,expected_score",
+    [
+        pytest.param("adage", "adobe", "🟩🟩⬜⬜🟩", id="normal_guess1"),
+        pytest.param("serif", "quiet", "⬜⬜🟨🟨⬜", id="normal_guess2"),
+        pytest.param("raise", "radix", "🟩🟩⬜🟨⬜", id="normal_guess3"),
+        pytest.param("abbey", "kebab", "⬜🟨🟩🟨🟨", id="multi_occur1"),
+        pytest.param("abbey", "babes", "🟨🟨🟩🟩⬜", id="multi_occur2"),
+        pytest.param("abbey", "abyss", "🟩🟩🟨⬜⬜", id="multi_occur3"),
+        pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
+        pytest.param("abbey", "keeps", "⬜🟨⬜⬜⬜", id="multi_occur5"),
+        pytest.param("abbey", "abate", "🟩🟩⬜⬜🟨", id="multi_occur6"),
+        pytest.param("train", "xenon", "⬜⬜⬜⬜🟩", id="multi_occur_issue1"),
+    ],
+)
+#+end_src
+
+Let's run the tests to see the result:
+
+: make test
+
+#+begin_example
+poetry run pytest
+============ test session starts =============
+platform linux -- Python 3.9.5, pytest-7.1.2, pluggy-1.0.0 -- /home/jiby/dev/ws/short/literate_wordle/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jiby/dev/ws/short/literate_wordle, configfile: pyproject.toml
+plugins: cov-3.0.0, clarity-1.0.1
+collected 23 items
+
+tests/test_checking_guess_valid_word.py::test_reject_long_words PASSED [  4%]
+tests/test_checking_guess_valid_word.py::test_reject_overly_short_words PASSED [  8%]
+tests/test_checking_guess_valid_word.py::test_reject_nondict_words PASSED [ 13%]
+tests/test_checking_guess_valid_word.py::test_accept_dict_words PASSED [ 17%]
+tests/test_pick_word.py::test_pick_word_ok_length PASSED [ 21%]
+tests/test_scoring_guess.py::test_perfect_guess PASSED [ 26%]
+tests/test_scoring_guess.py::test_no_common_character PASSED [ 30%]
+tests/test_scoring_guess.py::test_wrong_place PASSED [ 34%]
+tests/test_scoring_guess.py::test_generic_score[normal_guess1] PASSED [ 39%]
+tests/test_scoring_guess.py::test_generic_score[normal_guess2] PASSED [ 43%]
+tests/test_scoring_guess.py::test_generic_score[normal_guess3] PASSED [ 47%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur1] PASSED [ 52%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur2] PASSED [ 56%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur3] PASSED [ 60%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur4] PASSED [ 65%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur5] PASSED [ 69%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur6] PASSED [ 73%]
+tests/test_scoring_guess.py::test_generic_score[multi_occur_issue1] FAILED [ 78%]
+tests/test_track_guess_number.py::test_first_guess_allowed PASSED [ 82%]
+tests/test_track_guess_number.py::test_sixth_guess_allowed PASSED [ 86%]
+tests/test_track_guess_number.py::test_seventh_guess_fails_game PASSED [ 91%]
+tests/test_track_guess_number.py::test_winning_guess_wins PASSED [ 95%]
+tests/test_track_guess_number.py::test_invalid_guess_not_counted PASSED [100%]
+
+================== FAILURES ==================
+___ test_generic_score[multi_occur_issue1] ___
+
+answer = 'train', our_guess = 'xenon'
+expected_score = '⬜⬜⬜⬜🟩'
+
+    @pytest.mark.parametrize(
+        "answer,our_guess,expected_score",
+        [
+            pytest.param("adage", "adobe", "🟩🟩⬜⬜🟩", id="normal_guess1"),
+            pytest.param("serif", "quiet", "⬜⬜🟨🟨⬜", id="normal_guess2"),
+            pytest.param("raise", "radix", "🟩🟩⬜🟨⬜", id="normal_guess3"),
+            pytest.param("abbey", "kebab", "⬜🟨🟩🟨🟨", id="multi_occur1"),
+            pytest.param("abbey", "babes", "🟨🟨🟩🟩⬜", id="multi_occur2"),
+            pytest.param("abbey", "abyss", "🟩🟩🟨⬜⬜", id="multi_occur3"),
+            pytest.param("abbey", "algae", "🟩⬜⬜⬜🟨", id="multi_occur4"),
+            pytest.param("abbey", "keeps", "⬜🟨⬜⬜⬜", id="multi_occur5"),
+            pytest.param("abbey", "abate", "🟩🟩⬜⬜🟨", id="multi_occur6"),
+            pytest.param("train", "xenon", "⬜⬜⬜⬜🟩", id="multi_occur_issue1"),
+        ],
+    )
+    def test_generic_score(answer, our_guess, expected_score):
+        """Scenario Outline: Scoring guesses"""
+        # Given a wordle <answer>
+        # When scoring <guess>
+        score = score_guess(our_guess, answer)
+        # Then score should be <score>
+>       assert score == expected_score
+E       assert == failed. [pytest-clarity diff shown]
+E
+E         LHS vs RHS shown below
+E
+E         ⬜⬜🟨⬜⬜
+E         ⬜⬜⬜⬜🟩
+E
+
+tests/test_scoring_guess.py:68: AssertionError
+- generated xml file: /home/jiby/dev/ws/short/literate_wordle/test_results/results.xml -
+
+----------- coverage: platform linux, python 3.9.5-final-0 -----------
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+src/literate_wordle/__init__.py              0      0   100%
+src/literate_wordle/assets/__init__.py       0      0   100%
+src/literate_wordle/game.py                 38      0   100%
+src/literate_wordle/guess.py                25      0   100%
+src/literate_wordle/words.py                32      0   100%
+------------------------------------------------------------
+TOTAL                                       95      0   100%
+Coverage HTML written to dir test_results/coverage.html
+Coverage XML written to file test_results/coverage.xml
+
+========== short test summary info ===========
+FAILED tests/test_scoring_guess.py::test_generic_score[multi_occur_issue1]
+======== 1 failed, 22 passed in 0.15s ========
+make: *** [Makefile:16: test] Error 1
+#+end_example
+
+Bug confirmed! Whoops.
+
+** Why are we scoring badly?
+
+If necessary, we can step through the example code to figure out what's wrong,
+and I did. But overall, it seems that our approach to scoring by looking at
+character in a single pass is at fault.
+
+The approach falls down with the example we were given, because we don't /first/
+detect the second =n= of =xenon= as matching the last =n= of =train=, which
+would make it scored OK (🟩), then in another pass detecting remaining,
+non-matching (⬜) in the first =n=. Instead, we run over characters in order,
+detect a =n= in the wrong place, score it as wrong-place (🟨), and by decreasing
+the occurence counter, the next one is counted non-matching (⬜), hence the bad
+score.
+
+Thinking it through, it means that the single-pass scoring approach just /cannot/ work, as we /need/ to
+"look ahead", knowing already the OK-ness of all guess characters /before/
+scoring the wrong-place-ness. Interesting!
+
+So we will re-write this algorithm to work in two passes: First, detect exact
+matches of guess/answer character pairs, recording those as perfect score. Then,
+a second pairwise check looks for wrong-place score, defaulting to the mismatch "zero" score.
+
+** Fixing the issue
+
+In order to score "out of order" (in two passes), the =response= needs to change
+from the original empty string being built, to some random-access structure: a
+=list=.
+
+In designing the fix, we realise that a zero score, aka all-mismatch
+(⬜⬜⬜⬜⬜) is the "default" case of scoring. That is we "start" from that
+score, and score "up" by marking individual characters as matching.
+
+We reflect that in the list initialisation, starting with the worst score as it
+means we avoid having to "detect" it anymore. That's a tiny optimization of the
+code. But more importantly, this list is now randomly accessible, as we can now
+"peek ahead" when we couldn't before.
+
+#+CAPTION: Bug fixed, solution in two passes, defaulting score to NO
+#+NAME: scoring-guessfunc-impl3
+#+begin_src python :tangle no
+def score_guess(guess: str, answer: str) -> str:
+    """Score an individual guess with Counter"""
+    # Counter("abbey") = Counter({'b': 2, 'a': 1, 'e': 1, 'y': 1})
+    answer_chars = Counter(answer)
+    # NO is the default score, no need to detect it explicitly
+    response: list[str] = [CharacterScore.NO] * len(answer)
+    # First pass to detect perfect scores
+    for char_index, (answer_char, guess_char) in enumerate(zip(guess, answer)):
+        if answer_char == guess_char:
+            response[char_index] = CharacterScore.OK
+            answer_chars[guess_char] -= 1
+    # Second pass for the yellows
+    for char_num, (guess_char, existing_score) in enumerate(zip(guess, response)):
+        if existing_score == CharacterScore.OK:
+            continue  # It's already green: skip
+        if answer_chars.get(guess_char, 0) > 0:
+            response[char_num] = CharacterScore.WRONG_PLACE
+            # Reduce occurence counter since we "used" this occurence
+            answer_chars[guess_char] -= 1
+    return "".join(response)
+#+end_src
+
+Note another minor change, using Python's =get= operator with a default of =0=
+to catch both the "key is not set" as well as "key is set to zero" in the same
+way. We're trading off clarity for briefness, which only works by assuming our
+readers know about Python's =get= operator, and how it sets default via the
+second parameter in case of a missing key.
+
+Bug fixed, as attested by tests going green again. We also check linters are
+happy and coverage is good. All is well!
+
+** Tangling again
+
+We just re-defined (overwrote) a few code blocks from previous sections, so we need
+to re-weave them together into a real file.
+
+If we just "fixed" the tangling blocks of above, the story wouldn't be in order,
+wouldn't make sense.
+
+So we redefine a few files here:
+
+#+NAME: scoring-scenario-multi-identicalanswerchar2
+#+CAPTION: Adding bug =xenon= and =trains= to examples in documentation
+#+begin_src feature :tangle features/scoring_guess.feature
+  Examples: Reported bug: multiple occurence of same character in guess
+    | answer | guess	| score		|
+    | train  | xenon	| ⬜⬜⬜⬜🟩	|
+#+end_src
+
+
+
+#+NAME: scoring-test1-tangleweb2
+#+CAPTION: =tests/test_scoring_guess.py= with our extra testcase at the bottom
+#+begin_src python :tangle tests/test_scoring_guess.py :noweb yes
+"""Validates the Gherkin file features/scoring_guess.feature:
+
+<<scoring-feature>>
+"""
+
+<<scoring-test-import-pytest>>
+
+<<scoring-test-import>>
+
+
+<<scoring-test1>>
+
+
+<<scoring-test2>>
+
+
+<<scoring-test3>>
+
+
+<<scoring-multi-parameters2>>
+<<scoring-multi-skeleton>>
+#+end_src
+
+#+CAPTION: Re-defining =src/literate_wordle/guess.py= with our fix
+#+NAME: scoring-impl-tangleweb3
+#+begin_src python :tangle src/literate_wordle/guess.py :noweb yes
+<<scoring-guessmod-header>>
+
+
+<<scoring-guessfunc-import>>
+<<scoring-guess-enum-import>>
+
+
+<<scoring-guess-enum>>
+
+    <<track-guess-perfectscore>>
+
+
+<<scoring-guessfunc-impl3>>
+#+end_src
+
+** Why didn't you catch this earlier? Is it TDD/BDD's fault or are you just a bad dev?
+
+We just found a bug, and fixed it. But why didn't we catch it earlier!? Is TDD
+and BDD at fault? Can we just go back to coding without tests!?
+
+I like to think that the process didn't fail as much as my imagination did.
+
+First, note how the Gherkin features, requirements gathering and so on did their
+job, we adequately planned for features, defined scenarios that did make sense,
+and implemented those correctly. So the BDD side delivered its value!
+
+Purely TDD-wise, all the tests we defined /were/ valid, and covered reasonable
+aspect of the features to help design the new functions' shapes, nothing to say
+there either.
+
+The failing was in the (lack of) diversity of scores used as examples: we didn't
+cover a broad enough set of score samples to find issues like this one.
+
+But finding this bug isn't obvious: if you didn't know about this particular bug
+(by reading the sourcecode and seeing a really non-obvious flaw), finding the
+bug would instead require playing randomly this game's implementation until you
+find a bad score (which could take minutes or hours, due to the randomness
+involved), then reproducing the example + reporting it. This is likely what the
+bug reporter did, played around and found a bad case.
+
+As a developer, I didn't have any particular reason to suspect this specific scoring
+issue, so I didn't develop a test case with it.
+
+But I like to think that I was so close!
+
+As you see in sections above, I /was/ worried about scoring for multiple
+letters, as shown in the scoring example table. I remember this being a concern,
+because any naive implementation of wordle could miss the nuance of "the real
+Worlde". I even broke out screenshots from the real Wordle website to make up
+some references, because I couldn't explain to myself how the scoring /should/
+happen.
+
+Unfortunately, my attention was on multiple identical characters in the /answer/, not in
+the /guess/.
+
+So, again, I was close enough to look for similar bugs, but didn't quite find a
+diverse enough set of sample scores to unearth this particular issue.
+
+** Why should this be a failure story?
+
+Before we go, I want to flip the narrative around this bug:
+
+The way I see it, I built a fun implementation of Wordle to play with
+Python, TDD and BDD. I spent a reasonable amount of time on "due diligence
+research" around edge cases (seen in above section) to feel good about the
+solution.
+
+Isolating the bug (by adding a single line to the tests), and fixing it (a few
+paragraphs, one function) was a minuscule amount of additional effort, thanks to
+our strong test harness.
+
+Avoiding the bug in the first place would have cost a lot more time, doing
+research into 100% compatibility with existing Wordle implementations, likely
+having to connect someone else's Wordle code to ours to compare (with all the
+associated issues to deal with), for comparatively minor benefits.
+
+This isn't NASA, who has /a single chance to send rockets/, and (comparatively)
+infinite engineering time to plan it. In our case, the cost of making the system
+robust can be prohibitive. The discipline of Engineering is about balancing
+acceptable risks against the costs of reliability.
+
+So, despite having to issue a rectification to this narrative, I still believe
+the amount of pre-production research was sufficient: We did nothing wrong here.
+
+This bugfix also showcases the iterative nature of software development: Earlier
+sections demonstrated feature addition as incremental changes, but we see here
+that refining the solution when it's subtly wrong is an iterative process too!
+
+So, yeah, building code to be correct the first time is hard. Or maybe almost
+impossible. Or even not the best course of action for you!
+
+The best way to build code is to "make it work, make it right, then make it fast"
+/in that order/.
