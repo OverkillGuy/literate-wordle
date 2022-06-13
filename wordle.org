@@ -3225,9 +3225,8 @@ Python, TDD and BDD. I spent a reasonable amount of time on "due diligence
 research" around edge cases (seen in above section) to feel good about the
 solution.
 
-Finding the bug (by extending our test cases in one single line), and fixing it
-(a few more line being redefined) was a /tiny amount/ of additional effort,
-thanks in major part to our strong test harness.
+Isolating the bug (by adding a single line to the tests), and fixing it (a few
+paragraphs, one function) was a minuscule amount of additional effort, thanks to our strong test harness.
 
 Avoiding the bug in the first place would have cost a lot more time, doing
 research into 100% compatibility with existing Wordle implementations, likely
@@ -3235,12 +3234,14 @@ having to connect someone else's Wordle code to ours to compare (with all the
 associated issues to deal with), for comparatively minor benefits.
 
 So, despite having to issue a rectification to this narrative, I still believe
-the amount of pre-production research was adequate.
+the amount of pre-production research was sufficient: We did nothing wrong here.
 
-This story also reinforces the iterative nature of software development: Earlier
-sections showed feature addition as incremental changes, but in this case we see
-that even refining the solution when it's subtly wrong is an iterative process!
+This bugfix also reinforces the iterative nature of software development:
+Earlier sections showed feature addition as incremental changes, but in this
+case we see that even refining the solution when it's subtly wrong is an
+iterative process!
 
-So, yeah, building code to be correct the first time is hard, and maybe not
-possible or the best course of action for you! The Agile way, I hear, is to
-"make it work, make it right, then make it fast" (/in that order/).
+So, yeah, building code to be correct the first time is hard. Or maybe almost
+impossible. Or even not the best course of action for you!
+
+The Agile way, I hear, is to "make it work, make it right, then make it fast" /in that order/.
