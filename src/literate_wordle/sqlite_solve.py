@@ -62,8 +62,8 @@ if __name__ == "__main__":
 
     # First, create the tables
     create_table_sql = pkg_resources.read_text(db, "tables.sql")
-    # PERF: Skipping cursor creation due to single-user nature, isolation is
-    # useless, performance sought. See more in Python sqlite3 docs:
+    # PERF: Skipping cursor creation due to single-user nature of script, isolation is
+    # useless, performance sought instead. See more in Python sqlite3 docs:
     # https://docs.python.org/3/library/sqlite3.html#using-sqlite3-efficiently
     dbcon.executescript(create_table_sql)
 
@@ -121,11 +121,6 @@ if __name__ == "__main__":
         answer_indexes =  list(answer_word_acceptindex_dict.values())
         scores = [score_guess(guess, answer) for answer in SORTED_ANSWER_WORDS]
         score_indexes= [scores_index_dict[score] for score in scores]
-        # print(
-        #     f"Score for {guess=}({guess_index=}) against {answer=}({answer_index=}): "
-        #     f"{score=}({score_index=})"
-        # )
-        #
         # We HAVE 3 x long arrays, one for each structure: ([guesses], [answer], [scores])
         # We NEED a long array of TRIPLES [(guess1, answer1, score1), (guess2, answer2, score2),]
         # Classic problem of structure-of-array vs array-of-structure:
