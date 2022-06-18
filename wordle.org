@@ -3093,21 +3093,35 @@ def score_guess(guess: str, answer: str) -> str:
     for char_num, (guess_char, existing_score) in enumerate(zip(guess, response)):
         if existing_score == CharacterScore.OK:
             continue  # It's already green: skip
-        if answer_chars.get(guess_char, 0) > 0:
+        if answer_chars[guess_char] > 0:
             response[char_num] = CharacterScore.WRONG_PLACE
             # Reduce occurence counter since we "used" this occurence
             answer_chars[guess_char] -= 1
     return "".join(response)
 #+end_src
 
-Note another minor change, using Python's =get= operator with a default of =0=
-to catch both the "key is not set" as well as "key is set to zero" in the same
-way. We're trading off clarity for briefness, which only works by assuming our
-readers know about Python's =get= operator, and how it sets default via the
-second parameter in case of a missing key.
+Note another minor change, we removed the check for =guess_char in
+answer_chars=. This was previously there to catch the case where the
+=answer_chars= dictionary didn't have an entry for this =guess_char=, which
+meant trying to access it would raise a =KeyError=, so we'd protect agaisnt
+that.
 
-Bug fixed, as attested by tests going green again. We also check linters are
-happy and coverage is good. All is well!
+But [[https://github.com/OverkillGuy/literate-wordle/issues/1#issuecomment-1156974685=][as @gpiancastelli also pointed out]], a =collections.Counter= isn't a regular
+dictionary, [[https://docs.python.org/3/library/collections.html#collections.Counter][the documentation says:]] "Counter objects have a dictionary interface
+except that they return a zero count for missing items.". This helpful
+divergence from regular dictionaries protects us already from that missing key
+issue, so the code can flow just a little more smoothly.
+
+Had this been a raw dict, not a =Counter=, we could have used the =get= operator
+to set a default value on missing key, in the form =answer_chars.get(guess_char,
+0)=. We'd be trading off clarity for briefness, which only works by assuming our
+readers know about Python's =get= operator, and how it sets default via the
+second parameter in case of a missing key. Not as elegant as what =Counter=
+allows!
+
+
+Still, the bug is fixed, as attested by tests going green again. We also check
+linters are happy and coverage is good (they are, it is). All is well!
 
 ** Tangling again
 
