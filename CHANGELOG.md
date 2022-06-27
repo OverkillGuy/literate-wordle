@@ -14,6 +14,8 @@ code changes being just patching bugs.
 
 <!-- This section kept empty on purpose to help write un-released changelogs. See https://keepachangelog.com/en/1.0.0/#effort for more reasoning.   -->
 
+
+## [1.1.1] - 2022-06-27
 ### Fixed
 - Removed unnecessary check for KeyError in scoring bugfix, thanks to
   [@gpiancastelli](https://github.com/gpiancastelli) again for [pointing it out](https://github.com/OverkillGuy/literate-wordle/issues/1#issuecomment-1156974685).
