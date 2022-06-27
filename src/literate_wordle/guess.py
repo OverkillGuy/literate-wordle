@@ -34,7 +34,7 @@ def score_guess(guess: str, answer: str) -> str:
     for char_num, (guess_char, existing_score) in enumerate(zip(guess, response)):
         if existing_score == CharacterScore.OK:
             continue  # It's already green: skip
-        if answer_chars.get(guess_char, 0) > 0:
+        if answer_chars[guess_char] > 0:
             response[char_num] = CharacterScore.WRONG_PLACE
             # Reduce occurence counter since we "used" this occurence
             answer_chars[guess_char] -= 1
