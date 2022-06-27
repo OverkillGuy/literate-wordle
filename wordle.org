@@ -3114,9 +3114,7 @@ issue, so the code can flow just a little more smoothly.
 
 Had this been a raw dict, not a =Counter=, we could have used the =get= operator
 to set a default value on missing key, in the form =answer_chars.get(guess_char,
-0)=. We'd be trading off clarity for briefness, which only works by assuming our
-readers know about Python's =get= operator, and how it sets default via the
-second parameter in case of a missing key. Not as elegant as what =Counter=
+0)=. We'd be trading off clarity for briefness. Not as elegant as what =Counter=
 allows!
 
 
