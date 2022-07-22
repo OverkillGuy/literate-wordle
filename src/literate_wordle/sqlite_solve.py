@@ -78,8 +78,7 @@ if __name__ == "__main__":
     SCORES_SIZE = len(ALL_SCORES)
 
     print(
-        f"Scores list is {SCORES_SIZE} items "
-        f"aka {log2(SCORES_SIZE)} bits for index"
+        f"Scores list is {SCORES_SIZE} items " f"aka {log2(SCORES_SIZE)} bits for index"
     )
 
     indexed_scores = list(enumerate(ALL_SCORES))
@@ -119,15 +118,19 @@ if __name__ == "__main__":
         # for answer in SORTED_ANSWER_WORDS: (via list comprehension below)
 
         # Relying on dict iteration order being dict insertion order (!!!)
-        answer_indexes =  list(answer_word_acceptindex_dict.values())
+        answer_indexes = list(answer_word_acceptindex_dict.values())
         scores = [score_guess(guess, answer) for answer in SORTED_ANSWER_WORDS]
-        score_indexes= [scores_index_dict[score] for score in scores]
-        # We HAVE 3 x long arrays, one for each structure: ([guesses], [answer], [scores])
-        # We NEED a long array of TRIPLES [(guess1, answer1, score1), (guess2, answer2, score2),]
+        score_indexes = [scores_index_dict[score] for score in scores]
+        # We HAVE 3 x arrays, one for each structure: ([guesses], [answer], [scores])
+        # We NEED a long array of TRIPLES [(g1, a1, s1), (g2, a2, s2), (g3, a3, s3),]
         # Classic problem of structure-of-array vs array-of-structure:
-        array_of_structure_score = [(guess_index, answer_index, score_index) for answer_index, score_index in zip(answer_indexes, score_indexes)]
+        array_of_structure_score = [
+            (guess_index, answer_index, score_index)
+            for answer_index, score_index in zip(answer_indexes, score_indexes)
+        ]
         dbcon.executemany(
-            "INSERT INTO scores(guessidx, answeridx, scoreidx) VALUES (?,?,?)", array_of_structure_score
+            "INSERT INTO scores(guessidx, answeridx, scoreidx) VALUES (?,?,?)",
+            array_of_structure_score,
         )
         dbcon.commit()
     # Close is not a shortcut method and it's not called automatically,
