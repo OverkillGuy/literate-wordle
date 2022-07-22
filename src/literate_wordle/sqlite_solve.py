@@ -17,9 +17,10 @@ https://www.youtube.com/watch?v=v68zYyaEmEA
 
 
 import importlib.resources as pkg_resources
-import sqlite3
 from itertools import product
 from math import log2
+
+from pysqlite3 import dbapi2 as sqlite3
 
 from literate_wordle import db  # The db/ folder, for SQL scripts
 from literate_wordle.guess import score_guess

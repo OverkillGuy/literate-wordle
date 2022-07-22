@@ -17,6 +17,8 @@ keywords = [
 # While I wouldn't mind using Python 3.11 onwards, sphinxcontrib-needs, a
 # dev-dep, has conflicts with it. So we restrict our allowed Python...
 python = ">=3.9,<3.11"
+# sqlite3 library, compiled and packaged by third-party to be up to date.
+pysqlite3-binary = "*"
 # This project doesn't have runtime dependencies, just standard library.
 
 [tool.poetry.scripts]
