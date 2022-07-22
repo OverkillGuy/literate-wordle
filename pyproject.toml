@@ -19,7 +19,6 @@ keywords = [
 python = ">=3.9,<3.11"
 # sqlite3 library, compiled and packaged by third-party to be up to date.
 pysqlite3-binary = "*"
-# This project doesn't have runtime dependencies, just standard library.
 
 [tool.poetry.scripts]
 pywordle = "literate_wordle.cli:main"
