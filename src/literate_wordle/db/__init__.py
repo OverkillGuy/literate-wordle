@@ -1,1 +1,1 @@
-"""Static binary assets (dictionaries) required to perform Wordle"""
+"""Static SQL assets (tables and queries) required to solve Wordle"""
