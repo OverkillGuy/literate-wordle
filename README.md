@@ -2,7 +2,8 @@
 
 Writing up a Python implementation of Wordle using literate programming.
 
-> Follow along on the journey to implement Wordle in Python using Behaviour-driven Development techniques.
+> Follow along on the journey to implement Wordle in Python using
+> Behaviour-driven Development techniques.
 
 See my blogpost about the project: https://jiby.tech/post/literate-wordle/.
 
@@ -37,7 +38,8 @@ code, the rest of the repository is a completely normal python project.
 
 The primary usage of this repository is as a "story" to read along as a webpage.
 
-To generate that document, use `make docs` to build the project's website, which contains:
+To generate that document, use `make docs` to build the project's website, which
+contains:
 - Pretty HTML render of `wordle.org` to follow along
 - Python module API reference (generated from code tangled out into repo)
 - Project's requirements list, each a Gherkin feature, mapping to test cases
@@ -115,9 +117,17 @@ For ease of development, a `Makefile` is provided, use it like this:
 
 ### Documentation
 
-Documentation is generated via [Sphinx](https://www.sphinx-doc.org/en/master/), using the cool [myst_parser](https://myst-parser.readthedocs.io/en/latest/) plugin to support Markdown files like this one.
+Documentation is generated via [Sphinx](https://www.sphinx-doc.org/en/master/),
+using the cool [myst_parser](https://myst-parser.readthedocs.io/en/latest/)
+plugin to support Markdown files like this one.
 
-Other Sphinx plugins provide extra documentation features, like the fantastic [sphinxcontrib-needs](https://sphinxcontrib-needs.readthedocs.io/en/latest/index.html) used to track project requirements, the recent [AutoAPI](https://sphinx-autoapi.readthedocs.io/en/latest/index.html) to generate API reference without headaches, and the experimental [sphinx-collections](https://sphinx-autoapi.readthedocs.io/en/latest/index.html) to include automatically generated documentation.
+Other Sphinx plugins provide extra documentation features, like the fantastic
+[sphinxcontrib-needs](https://sphinxcontrib-needs.readthedocs.io/en/latest/index.html)
+used to track project requirements, the recent
+[AutoAPI](https://sphinx-autoapi.readthedocs.io/en/latest/index.html) to
+generate API reference without headaches, and the experimental
+[sphinx-collections](https://sphinx-autoapi.readthedocs.io/en/latest/index.html)
+to include automatically generated documentation.
 
 To build the documentation, run
 
@@ -128,7 +138,8 @@ To browse the website version of the documentation you just built, run:
 
     make docs-serve
 
-And remember that `make` supports multiple targets, so you can generate the documentation and serve it:
+And remember that `make` supports multiple targets, so you can generate the
+documentation and serve it:
 
     make docs docs-serve
 
